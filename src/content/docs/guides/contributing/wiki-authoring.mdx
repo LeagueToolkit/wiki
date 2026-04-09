@@ -1,0 +1,22 @@
+---
+title: Wiki Authoring
+description: Learn how to contribute content to the LTK Wiki, including writing guides, formatting conventions, and submission workflow.
+---
+
+import Counter from '../../../../components/Counter.svelte';
+
+This guide covers everything you need to know about authoring and contributing content to the LTK Wiki.
+
+## Interactive Components
+
+The wiki supports interactive Svelte components embedded in MDX pages. Here's an example:
+
+<Counter client:visible label="Example Counter" />
+
+Components use Astro's island architecture — they render statically at build time and hydrate on the client when needed. Available hydration strategies:
+
+- `client:load` — Hydrate immediately (critical interactivity)
+- `client:visible` — Hydrate when scrolled into view
+- `client:idle` — Hydrate when the browser is idle
+
+_The rest of this page is a placeholder. Full authoring guide content will be added here._

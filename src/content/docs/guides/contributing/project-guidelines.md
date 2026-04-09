@@ -1,0 +1,55 @@
+---
+title: Project Guidelines
+description: Contribution guidelines for LeagueToolkit projects, covering code standards, pull request workflow, and community expectations.
+---
+
+Thank you for your interest in contributing to LeagueToolkit! This guide covers how to get involved.
+
+## Ways to Contribute
+
+- **Bug reports** — Found a problem? Open an issue on GitHub
+- **Feature requests** — Have an idea? Open a discussion or issue
+- **Code contributions** — Fix bugs, add features, improve documentation
+- **Documentation** — Help improve this wiki
+- **Testing** — Try new releases and report issues
+
+## Reporting Issues
+
+When reporting a bug, please include:
+
+1. **Description** — What happened vs. what you expected
+2. **Steps to reproduce** — How to trigger the issue
+3. **Environment** — OS version, LTK Manager version
+4. **Logs** — Relevant log file contents (see [Troubleshooting](/guides/mod-management/troubleshooting/#log-files))
+5. **Screenshots** — If applicable
+
+## Development Setup
+
+See [Building from Source](/guides/contributing/building-from-source/) for instructions on setting up the development environment.
+
+## Code Contributions
+
+1. Fork the repository
+2. Create a feature branch from `main`
+3. Make your changes
+4. Run checks: `pnpm check` (typecheck + lint + format)
+5. Run Rust checks: `cargo clippy -p ltk-manager` and `cargo fmt -p ltk-manager`
+6. Open a pull request against `main`
+
+### Code Style
+
+- **Rust:** Follow standard Rust conventions. Document public APIs with `///` doc comments. Run `cargo fmt` and `cargo clippy`.
+- **TypeScript/React:** Follow the existing codebase patterns. Import from barrel exports, not subdirectories. Avoid ternary operators in JSX.
+- **Comments:** Only comment non-obvious logic. Avoid comments that restate what the code does.
+
+## Project Structure
+
+- **`src-tauri/src/`** — Rust backend (Tauri commands, business logic)
+- **`src/`** — React frontend (routes, components, modules)
+- **`src/components/`** — Reusable UI component library
+- **`src/modules/`** — Feature modules (library, workshop, patcher, etc.)
+- **`src/routes/`** — Page routes (TanStack Router, file-based)
+
+## License
+
+<!-- TODO: Add license information -->

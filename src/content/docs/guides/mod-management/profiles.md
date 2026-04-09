@@ -1,0 +1,40 @@
+---
+title: Profiles
+description: Learn how to create and manage mod profiles in ltk-manager to switch between different mod configurations.
+---
+
+Profiles let you save different mod configurations and switch between them. Each profile tracks which mods are enabled and their load order.
+
+## Use Cases
+
+- **Champion-specific setups** — A profile for each champion you play
+- **Testing vs. live** — Keep experimental mods separate from your main setup
+- **Minimal vs. full** — A lightweight profile and a fully modded one
+
+## Creating a Profile
+
+1. Open the profile selector in the toolbar
+2. Click **New Profile**
+3. Enter a name for the profile
+
+New profiles start with all mods disabled.
+
+## Switching Profiles
+
+Select a profile from the profile dropdown in the toolbar. Switching profiles updates which mods are enabled in the library.
+
+**Note:** You cannot switch profiles while the patcher is running. Stop the patcher first.
+
+## Renaming a Profile
+
+Right-click a profile and select **Rename**, or use the rename option in the profile menu.
+
+## Deleting a Profile
+
+Right-click a profile and select **Delete**. You cannot delete the last remaining profile.
+
+## How Profiles Work
+
+Each profile stores a list of enabled mod IDs. When you switch profiles, LTK Manager updates the enabled/disabled state of all installed mods to match the selected profile's configuration.
+
+Profiles are saved automatically when you toggle mods or reorder them.

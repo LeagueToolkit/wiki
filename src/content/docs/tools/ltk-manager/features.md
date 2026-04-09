@@ -1,0 +1,170 @@
+---
+title: Features
+description: A breakdown of ltk-manager's feature set including mod management, profile switching, conflict resolution, and the Creator Workshop for mod authors.
+---
+
+Patching is the process of applying your enabled mods to League of Legends. LTK Manager builds an overlay of all enabled mod files and injects them into the game.
+
+## How Patching Works
+
+The patching process has two main phases:
+
+### 1. Building the Overlay
+
+LTK Manager combines all enabled mods into a single overlay directory. This involves:
+
+1. **Indexing** — Scanning enabled mods and their active layers
+2. **Collecting** — Gathering mod files organized by game data path
+3. **Patching WADs** — Building WAD archive overlays for each affected game data file
+4. **String overrides** — Applying any text replacements from mod layers
+
+Progress is shown in real-time in the status bar.
+
+### 2. Applying to League
+
+Once the overlay is built, LTK Manager uses a patcher DLL to inject the overlay into the League of Legends client. The game reads from the overlay files instead of the original data.
+
+## Starting the Patcher
+
+Click the **Patch** button in the status bar at the bottom of the window. The button shows the current patcher phase:
+
+- **Idle** — Ready to patch
+- **Building** — Creating the overlay (may take a moment depending on mod count/size)
+- **Patching** — Overlay applied, game is patched
+
+## Stopping the Patcher
+
+Click **Stop** to remove the overlay and restore the game to its unmodded state. The patcher stops gracefully, cleaning up the injected files.
+
+## TFT Patching
+
+By default, only Summoner's Rift game files are patched. To also patch Teamfight Tactics files, enable **Patch TFT** in [Settings](/tools/ltk-manager/configuration/).
+
+## Constraints
+
+While the patcher is running:
+
+- You **cannot** toggle mods on or off
+- You **cannot** switch profiles
+- You **cannot** reorder mods
+
+Stop the patcher first, make your changes, then patch again.
+
+## Patching Troubleshooting
+
+### Patcher won't start
+- Verify your League path is correct in [Settings](/tools/ltk-manager/configuration/)
+- Make sure League of Legends is installed
+- Check the [log file](/guides/mod-management/troubleshooting/#log-files) for errors
+
+### Mods not showing in-game
+- Confirm the mods are **enabled** in your current profile
+- Make sure you started the patcher **after** enabling the mods
+- Check that the mod targets the correct game files
+
+### Patcher is slow
+- The first build takes longer as it processes all mod files
+- Large mods with many WAD files take more time
+- Building is the slow phase; applying is near-instant
+
+---
+
+## Under the Hood
+
+This section explains what happens behind the scenes when LTK Manager patches your game. You don't need to understand any of this to use the tool — but if you're curious about the internals, read on.
+
+### The Core Idea: Overlays
+
+League of Legends stores all of its game data — champion models, textures, sounds, UI elements, text — inside compressed archive files called **WAD files**. These live in your League installation folder under `Game/DATA/FINAL/`.
+
+When you install a mod, LTK Manager doesn't touch any of these original files. Instead, it creates **copies** of the affected game files with your mod's changes applied, and places them in a separate folder called an **overlay**. When the game runs, LTK Manager redirects the game to read from the overlay instead of its original files.
+
+### What's in the Overlay
+
+The overlay is a directory that mirrors the structure of League's game data folder, but only contains the files that your mods actually change. If you have a mod that replaces a champion's skin, the overlay will contain a patched version of that champion's WAD file — and nothing else.
+
+For example, if you have a mod that changes Ahri's textures, the overlay might look like this:
+
+```
+overlay/
+└── DATA/
+    └── FINAL/
+        └── Champions/
+            └── Ahri.wad.client    ← patched copy with your mod's textures
+```
+
+The rest of the game's hundreds of WAD files remain untouched and are read from the original location.
+
+### How Mods are Combined
+
+When you have multiple mods enabled, their changes are **merged** into the overlay. LTK Manager processes each mod in the order they appear in your mod list (top to bottom). If two mods change the same file, the mod higher in the list takes priority.
+
+This is why [mod ordering](/guides/mod-management/installing-mods/) matters — it determines which mod "wins" when there's a conflict.
+
+### Profiles and Overlays
+
+Each [profile](/guides/mod-management/profiles/) maintains its own separate overlay directory. When you switch profiles, you're not just swapping a list of enabled mods — you're switching to an entirely different set of built overlay files.
+
+This means:
+
+- **Profile A** with Champion Skin X and HUD Mod Y has its own overlay with those specific changes baked in
+- **Profile B** with a completely different set of mods has its own, independent overlay
+- Switching between profiles doesn't corrupt or mix up your mod setups
+
+When you change anything in a profile — enable a mod, disable a mod, reorder mods — the overlay for that profile is marked as outdated. The next time you start the patcher, it rebuilds the overlay from scratch to reflect your changes.
+
+### The Two Phases in Detail
+
+When you click the **Patch** button, two things happen in sequence:
+
+**Phase 1: Building the Overlay**
+
+1. **Indexes** your League installation to find all the game's WAD files
+2. **Collects** the changes from each of your enabled mods (reading from `.modpkg` or `.fantome` mod archives)
+3. **Patches** the affected WAD files — creates modified copies in the overlay directory with your mod's content merged in
+4. **Applies string overrides** — if any mods change in-game text (champion names, item descriptions, etc.), those text changes are applied to the relevant data files
+
+This phase is where most of the time is spent. You'll see a progress indicator in the status bar.
+
+**Phase 2: Running the Patcher**
+
+Once the overlay is built, LTK Manager loads a patcher module that watches for the League of Legends game process. When the game starts:
+
+1. The patcher detects the running game process
+2. It **hooks into the game's file reading** mechanism
+3. Whenever the game tries to read a file that exists in your overlay, the read is silently **redirected** to the overlay copy instead
+
+The patcher stays active and continues watching. If you play multiple games in a row, it will re-apply the hooks each time a new game process starts.
+
+### What Happens When You Stop
+
+When you click **Stop**, the patcher stops watching for game processes, removes any active file redirections, and returns to an idle state. The overlay files remain on disk (so subsequent patches can be faster if nothing changed), but the game will no longer be redirected to them.
+
+Your original game files are **never modified** throughout this entire process. Patching is always safe to start and stop.
+
+### Where Overlays are Stored
+
+Overlays are stored inside your LTK Manager storage directory, organized by profile:
+
+```
+LTK Manager Storage/
+└── profiles/
+    ├── default/
+    │   └── overlay/          ← overlay for your "Default" profile
+    ├── ranked-setup/
+    │   └── overlay/          ← overlay for a "Ranked Setup" profile
+    └── fun-skins/
+        └── overlay/          ← overlay for a "Fun Skins" profile
+```
+
+You can configure the storage directory location in [Settings](/tools/ltk-manager/configuration/).
+
+### Why This Approach?
+
+The overlay approach has several advantages over directly modifying game files:
+
+- **Safety** — Original files are never changed, so there's no risk of corrupting your installation
+- **Reversibility** — Stop the patcher and your game is instantly back to normal
+- **Profile isolation** — Different mod setups stay completely separate
+- **Game updates** — When League updates, your original files are updated normally by the game client. Your overlays may need to be rebuilt, but there's nothing to "undo" first
+- **Multiple sessions** — The patcher can stay running across multiple games without any extra steps

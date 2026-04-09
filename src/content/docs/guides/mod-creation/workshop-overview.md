@@ -1,0 +1,127 @@
+---
+title: Workshop Overview
+description: An introduction to the ltk-manager Creator Workshop, the integrated environment for building and authoring League of Legends mods.
+---
+
+The Creator Workshop is where you build, edit, and package mods. It provides a project-based workflow for mod development.
+
+## Getting Started
+
+### Setting Up the Workshop
+
+1. Go to [Settings](/tools/ltk-manager/configuration/)
+2. Set the **Workshop Path** — this is the directory where your projects live
+3. Navigate to the **Workshop** tab
+
+### Workshop Path Structure
+
+```
+workshop-path/
+├── my-skin-mod/
+│   ├── mod.config.json
+│   ├── thumbnail.webp
+│   └── content/
+│       └── base/
+│           └── ... (mod files)
+├── another-mod/
+│   ├── mod.config.json
+│   └── content/
+│       ├── base/
+│       │   └── ...
+│       └── high-res/
+│           └── ...
+```
+
+Each subdirectory containing a `mod.config.json` (or `mod.config.toml`) is recognized as a project.
+
+## Creating a Project
+
+Click **New Project** and fill in:
+
+- **Name** — Slug name used for the directory (lowercase, hyphens, no spaces)
+- **Display Name** — Human-readable name shown in the library
+- **Description** — What the mod does
+- **Authors** — Creator names and optional roles
+
+## Project Configuration
+
+The `mod.config.json` file stores all project metadata:
+
+```json
+{
+  "name": "my-skin-mod",
+  "displayName": "My Skin Mod",
+  "version": "1.0.0",
+  "description": "A custom skin for Ahri",
+  "authors": [
+    { "name": "ModderName", "role": "Creator" }
+  ],
+  "tags": ["skin"],
+  "champions": ["Ahri"],
+  "maps": [],
+  "layers": [
+    {
+      "name": "base",
+      "priority": 0,
+      "description": "Base skin files"
+    }
+  ]
+}
+```
+
+## Editing Projects
+
+Open a project to access the editor, where you can:
+
+- Edit display name, version, and description
+- Manage authors (add, remove, set roles)
+- Set tags, champions, and maps
+- Configure layers
+- Set a thumbnail image
+
+## Layers
+
+Layers organize your mod's content into separate groups. Common uses:
+
+- **base** — Core mod files (required)
+- **high-res** — Optional high-resolution textures
+- **alternate** — Alternative versions or color variants
+- **particles** — Optional particle effect modifications
+
+Each layer has a priority that determines load order when multiple layers are active. See [Layers](/guides/mod-creation/layers/) for details.
+
+## Importing Projects
+
+You can create projects from existing sources:
+
+- **[From .modpkg](/guides/mod-creation/creating-a-project/#from-modpkg)** — Extract an existing mod package into a project
+- **[From .fantome](/guides/mod-creation/creating-a-project/#from-fantome)** — Convert a legacy fantome archive
+- **[From Git](/guides/mod-creation/creating-a-project/#from-git)** — Clone a Git repository as a project
+
+## Packing and Exporting
+
+When your mod is ready for distribution:
+
+1. Click **Pack** on your project
+2. Choose the output format:
+   - **modpkg** (recommended) — Full metadata, multi-layer, thumbnail support
+   - **fantome** — Legacy format for compatibility
+3. Choose the output location
+4. The packed file is ready to share
+
+## Validation
+
+Before packing, run **Validate** to check for issues. Validation checks for:
+
+- Required configuration fields
+- Valid layer structure
+- File path conflicts between layers
+- Configuration syntax errors
+
+Warnings suggest improvements; errors must be fixed before packing.
+
+## Related Pages
+
+- [Layers](/guides/mod-creation/layers/) — Layer system details
+- [Importing Projects](/guides/mod-creation/creating-a-project/) — Import from various sources
+- [Mod Package Format](/guides/mod-creation/packaging/) — Technical format specification

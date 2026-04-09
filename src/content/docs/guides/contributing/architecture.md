@@ -1,0 +1,88 @@
+---
+title: Architecture
+description: Overview of the ltk-manager codebase structure, technology stack, and design decisions.
+---
+
+LTK Manager is built with [Tauri v2](https://v2.tauri.app/) — a Rust backend with a React (TypeScript) frontend rendered in a native webview.
+
+## High-Level Overview
+
+```
+┌─────────────────────────────────────────┐
+│              React Frontend              │
+│  (TanStack Router, Query, Base UI)       │
+├─────────────────────────────────────────┤
+│           Tauri IPC Bridge               │
+│     (invoke commands, event listeners)   │
+├─────────────────────────────────────────┤
+│              Rust Backend                │
+│  (Commands, Business Logic, Patcher)     │
+├─────────────────────────────────────────┤
+│         LeagueToolkit Libraries          │
+│  (ltk_modpkg, ltk_wad, ltk_overlay)     │
+└─────────────────────────────────────────┘
+```
+
+## Backend (Rust)
+
+### Module Layout
+
+| Module | Purpose |
+|--------|---------|
+| `main.rs` | Tauri setup, command registration, logging initialization |
+| `error.rs` | Error types, IPC result wrapper, error codes |
+| `state.rs` | Tauri-managed state (settings, patcher) |
+| `commands/` | IPC command handlers — thin wrappers over business logic |
+| `mods/` | Mod management — install, uninstall, toggle, profiles, library index |
+| `overlay/` | Overlay building — combines mods into patchable output |
+| `patcher/` | Patcher lifecycle — background thread, start/stop, status |
+| `workshop/` | Project management — CRUD, packing, importing, validation |
+| `legacy_patcher/` | FFI integration with cslol patcher DLL |
+
+### State Management
+
+Two Tauri-managed states:
+
+- **SettingsState** — `Mutex<Settings>` for app configuration
+- **PatcherState** — Patcher thread handle and `Arc<AtomicBool>` stop flag
+
+### Error Handling
+
+All commands return `IpcResult<T>`, which serializes to `{ ok: true, value: T }` or `{ ok: false, error: { code, message, context? } }`. Error codes are `SCREAMING_SNAKE_CASE` enum variants.
+
+## Frontend (React + TypeScript)
+
+### Key Patterns
+
+| Pattern | Implementation |
+|---------|---------------|
+| Routing | TanStack Router, file-based routes in `src/routes/` |
+| Server state | TanStack Query with custom `queryFn()` / `mutationFn()` wrappers |
+| Client state | Zustand stores in `src/stores/` |
+| Forms | TanStack Form + Zod validation |
+| UI components | Base UI primitives wrapped in `src/components/` |
+| Styling | Tailwind CSS v4 with CSS custom properties |
+
+### Module Structure
+
+Each feature lives in `src/modules/{name}/`:
+
+```
+src/modules/library/
+├── api/           # TanStack Query hooks
+├── components/    # Feature-specific UI components
+├── utils/         # Helpers
+└── index.ts       # Public barrel export
+```
+
+Modules export through barrel files. Consumers import from `@/modules/{name}`, never from subdirectories.
+
+### IPC Bridge
+
+`src/lib/tauri.ts` defines all command bindings as an `api` object. The `invokeResult<T>()` function calls Tauri commands and returns a `Result<T, AppError>` discriminated union, bridging Rust's error handling to TypeScript.
+
+TanStack Query hooks in module `api/` directories use `queryFn()` and `mutationFn()` helpers to convert results for React Query consumption.
+
+### Event System
+
+Backend-to-frontend events (e.g., overlay build progress) use Tauri's `listen<T>()` API in `useEffect` hooks with cleanup via `unlisten()`.
