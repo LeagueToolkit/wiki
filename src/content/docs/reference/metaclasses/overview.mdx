@@ -1,0 +1,120 @@
+---
+title: Metaclasses Overview
+description: Overview of League of Legends metaclass system and how to work with metaclass definitions.
+---
+
+The metaclass system is League of Legends' data-driven architecture for defining typed object schemas. Metaclasses give structure and meaning to [BIN property files](/reference/file-formats/bin/), defining what properties an object can have, their types, and default values.
+
+## Overview
+
+Every object in a BIN file references a **class hash** that identifies its metaclass. The metaclass acts as a schema - it defines the set of properties the object can contain, each with a name, type, and optional default value. Without metaclass definitions, BIN data is opaque: properties appear as numeric hashes with typed but unnamed values.
+
+Metaclasses are not stored in the game client in a human-readable form. They are compiled into the game binary and must be extracted through reverse engineering. The [lol-meta-classes](https://github.com/LeagueToolkit/lol-meta-classes) project automates this extraction.
+
+## How Metaclasses Work
+
+### Class Identification
+
+Each metaclass has a unique identifier computed as the [FNV-1a hash](/reference/hashing/algorithms/#fnv-1a) of its name. For example:
+
+```
+Class name:  "SpellDataResource"
+Class hash:  FNV-1a("SpellDataResource") → 0x______
+```
+
+When a BIN object declares its class hash, tools look up the corresponding metaclass definition to resolve property names and validate types.
+
+### Property Definitions
+
+A metaclass defines its properties as a list of:
+
+| Field        | Description                                              |
+|--------------|----------------------------------------------------------|
+| Name hash    | FNV-1a hash of the property name                         |
+| Type         | One of the 28 BIN property types                         |
+| Default      | Default value (used when the property is omitted)        |
+| Offset       | Memory offset in the engine's runtime representation     |
+
+### Inheritance
+
+Metaclasses support **single inheritance**. A child class inherits all properties from its parent and can add new properties. When reading a BIN object, the full property set includes both the class's own properties and all inherited properties up the chain.
+
+## Metaclass Extraction
+
+The [lol-meta-classes](https://github.com/LeagueToolkit/lol-meta-classes) project extracts metaclass definitions from the game binary. The extraction process:
+
+1. **Scans** the game executable for metaclass registration patterns
+2. **Extracts** class names, property names, types, defaults, and inheritance relationships
+3. **Outputs** structured definitions that tools can consume
+
+Extracted definitions are published per game patch, as metaclasses change with game updates - new classes are added, properties are renamed or retyped, and inheritance hierarchies evolve.
+
+## Using Metaclasses in Modding
+
+### Resolving BIN Data
+
+Without metaclass definitions, a BIN object looks like:
+
+```
+0xA1B2C3D4 {
+    0x1234ABCD: f32 = 100.0
+    0x5678EF01: string = "Annie"
+}
+```
+
+With metaclass definitions applied, the same object becomes:
+
+```
+ChampionStatData {
+    mBaseAttackDamage: f32 = 100.0
+    mCharName: string = "Annie"
+}
+```
+
+### Hash Dictionaries
+
+Metaclass extraction produces hash dictionaries that map:
+- **Class hashes** → class names (e.g., `0xA1B2C3D4` → `ChampionStatData`)
+- **Property hashes** → property names (e.g., `0x1234ABCD` → `mBaseAttackDamage`)
+
+These dictionaries are used by [Ritobin](/reference/file-formats/ritobin/) and other BIN tools to display human-readable output.
+
+### Common Metaclass Categories
+
+Metaclasses span all areas of game functionality:
+
+| Category          | Example Classes                                         | What They Configure                        |
+|-------------------|---------------------------------------------------------|--------------------------------------------|
+| Champions         | `CharacterRecord`, `SpellDataResource`                  | Stats, abilities, scaling                  |
+| Items             | `ItemData`                                              | Item stats, recipes, passives              |
+| Particles         | `VfxSystemDefinitionData`                               | Visual effects and particles               |
+| UI                | `HudMenuDataResource`                                   | HUD and menu configuration                 |
+| Audio             | `BankUnit`, `SkinCharacterDataProperties`               | Sound events and music                     |
+| Maps              | `MapData`, `MapGraphicsData`                            | Map configuration and rendering            |
+| AI / Gameplay     | `AIData`, `GameModeData`                                | Bot behavior, game rules                   |
+
+## Relationship to Other Formats
+
+Metaclasses are the "type system" that connects several format layers:
+
+```
+Metaclass definitions (extracted from game binary)
+    ↓ provide schemas for
+BIN files (binary property data)
+    ↓ can be viewed as
+Ritobin (human-readable text)
+    ↓ identify properties via
+FNV-1a hashes (hashing algorithms)
+```
+
+## Related Formats
+
+- [BIN (Property Bins)](/reference/file-formats/bin/) - The data format that metaclasses provide schemas for
+- [Ritobin](/reference/file-formats/ritobin/) - Text representation that uses metaclass dictionaries for name resolution
+- [Hashing Algorithms](/reference/hashing/algorithms/) - FNV-1a hash used for class and property identification
+
+## References
+
+- **Metaclass extraction**: [lol-meta-classes](https://github.com/LeagueToolkit/lol-meta-classes) - Automated metaclass extraction toolchain
+- **Rust BIN parser**: [`league-toolkit` - `ltk_meta` crate](https://github.com/LeagueToolkit/league-toolkit)
+- **C# BIN parser**: [`LeagueToolkit` - `Core/Meta/`](https://github.com/LeagueToolkit/LeagueToolkit)

@@ -1,0 +1,84 @@
+---
+title: Glossary
+description: Common terms and definitions used in League of Legends modding.
+---
+
+A reference of common terms and definitions used throughout the League of Legends modding community.
+
+## A
+
+### ANM
+Animation file format used by League of Legends. Stores per-joint keyframe data for champion and map animations. See [ANM reference](/reference/file-formats/anm/).
+
+## B
+
+### BIN
+Binary property file format (magic `PROP`) used by League of Legends to store configuration, game data, and asset metadata. The most complex and widely-used data format in the engine. See [BIN reference](/reference/file-formats/bin/).
+
+## C
+
+### cslol-manager
+The legacy community mod manager for League of Legends, written in C++/Qt. Being deprecated in favor of [LTK Manager](#ltk-manager). Mods can be migrated using the [migration wizard](/getting-started/migration/).
+
+## F
+
+### Fantome
+A legacy mod archive format (`.fantome`) based on ZIP. Contains WAD file entries and basic metadata. Supported by LTK Manager for backwards compatibility but superseded by [modpkg](#modpkg).
+
+## L
+
+### Layer
+A named group of files within a mod project. Layers let mod creators offer optional components (e.g. high-res textures, alternate colors) that users can toggle independently. See [Layers](/guides/mod-creation/layers/).
+
+### LTK Manager
+The current-generation desktop mod manager for League of Legends, built with Tauri (Rust + React). Successor to [cslol-manager](#cslol-manager). See [LTK Manager overview](/tools/ltk-manager/overview/).
+
+## M
+
+### Metaclass
+A typed schema that defines the structure of a [BIN](#bin) object - its class hash, property names, types, and defaults. Extracted from the game client by the lol-meta-classes toolchain. See [Metaclasses overview](/reference/metaclasses/overview/).
+
+### modpkg
+The modern mod package format (`.modpkg`) used by LTK Manager. Supports full metadata, multi-layer content, thumbnails, and author information. Recommended over [Fantome](#fantome) for new mods.
+
+### modtools.exe
+The legacy CLI tool bundled with cslol-manager for command-line mod operations. LTK Manager plans to offer a similar CLI tool by abstracting its core into a reusable library. See [ltk-manager#104](https://github.com/LeagueToolkit/ltk-manager/issues/104).
+
+## O
+
+### Overlay
+A directory that mirrors League's game data structure but contains only the files modified by your mods. The [patcher](#patcher) redirects the game to read from the overlay instead of original files. See [how overlays work](/tools/ltk-manager/features/#the-core-idea-overlays).
+
+## P
+
+### Patcher
+The component that applies mod overlays to League of Legends at runtime. It hooks into the game's file reading mechanism and redirects reads to overlay files. Based on the original cslol patcher.
+
+### Profile
+A named mod configuration in LTK Manager. Each profile has its own set of enabled mods, load order, and overlay. Useful for switching between different mod setups. See [Profiles](/guides/mod-management/profiles/).
+
+## R
+
+### Ritobin
+A human-readable text serialization of [BIN](#bin) files, using the header `#PROP_text`. Used for editing BIN data with text editors. See [Ritobin reference](/reference/file-formats/ritobin/).
+
+## S
+
+### SKL
+Skeleton file format used by League of Legends. Defines the joint hierarchy and bind pose for character models. See [SKL reference](/reference/file-formats/skl/).
+
+### SKN
+Skinned mesh file format used by League of Legends. Contains vertex data, bone weights, and material references for character models. See [SKN reference](/reference/file-formats/skn/).
+
+## T
+
+### TEX
+Texture file format used by League of Legends. Stores compressed image data with mipmaps. See [TEX reference](/reference/file-formats/tex/).
+
+## W
+
+### WAD
+The primary archive format (magic `RW`) used by League of Legends to bundle game assets. Each WAD contains compressed files identified by path hashes. See [WAD reference](/reference/file-formats/wad/).
+
+### Workshop
+The integrated mod creation environment in LTK Manager. Provides a project-based workflow for building, editing, validating, and packaging mods. See [Workshop overview](/guides/mod-creation/workshop-overview/).

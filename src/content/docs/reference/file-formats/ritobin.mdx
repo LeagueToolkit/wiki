@@ -1,0 +1,186 @@
+---
+title: Ritobin
+description: Technical reference for the Ritobin text representation of BIN files.
+---
+
+Ritobin is a human-readable text format that represents the contents of [BIN property files](/reference/file-formats/bin/). It provides a one-to-one mapping with the binary BIN format, making it the primary format for viewing, editing, and diffing game configuration data.
+
+## Overview
+
+While BIN files store data in a compact binary encoding, Ritobin presents the same data as structured, indented text. Every BIN file can be losslessly converted to Ritobin and back. This makes Ritobin essential for:
+
+- Reading and understanding game configuration
+- Manually editing BIN data with a text editor
+- Diffing changes between game patches
+- Debugging and inspecting mod content
+
+Ritobin files typically use the `.bin` extension with the text header distinguishing them from binary BIN files, though `.ritobin` is also used by some tools.
+
+## Use Cases
+
+- **Mod development** - Editing champion stats, ability data, particle configurations, and other gameplay parameters
+- **Patch analysis** - Comparing Ritobin output between game versions to identify changes
+- **Data inspection** - Viewing BIN file contents in a readable format
+- **Tool debugging** - Validating BIN read/write correctness
+
+## File Header
+
+A Ritobin file begins with one of two header markers:
+
+| Header        | Description                                      |
+|---------------|--------------------------------------------------|
+| `#PROP_text`  | Standard property file                           |
+| `#PTCH_text`  | Patch/override file (corresponds to PTCH binary) |
+
+## Syntax
+
+### Metadata Block
+
+Following the header, the file declares its metadata:
+
+```
+type: "PROP"
+version: 3
+linked: {
+    "DATA/Characters/Annie/Annie.bin"
+    "DATA/Characters/Shared/Shared.bin"
+}
+```
+
+- `type` - Always `"PROP"` (or `"PTCH"` for patch files)
+- `version` - BIN format version (1, 2, or 3)
+- `linked` - List of dependency file paths (version 2+)
+
+### Entries Block
+
+The main content is an `entries` map containing all BIN objects:
+
+```
+entries: map[hash,embed] {
+    0xDEADBEEF = {
+        SomeClassName {
+            propertyName: f32 = 1.5
+            anotherProperty: string = "hello"
+        }
+    }
+}
+```
+
+Each entry is identified by its **path hash** (displayed as a hex value or resolved name) and contains a class-typed object with named properties.
+
+### Property Syntax
+
+Properties follow the pattern:
+
+```
+name: type = value
+```
+
+Where `name` is either a resolved string or a hex hash (`0x...`), `type` is the property type annotation, and `value` is the typed value.
+
+## Type Annotations
+
+Every property type in the [BIN format](/reference/file-formats/bin/) has a corresponding text representation:
+
+### Primitive Types
+
+| Type    | Syntax Example                     | Description              |
+|---------|------------------------------------|--------------------------|
+| `bool`  | `flag: bool = true`               | Boolean                  |
+| `i8`    | `val: i8 = -1`                    | Signed 8-bit integer     |
+| `u8`    | `val: u8 = 255`                   | Unsigned 8-bit integer   |
+| `i16`   | `val: i16 = -100`                 | Signed 16-bit integer    |
+| `u16`   | `val: u16 = 1000`                 | Unsigned 16-bit integer  |
+| `i32`   | `val: i32 = -50000`              | Signed 32-bit integer    |
+| `u32`   | `val: u32 = 100000`              | Unsigned 32-bit integer  |
+| `i64`   | `val: i64 = -999999`             | Signed 64-bit integer    |
+| `u64`   | `val: u64 = 999999`              | Unsigned 64-bit integer  |
+| `f32`   | `val: f32 = 3.14`                | 32-bit float             |
+| `flag`  | `val: flag = true`               | Bit boolean              |
+
+### Vector and Matrix Types
+
+| Type    | Syntax Example                                          |
+|---------|---------------------------------------------------------|
+| `vec2`  | `pos: vec2 { 1.0, 2.0 }`                               |
+| `vec3`  | `pos: vec3 { 1.0, 2.0, 3.0 }`                          |
+| `vec4`  | `col: vec4 { 1.0, 0.5, 0.0, 1.0 }`                    |
+| `mtx44` | `transform: mtx44 { { row0 } { row1 } { row2 } { row3 } }` |
+| `rgba`  | `color: rgba { 255, 128, 0, 255 }`                     |
+
+### Reference Types
+
+| Type      | Syntax Example                                          | Description                         |
+|-----------|---------------------------------------------------------|-------------------------------------|
+| `string`  | `name: string = "Annie"`                                | UTF-8 string                        |
+| `hash`    | `ref: hash = 0xDEADBEEF`                               | FNV-1a hash value                   |
+| `file`    | `path: file = "DATA/path/to/file.dds"`                  | WAD chunk link (file path)          |
+| `link`    | `target: link = 0x12345678`                             | Object link (path hash of another entry) |
+| `pointer` | `obj: pointer = 0xABCDEF01`                             | Object pointer                      |
+
+### Container Types
+
+| Type       | Syntax Example                                         |
+|------------|--------------------------------------------------------|
+| `list`     | `items: list[u32] { 1, 2, 3 }`                        |
+| `list2`    | `items: list2[u32] { 1, 2, 3 }`                       |
+| `option`   | `opt: option[f32] { 3.14 }`                            |
+| `map`      | `data: map[hash,string] { 0x1234 = "value" }`         |
+
+### Struct and Embed Types
+
+```
+// Struct: inline typed object
+prop: struct = ClassName {
+    field1: f32 = 1.0
+    field2: bool = true
+}
+
+// Embed: embedded object (similar to struct)
+prop: embed = ClassName {
+    field1: f32 = 1.0
+}
+```
+
+## Hash Display
+
+Hashes are displayed using one of two conventions:
+
+- **Resolved**: When a hash dictionary entry exists, the human-readable name is used directly (e.g., `mAttackDamage`)
+- **Unresolved**: When no dictionary entry exists, the hex value is shown (e.g., `0xDEADBEEF`)
+
+This applies to property names, class names, path hashes, and hash-typed values.
+
+## Empty and Optional Values
+
+```
+// Empty container
+items: list[u32] {}
+
+// None optional
+opt: option[f32] {}
+
+// Some optional
+opt: option[f32] { 3.14 }
+```
+
+## Conversion
+
+Ritobin and binary BIN are interchangeable:
+
+```
+Binary BIN (.bin) ↔ Ritobin (.bin / .ritobin)
+```
+
+The Rust implementation uses an error-resilient parser that produces a Concrete Syntax Tree (CST) even when the input contains malformed sections. Error nodes in the CST preserve the original text, allowing partial round-tripping of invalid data.
+
+## Related Formats
+
+- [BIN (Property Bins)](/reference/file-formats/bin/) - The binary counterpart; Ritobin is a text serialization of BIN
+- [Metaclasses](/reference/metaclasses/overview/) - Define the schemas that give meaning to BIN object classes and property names
+- [Hashing Algorithms](/reference/hashing/algorithms/) - FNV-1a hashes used for names and references
+
+## Implementation References
+
+- **Rust**: [`league-toolkit` - `ltk_ritobin` crate](https://github.com/LeagueToolkit/league-toolkit) - CST parser, printer, and type checker
+- **C#**: [`LeagueToolkit` - `Toolkit/Ritobin/RitobinWriter.cs`](https://github.com/LeagueToolkit/LeagueToolkit)

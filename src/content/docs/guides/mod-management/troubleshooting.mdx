@@ -37,9 +37,9 @@ RUST_LOG=ltk_manager=trace,tauri=info
 ### Mods not appearing in-game
 
 **Possible causes:**
-- Mods are installed but not **enabled** — check the toggle on each mod
-- Patcher is not running — click **Patch** in the status bar
-- Patcher was started **before** enabling the mod — stop and re-patch
+- Mods are installed but not **enabled** - check the toggle on each mod
+- Patcher is not running - click **Patch** in the status bar
+- Patcher was started **before** enabling the mod - stop and re-patch
 - Mod targets different game files than expected
 
 ### Patcher fails to start
@@ -47,7 +47,7 @@ RUST_LOG=ltk_manager=trace,tauri=info
 **Possible causes:**
 - League path is incorrect or League was uninstalled
 - Another instance of the patcher is already running
-- Insufficient permissions — try running as administrator
+- Insufficient permissions - try running as administrator
 
 **Check the log file** for specific error messages.
 
@@ -79,6 +79,16 @@ The first build is usually the slowest.
 - Check if another instance is already running
 - Try deleting `settings.json` to reset to defaults (you'll need to reconfigure paths)
 - Check the log file for startup errors
+
+## Platform Issues
+
+### macOS
+
+LTK Manager is currently Windows-only. The cslol patcher stopped working on macOS, so there is no working mod manager for macOS at this time. A new macOS patcher is being developed alongside a native macOS LTK Manager release, targeted for Q2/Summer 2026.
+
+### Linux
+
+LTK Manager does not yet support Linux. Linux support is planned but has no release date. Follow [LeagueToolkit on GitHub](https://github.com/LeagueToolkit) for updates.
 
 ## Getting Help
 

@@ -1,0 +1,56 @@
+---
+title: ltk-manager Overview
+description: An introduction to ltk-manager, the desktop mod manager for League of Legends that streamlines mod installation, updates, and profile management.
+---
+
+LTK Manager is the official mod manager for League of Legends, and the successor to [cslol-manager](https://github.com/LeagueToolkit/cslol-manager). Built with [Tauri](https://tauri.app/) (Rust backend + React frontend), it provides a fast, native experience for installing, managing, and creating mods.
+
+The patcher used by LTK Manager is based on the original cslol patcher, which is maintained for cslol-manager and has been adopted into LTK Manager through the `ltk_overlay` Rust crate.
+
+:::note
+cslol-manager is being deprecated. If you're still using it, see [Migrating from cslol-manager](/getting-started/migration/) to bring your mods over.
+:::
+
+## Platform Support
+
+| Platform | Status |
+|----------|--------|
+| Windows 10+ (64-bit) | Supported - download from [GitHub Releases](https://github.com/LeagueToolkit/ltk-manager/releases) |
+| macOS | Coming Q2/Summer 2026 (the cslol patcher broke on macOS - a new patcher is in development) |
+| Linux | Planned (no timeline yet) |
+
+## Features
+
+- **Mod Library** - Install, browse, search, and manage mods with a grid or list view
+- **Profiles** - Create multiple mod configurations and switch between them instantly
+- **Patcher** - One-click patching to apply mods to League of Legends via an overlay system
+- **Creator Workshop** - Build, edit, validate, and package mods
+- **Import/Migration** - Import mods from `.modpkg`, `.fantome`, Git repos, or cslol-manager
+- **System Tray** - Status icons and background operation
+- **Hotkeys** - Global shortcuts for mod reload and League management
+- **Auto-Updates** - Background version checking with built-in updater
+- **WAD Reporting** - Per-mod WAD footprint display showing which game files each mod touches
+
+## Roadmap
+
+- **Core library and CLI tool** - The plan is to abstract LTK Manager's core into a reusable Rust library and provide a CLI tool, similar to the old `modtools.exe` in cslol-manager. This will also allow 3rd party tools and managers to operate on the same toolchain. Tracked in [ltk-manager#104](https://github.com/LeagueToolkit/ltk-manager/issues/104).
+- **macOS release** - A native macOS build with a new patcher is targeted for Q2/Summer 2026.
+- **Linux release** - Planned, but no timeline has been set.
+
+## Pages
+
+- [Getting Started](/getting-started/installation/)
+- [Managing Mods](/guides/mod-management/installing-mods/)
+- [Profiles](/guides/mod-management/profiles/)
+- [Patching](/tools/ltk-manager/features/)
+- [Workshop Overview](/guides/mod-creation/workshop-overview/)
+- [Settings](/tools/ltk-manager/configuration/)
+- [Migration from cslol-manager](/getting-started/migration/)
+- [Troubleshooting](/guides/mod-management/troubleshooting/)
+
+## Supported Mod Formats
+
+| Format | Extension | Description |
+|--------|-----------|-------------|
+| modpkg | `.modpkg` | Modern format with full metadata, multi-layer support, and thumbnails |
+| Fantome | `.fantome` | Legacy WAD-based format, auto-converted to modpkg on install |

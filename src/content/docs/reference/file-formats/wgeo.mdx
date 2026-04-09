@@ -1,0 +1,105 @@
+---
+title: 'WGEO (World Geometry)'
+description: Technical reference for the legacy WGEO world geometry format.
+---
+
+WGEO is the legacy world geometry format that was used for League of Legends maps before being replaced by [MapGeo](/reference/file-formats/mapgeo/). It stores map terrain geometry with a bucket-grid spatial partitioning system for visibility culling.
+
+## Overview
+
+WGEO files contain the complete static geometry for a game map: vertex positions, triangle faces, material assignments, and a 2D bucket grid that partitions the map into spatial cells for efficient rendering. Each bucket tracks which faces are visible from that region.
+
+This format is considered **legacy** - modern game versions use [MapGeo](/reference/file-formats/mapgeo/) instead. WGEO may still be encountered in older game data or community tools.
+
+## Use Cases
+
+- **Legacy map analysis** - Understanding older map data formats
+- **Historical reference** - Comparing with the modern MapGeo format
+- **Legacy mod compatibility** - Working with older map mods
+
+## File Structure
+
+All multi-byte values are **little-endian**.
+
+### Header
+
+| Offset | Size | Type   | Field        | Description                              |
+|--------|------|--------|--------------|------------------------------------------|
+| 0x00   | 4    | char[] | magic        | `WGEO` (ASCII, 4 bytes)                 |
+| 0x04   | 4    | u32    | version      | Format version                           |
+| 0x08   | 4    | u32    | model_count  | Number of mesh models                    |
+| 0x0C   | 4    | u32    | face_count   | Total number of faces                    |
+
+### Models
+
+Each model entry contains geometry for one section of the map:
+
+| Field         | Type   | Description                                    |
+|---------------|--------|------------------------------------------------|
+| material      | string | Material name (length-prefixed)                |
+| vertex_count  | u32    | Number of vertices in this model               |
+| index_count   | u32    | Number of indices (face_count × 3)             |
+| vertices      | arr    | Array of vertex data                           |
+| indices       | u16[]  | Array of triangle indices                      |
+
+#### Vertex Data
+
+Each vertex in a WGEO model:
+
+| Size | Type | Description              |
+|------|------|--------------------------|
+| 12   | Vec3 | Position (x, y, z)       |
+| 12   | Vec3 | Normal (x, y, z)         |
+| 8    | Vec2 | UV coordinates (u, v)    |
+
+### Bucketed Geometry
+
+Following the model data, the bucket grid provides spatial partitioning:
+
+| Field          | Type   | Description                                   |
+|----------------|--------|-----------------------------------------------|
+| min_x          | f32    | Minimum X boundary of the grid                |
+| min_z          | f32    | Minimum Z boundary of the grid                |
+| max_x          | f32    | Maximum X boundary of the grid                |
+| max_z          | f32    | Maximum Z boundary of the grid                |
+| max_stickout_x | f32    | Maximum face extension beyond grid in X       |
+| max_stickout_z | f32    | Maximum face extension beyond grid in Z       |
+| bucket_width   | u32    | Number of buckets in X dimension              |
+| bucket_height  | u32    | Number of buckets in Z dimension              |
+| buckets        | arr[][]| 2D array of bucket entries                    |
+
+#### Bucket Entry
+
+Each bucket in the grid:
+
+| Field              | Type   | Description                              |
+|--------------------|--------|------------------------------------------|
+| vertex_count       | u32    | Number of vertices visible from bucket   |
+| index_count        | u32    | Number of indices visible from bucket    |
+| vertices           | Vec3[] | Vertex position array                    |
+| indices            | u16[]  | Index array                              |
+| face_visibility    | u8[]   | Optional per-face visibility flags       |
+
+The bucket grid enables the renderer to quickly determine which faces need to be drawn based on the camera's position, without testing every face individually.
+
+## Comparison with MapGeo
+
+| Feature              | WGEO                    | MapGeo                         |
+|----------------------|-------------------------|--------------------------------|
+| Magic                | `WGEO`                  | `OEGM`                        |
+| Spatial structure    | 2D bucket grid          | Scene graph + bucketed geometry|
+| Vertex buffers       | Per-model               | Shared across meshes           |
+| Lighting             | None                    | Lightmaps, baked paint         |
+| Reflections          | None                    | Planar reflectors              |
+| Material system      | Simple names            | Hash-based with shader overrides|
+| Version range        | Limited                 | v5–v18 with progressive features|
+
+## Related Formats
+
+- [MapGeo](/reference/file-formats/mapgeo/) - The modern replacement for WGEO with significantly more features
+- [BIN (Property Bins)](/reference/file-formats/bin/) - Map configuration data
+- [WAD Archives](/reference/file-formats/wad/) - WGEO files are stored inside WAD packages
+
+## Implementation References
+
+- **C#**: [`LeagueToolkit` - `Core/Environment/WorldGeometry.cs`, `BucketedGeometry.cs`](https://github.com/LeagueToolkit/LeagueToolkit)

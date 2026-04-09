@@ -1,0 +1,171 @@
+---
+title: MapGeo
+description: Technical reference for the MapGeo map geometry format.
+---
+
+MapGeo is the primary environment geometry format for League of Legends maps. It stores the static 3D geometry, materials, lighting data, and spatial acceleration structures that make up Summoner's Rift and other game maps.
+
+## Overview
+
+A MapGeo file (`.mapgeo`) contains everything needed to render the static portions of a map: vertex and index buffers, meshes with material assignments, scene graph hierarchy, texture channel mappings, planar reflectors, and bucketed geometry for efficient rendering.
+
+The format uses a **shared buffer architecture** - multiple meshes reference the same vertex and index buffers via offsets, reducing data duplication.
+
+MapGeo files are found inside [WAD archives](/reference/file-formats/wad/) at paths like `DATA/Maps/Shipping/Map11/Scene/MapGeo.mapgeo`.
+
+## Use Cases
+
+- **Custom map skins** - Modifying terrain geometry, materials, and lighting for existing maps
+- **Map analysis** - Inspecting mesh counts, material assignments, and spatial structure
+- **Environment art** - Understanding the rendering pipeline for map content
+
+## File Structure
+
+All multi-byte values are **little-endian**.
+
+### Header
+
+| Offset | Size | Type   | Field   | Description                                    |
+|--------|------|--------|---------|------------------------------------------------|
+| 0x00   | 4    | char[] | magic   | `OEGM` (ASCII, 4 bytes)                       |
+| 0x04   | 4    | u32    | version | Format version (5–18)                          |
+
+### Major Sections
+
+After the header, the file contains the following sections (presence varies by version):
+
+1. **Vertex Buffers** - Raw vertex data shared across meshes
+2. **Index Buffers** - Triangle index data (u16 or u32)
+3. **Meshes** - Geometry entries referencing buffers with material assignments
+4. **Bucketed Geometry** - Spatial partitioning for visibility/rendering
+5. **Planar Reflectors** - Reflection plane definitions
+6. **Scene Graph** - Spatial hierarchy and bounding volumes
+
+### Vertex Buffer Descriptors
+
+Each vertex buffer has a descriptor defining its layout:
+
+| Field         | Type | Description                                         |
+|---------------|------|-----------------------------------------------------|
+| element_count | u32  | Number of vertex elements in the buffer             |
+| vertex_size   | u32  | Size of each vertex in bytes (stride)               |
+| elements      | arr  | Array of element descriptors (name, format, offset) |
+| data          | u8[] | Raw vertex data                                     |
+
+Vertex elements can include:
+- **Position** - Vec3 (12 bytes)
+- **Normal** - Various packed formats
+- **Texcoord** - Vec2 per UV channel
+- **Color** - RGBA
+
+### Index Buffers
+
+| Field          | Type  | Description                          |
+|----------------|-------|--------------------------------------|
+| index_count    | u32   | Number of indices                    |
+| index_format   | u16   | Format (16-bit or 32-bit indices)    |
+| data           | u8[]  | Raw index data                       |
+
+### Environment Mesh
+
+Each mesh entry describes a renderable piece of map geometry:
+
+| Field              | Type   | Description                                          |
+|--------------------|--------|------------------------------------------------------|
+| name               | string | Mesh name identifier                                 |
+| vertex_buffer_id   | u32    | Index of the vertex buffer to use                    |
+| vertex_offset      | u32    | Starting vertex in the buffer                        |
+| vertex_count       | u32    | Number of vertices                                   |
+| index_buffer_id    | u32    | Index of the index buffer to use                     |
+| index_offset       | u32    | Starting index in the buffer                         |
+| index_count        | u32    | Number of indices                                    |
+| submesh_count      | u32    | Number of submesh draw ranges (up to 64)             |
+| submeshes          | arr    | Array of submesh entries                             |
+| world_transform    | Mat44  | 4×4 world transformation matrix                     |
+| bounding_box       | AABB   | Axis-aligned bounding box                            |
+| flags              | u32    | Quality and visibility flags                         |
+
+#### Submesh Entry
+
+| Field         | Type   | Description                                    |
+|---------------|--------|------------------------------------------------|
+| material_hash | u32    | Hash identifying the material                  |
+| index_offset  | u32    | Starting index within the mesh's index range   |
+| index_count   | u32    | Number of indices for this submesh             |
+
+#### Texture Channels
+
+Meshes can reference multiple texture channels for lighting:
+
+| Channel          | Description                                  |
+|------------------|----------------------------------------------|
+| Stationary Light | Diffuse lighting texture (real-time shadows)  |
+| Baked Light      | Lightmap texture (pre-baked global illumination) |
+| Baked Paint      | Painted detail texture                       |
+
+### Bucketed Geometry
+
+Bucketed geometry provides spatial acceleration for rendering:
+
+| Field       | Type       | Description                                      |
+|-------------|------------|--------------------------------------------------|
+| bounds      | AABB       | Min/max XZ bounds of the bucket grid             |
+| grid_width  | u32        | Number of buckets in X                           |
+| grid_height | u32        | Number of buckets in Z                           |
+| buckets     | Bucket[][] | 2D array of visibility buckets                   |
+
+Each bucket tracks which faces are visible from that spatial region, enabling efficient view-frustum culling.
+
+### Planar Reflectors
+
+Planar reflectors define reflection planes for water and other reflective surfaces:
+
+| Field     | Type  | Description                               |
+|-----------|-------|-------------------------------------------|
+| position  | Vec3  | Position of the reflection plane          |
+| normal    | Vec3  | Normal direction of the reflection plane  |
+
+### Scene Graph
+
+The scene graph organizes meshes into a spatial hierarchy with bounding volumes, enabling efficient visibility testing and rendering order.
+
+## Version Feature Matrix
+
+The MapGeo format has undergone significant evolution. Key features by version:
+
+| Feature                   | v5 | v6 | v7 | v9 | v11 | v12 | v13 | v14 | v15 | v17 | v18 |
+|---------------------------|----|----|----|----|-----|-----|-----|-----|-----|-----|-----|
+| Vertex/Index buffers      | ✓  | ✓  | ✓  | ✓  | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   |
+| Environment meshes        | ✓  | ✓  | ✓  | ✓  | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   |
+| Bucketed geometry         | ✓  | ✓  | ✓  | ✓  | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   |
+| Planar reflectors         |    | ✓  | ✓  | ✓  | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   |
+| Scene graph               |    |    | ✓  | ✓  | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   |
+| Quality level flags       |    |    |    | ✓  | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   |
+| Texture channel overrides |    |    |    |    |     | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   |
+| Shader overrides          |    |    |    |    |     |     | ✓   | ✓   | ✓   | ✓   | ✓   |
+| Visibility controller     |    |    |    |    |     |     |     |     | ✓   | ✓   | ✓   |
+
+**Note:** Versions 8, 10, and 16 are not supported by either library implementation, suggesting they were internal/transitional versions.
+
+### Notable Version Changes
+
+- **v5**: Baseline format with vertex buffers, index buffers, meshes, and bucketed geometry
+- **v6**: Added planar reflectors for water rendering
+- **v7**: Added scene graph for spatial hierarchy
+- **v9**: Added quality level flags; removed legacy per-mesh point lights and spherical harmonics
+- **v12**: Added texture channel overrides per sampler
+- **v13**: Added global shader/sampler overrides
+- **v15**: Added visibility controller path hash
+- **v18**: Added additional float metadata
+
+## Related Formats
+
+- [BIN (Property Bins)](/reference/file-formats/bin/) - Material definitions, shader parameters, and map settings are stored in BIN files alongside MapGeo
+- [TEX (Textures)](/reference/file-formats/tex/) - Textures referenced by MapGeo materials (lightmaps, terrain, etc.)
+- [WGEO (World Geometry)](/reference/file-formats/wgeo/) - The legacy world geometry format that MapGeo replaced
+- [WAD Archives](/reference/file-formats/wad/) - MapGeo files are stored inside WAD packages
+
+## Implementation References
+
+- **Rust**: [`league-toolkit` - `ltk_mapgeo` crate](https://github.com/LeagueToolkit/league-toolkit) - `EnvironmentAsset`, `EnvironmentMesh`, `SceneGraph`
+- **C#**: [`LeagueToolkit` - `Core/Environment/`](https://github.com/LeagueToolkit/LeagueToolkit) - `EnvironmentAsset.cs`, `EnvironmentAssetMesh.cs`, `EnvironmentAssetBuilder.cs`

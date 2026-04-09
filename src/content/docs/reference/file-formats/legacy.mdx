@@ -1,0 +1,252 @@
+---
+title: Legacy Formats
+description: Reference for deprecated and legacy file formats in League of Legends.
+---
+
+This page documents older file formats that have been largely replaced by modern equivalents but may still be encountered in legacy game data, older tools, or historical analysis.
+
+## INIBIN - Legacy Configuration
+
+| Property    | Value                    |
+|-------------|--------------------------|
+| Extension   | `.inibin`                |
+| Versions    | 1, 2                    |
+| Replaced by | [BIN (Property Bins)](/reference/file-formats/bin/) |
+
+INIBIN was the predecessor to the BIN format for storing game configuration data. It supported typed data lists with a flag-based type system.
+
+### Version 2 Structure
+
+| Field              | Type | Description                                |
+|--------------------|------|--------------------------------------------|
+| string_data_length | u16  | Length of trailing string data             |
+| flags              | u16  | Bitfield indicating present data types    |
+
+Supported data types (via flag bits):
+- Int32, Int16, Int8, Float32 lists
+- Fixed-point floats (0.0–25.5 range)
+- Boolean/bit values
+- 2D, 3D, 4D vectors (float and fixed-point)
+- String data (at end of file)
+
+**C# source**: `LeagueToolkit` - `Core/Legacy/IO/InibinFile.cs`
+
+---
+
+## AIMesh - AI Navigation Mesh
+
+| Property    | Value                    |
+|-------------|--------------------------|
+| Extension   | `.aimesh`                |
+| Magic       | `r3d2aims` (8 bytes)    |
+| Version     | 2                       |
+
+AIMesh files define the navigation mesh used for AI pathfinding. The format stores an array of cells with spatial data.
+
+### Structure
+
+| Field      | Type   | Description                      |
+|------------|--------|----------------------------------|
+| magic      | char[8]| `r3d2aims`                       |
+| version    | u32    | Must be 2                        |
+| cell_count | u32    | Number of navigation cells       |
+| flags      | u32    | Format flags                     |
+| cells      | arr    | Array of AiMeshCell entries      |
+
+**C# source**: `LeagueToolkit` - `Core/Legacy/IO/AiMeshFile.cs`
+
+---
+
+## MOB - Map Object Binary
+
+| Property    | Value                    |
+|-------------|--------------------------|
+| Extension   | `.mob`                   |
+| Magic       | `OPAM` (4 bytes)        |
+| Version     | 2 (enforced)            |
+
+MOB files store map object placement data - positions, rotations, and types of objects placed on a map.
+
+### Structure
+
+| Field         | Type   | Description                          |
+|---------------|--------|--------------------------------------|
+| magic         | char[4]| `OPAM`                               |
+| version       | u32    | Must be 2                            |
+| object_count  | u32    | Number of map objects                |
+| reserved      | u32    | Reserved field                       |
+| objects       | arr    | Array of MOBObject entries           |
+
+**C# source**: `LeagueToolkit` - `Core/Legacy/IO/MOBFile.cs`
+
+---
+
+## DSC - World Description
+
+| Property    | Value                    |
+|-------------|--------------------------|
+| Extension   | `.dsc`                   |
+| Format      | Text (UTF-8)            |
+
+World description files store metadata about map objects in a text-based format. Each entry describes an object's properties.
+
+**C# source**: `LeagueToolkit` - `Core/Legacy/IO/WorldDescriptionFile.cs`
+
+---
+
+## LIGHT - Light Environment
+
+| Property    | Value                    |
+|-------------|--------------------------|
+| Extension   | `.light`                 |
+| Version ID  | `"3"` (first text line)  |
+| Format      | Text                    |
+
+Light environment files define lighting parameters for a map scene. The version number is stored as the first line of the file, followed by light definition entries.
+
+**C# source**: `LeagueToolkit` - `Core/Legacy/IO/LightEnvironmentFile.cs`
+
+---
+
+## MATLIB - Material Library
+
+| Property    | Value                    |
+|-------------|--------------------------|
+| Extension   | `.matlib`                |
+| Delimiter   | `[MaterialBegin]`       |
+| Format      | Text (UTF-8)            |
+
+Material library files define material properties in a text format. Materials are separated by `[MaterialBegin]` section markers with blank lines between entries.
+
+**C# source**: `LeagueToolkit` - `Core/Legacy/IO/MaterialLibraryFile.cs`
+
+---
+
+## FX - Effects / Particle Tracks
+
+| Property    | Value                    |
+|-------------|--------------------------|
+| Extension   | `.fx`                    |
+| Version     | 1                       |
+
+FX files store particle effect track data and weapon streak information.
+
+### Structure
+
+| Field             | Type     | Description                           |
+|-------------------|----------|---------------------------------------|
+| tracks            | FXTrack[8] | 8 fixed effect track entries        |
+| version           | u32      | Version number (1)                    |
+| flags             | u32      | Bit 0: target bones present          |
+| target_bone_count | u32      | Number of target bones               |
+| target_bones      | char[64][]| Null-padded ASCII bone names        |
+
+**C# source**: `LeagueToolkit` - `Core/Legacy/IO/FXFile.cs`
+
+---
+
+## Map Particles
+
+| Property    | Value                    |
+|-------------|--------------------------|
+| Extension   | `.dat` (Particles.dat)   |
+| Format      | Text                    |
+
+Map particle files define particle emitter placements on a map. Stored as text with sequential parsing of particle definitions.
+
+**C# source**: `LeagueToolkit` - `Core/Legacy/IO/MapParticlesFile.cs`
+
+---
+
+## Shader TOC - Shader Table of Contents
+
+| Property    | Value                    |
+|-------------|--------------------------|
+| Extension   | `.toc`                   |
+| Magic       | `TOC3.0` (text marker)  |
+
+Shader TOC files index compiled shader programs. They describe shader defines, types, and hash mappings.
+
+### Sections
+
+| Marker         | Description                              |
+|----------------|------------------------------------------|
+| `baseDefines`  | Macro definitions (name-value pairs with hashes) |
+| `shaders`      | Shader entries with type (vertex/pixel), hashes, IDs |
+
+### Shader Types
+
+| Value | Type          |
+|-------|---------------|
+| 0     | Vertex Shader |
+| 1     | Pixel Shader  |
+
+### Target Platforms
+
+Shaders are compiled for multiple platforms:
+- DirectX 9 (`dx9`)
+- DirectX 11 (`dx11`)
+- GLSL (`glsl`)
+- Metal (`metal`)
+
+**C# source**: `LeagueToolkit` - `Core/Renderer/ShaderToc.cs`, `ShaderLoader.cs`
+
+---
+
+## Audio Formats
+
+### Wwise Sound Bank (BNK)
+
+| Property    | Value                    |
+|-------------|--------------------------|
+| Extension   | `.bnk`                   |
+| Magic       | `BKHD` (4 bytes)        |
+
+Wwise audio banks contain sound events, audio data, and mixing configuration. These are standard Wwise format files, not a custom League format.
+
+### Wwise Package (WPK)
+
+| Property    | Value                    |
+|-------------|--------------------------|
+| Extension   | `.wpk`                   |
+| Magic       | `r3d2` + value 1         |
+
+Wwise packages bundle multiple audio assets. The header uses the `r3d2` prefix common to many League formats.
+
+**Note:** Audio files in WAD archives are stored uncompressed by default, as they are already internally compressed by Wwise.
+
+---
+
+## RST - Riot String Table
+
+| Property    | Value                    |
+|-------------|--------------------------|
+| Extension   | `.stringtable`           |
+| Magic       | `RST` (3 bytes)         |
+
+String table files store localized text strings indexed by hash. Used for in-game text, tooltips, and UI strings across different languages.
+
+---
+
+## Preload Configuration
+
+| Property    | Value                    |
+|-------------|--------------------------|
+| Extension   | `.preload`               |
+| Magic       | `PreLoad` (ASCII)       |
+
+Preload files specify which assets should be loaded into memory ahead of time for performance.
+
+---
+
+## Related Formats
+
+Most legacy formats have been superseded by:
+- [BIN (Property Bins)](/reference/file-formats/bin/) - Replaced INIBIN and various text configuration formats
+- [MapGeo](/reference/file-formats/mapgeo/) - Replaced WGEO and incorporated static mesh, lighting, and material data
+- [WAD Archives](/reference/file-formats/wad/) - Contains all modern game assets
+
+## Implementation References
+
+All legacy format implementations are in the C# LeagueToolkit library:
+- **C#**: [`LeagueToolkit` - `Core/Legacy/IO/`](https://github.com/LeagueToolkit/LeagueToolkit) - 14 subdirectories covering all legacy formats

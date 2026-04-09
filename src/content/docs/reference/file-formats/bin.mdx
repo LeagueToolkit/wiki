@@ -1,0 +1,225 @@
+---
+title: 'BIN (Property Bins)'
+description: Technical reference for the BIN property bin format.
+---
+
+BIN files are League of Legends' primary typed property container format. They store all game configuration data - champion stats, ability definitions, particle systems, UI layouts, map settings, and more. BIN is the most widely used data format in the engine.
+
+## Overview
+
+A BIN file contains a collection of **objects**, each identified by a path hash and associated with a [metaclass](/reference/metaclasses/overview/) via a class hash. Each object holds a set of typed **properties** using a rich type system with 28 distinct property types including primitives, vectors, containers, maps, and nested structures.
+
+BIN files are found throughout the game client inside [WAD archives](/reference/file-formats/wad/), typically with paths like `DATA/Characters/{name}/{name}.bin` for champion data or `DATA/Maps/Shipping/{map}/` for map configuration.
+
+The human-readable text representation of BIN is called [Ritobin](/reference/file-formats/ritobin/).
+
+## Use Cases
+
+- **Champion modding** - Modifying attack damage, ability ratios, cooldowns, ranges
+- **Particle editing** - Changing visual effects, particle colors, lifetimes, emitters
+- **UI customization** - Adjusting HUD elements, minimap configuration
+- **Map editing** - Modifying terrain materials, lighting, fog settings
+- **Game data analysis** - Extracting and comparing game balance data across patches
+
+## File Structure
+
+All multi-byte values are **little-endian**.
+
+### File Variants
+
+BIN files come in two variants identified by their magic bytes:
+
+| Magic  | Name | Description                                        |
+|--------|------|----------------------------------------------------|
+| `PROP` | Standard | Contains objects with typed properties           |
+| `PTCH` | Patch    | Override file that wraps a PROP section with data overrides |
+
+### PROP Header
+
+| Offset | Size | Type   | Field            | Description                                 |
+|--------|------|--------|------------------|---------------------------------------------|
+| 0x00   | 4    | char[] | magic            | `PROP` (ASCII, 4 bytes)                     |
+| 0x04   | 4    | u32    | version          | Format version (1, 2, or 3)                 |
+
+#### Version 2+ Dependencies
+
+If version >= 2, the header is followed by a dependency list:
+
+| Offset | Size     | Type     | Field            | Description                            |
+|--------|----------|----------|------------------|----------------------------------------|
+| 0x08   | 4        | u32      | dependency_count | Number of linked dependency files      |
+| 0x0C   | variable | string[] | dependencies     | Size-prefixed UTF-8 strings (see below) |
+
+Each dependency string is encoded as:
+
+| Size | Type | Field  | Description                  |
+|------|------|--------|------------------------------|
+| 2    | u16  | length | String length in bytes       |
+| N    | u8[] | data   | UTF-8 string data (no null terminator) |
+
+### PTCH Header
+
+Patch files wrap a PROP section:
+
+| Offset | Size | Type   | Field              | Description                                 |
+|--------|------|--------|--------------------|---------------------------------------------|
+| 0x00   | 4    | char[] | magic              | `PTCH` (ASCII, 4 bytes)                     |
+| 0x04   | 4    | u32    | patch_version      | Patch format version (must be 1)            |
+| 0x08   | 4    | u32    | override_object_count | Number of override targets               |
+| 0x0C   | ...  | PROP   | prop_section       | Full PROP section (magic + data)            |
+
+When the inner PROP section is version 3, data override entries follow the object data.
+
+### Object Table
+
+After the header (and dependencies), the object table begins:
+
+| Size | Type   | Field            | Description                                 |
+|------|--------|------------------|---------------------------------------------|
+| 4    | u32    | object_count     | Number of objects in the file               |
+| N×4  | u32[]  | class_hashes     | Array of class hashes, one per object (index-correlated) |
+
+Followed by the object data array. Each object is serialized sequentially - its class hash is already known from the class_hashes array at the corresponding index:
+
+| Size     | Type   | Field            | Description                                   |
+|----------|--------|------------------|-----------------------------------------------|
+| 4        | u32    | data_size        | Size in bytes of the remaining object data (path_hash + property_count + all properties) |
+| 4        | u32    | path_hash        | [FNV-1a hash](/reference/hashing/algorithms/#fnv-1a) identifying this object |
+| 2        | u16    | property_count   | Number of properties in this object           |
+| variable | prop[] | properties       | Array of typed properties (each with 5-byte header) |
+
+### Property Encoding
+
+Each property is encoded as:
+
+| Size     | Type   | Field       | Description                                      |
+|----------|--------|-------------|--------------------------------------------------|
+| 4        | u32    | name_hash   | [FNV-1a hash](/reference/hashing/algorithms/#fnv-1a) of the property name |
+| 1        | u8     | type_id     | Property type identifier (see Property Types)    |
+| variable | varies | value       | Type-specific encoded value                      |
+
+## Property Types
+
+The property header is always **5 bytes**: 4-byte name hash + 1-byte type ID. Elements inside containers, maps, and optionals are written **without** this header (the type is declared in the container's own header).
+
+Properties inside structs and embedded objects **do** include the full 5-byte header.
+
+### Primitive Types (IDs 0–18)
+
+| ID | Name         | Size    | Encoding                                    |
+|----|--------------|---------|---------------------------------------------|
+| 0  | None         | 0       | No data                                     |
+| 1  | Bool         | 1       | u8 (0 = false, 1 = true)                   |
+| 2  | I8           | 1       | Signed 8-bit integer                        |
+| 3  | U8           | 1       | Unsigned 8-bit integer                      |
+| 4  | I16          | 2       | Signed 16-bit integer                       |
+| 5  | U16          | 2       | Unsigned 16-bit integer                     |
+| 6  | I32          | 4       | Signed 32-bit integer                       |
+| 7  | U32          | 4       | Unsigned 32-bit integer                     |
+| 8  | I64          | 8       | Signed 64-bit integer                       |
+| 9  | U64          | 8       | Unsigned 64-bit integer                     |
+| 10 | F32          | 4       | IEEE 754 single-precision float             |
+| 11 | Vec2         | 8       | 2× f32 (x, y)                              |
+| 12 | Vec3         | 12      | 3× f32 (x, y, z)                           |
+| 13 | Vec4         | 16      | 4× f32 (x, y, z, w)                        |
+| 14 | Mat44        | 64      | 16× f32 (4×4 matrix, row-major)            |
+| 15 | Color        | 4       | 4× u8 (R, G, B, A)                         |
+| 16 | String       | variable| u16 length prefix + UTF-8 bytes             |
+| 17 | Hash         | 4       | u32 FNV-1a hash value                       |
+| 18 | WadChunkLink | 8       | u64 xxHash64 of WAD chunk path              |
+
+### Complex Types (IDs 128+)
+
+| ID  | Hex  | Name               | Encoding                                                |
+|-----|------|--------------------|---------------------------------------------------------|
+| 128 | 0x80 | Container          | u8 element_type + u32 size + u32 count + N× element    |
+| 129 | 0x81 | UnorderedContainer | u8 element_type + u32 size + u32 count + N× element    |
+| 130 | 0x82 | Struct             | u32 class_hash + u32 data_size + u16 prop_count + props |
+| 131 | 0x83 | Embedded           | u32 class_hash + u32 data_size + u16 prop_count + props |
+| 132 | 0x84 | ObjectLink         | u32 path hash of linked object                          |
+| 133 | 0x85 | Optional           | u8 inner_type + u8 present (0/1) + value if present     |
+| 134 | 0x86 | Map                | u8 key_type + u8 value_type + u32 size + u32 count + N× (key, value) |
+| 135 | 0x87 | BitBool            | u8 (0 = false, 1 = true)                               |
+
+### Legacy Type Unpacking
+
+`WadChunkLink` (ID 18) was added to the primitive range after the format's initial release. In legacy files, type IDs 18+ in the primitive range are shifted - they actually represent complex types. Both library implementations detect this by attempting a standard read first, then falling back to legacy unpacking if an invalid type ID is encountered.
+
+Struct and Embedded are encoded identically - the distinction is semantic. Structs are value types (copied), while Embedded objects have identity and can be referenced. If `class_hash` is 0, the struct/embedded is null and no further data follows (total value = 4 bytes).
+
+### Container Encoding Details
+
+**Container / UnorderedContainer:**
+
+| Size     | Type | Field         | Description                         |
+|----------|------|---------------|-------------------------------------|
+| 1        | u8   | element_type  | Type ID of contained elements       |
+| 4        | u32  | data_size     | Total size of element data in bytes |
+| 4        | u32  | count         | Number of elements                  |
+| variable | T[]  | elements      | Array of typed elements             |
+
+**Map:**
+
+| Size     | Type | Field         | Description                         |
+|----------|------|---------------|-------------------------------------|
+| 1        | u8   | key_type      | Type ID of map keys                 |
+| 1        | u8   | value_type    | Type ID of map values               |
+| 4        | u32  | data_size     | Total size of key-value data        |
+| 4        | u32  | count         | Number of key-value pairs           |
+| variable | KV[] | entries       | Array of (key, value) pairs         |
+
+**Optional:**
+
+| Size     | Type | Field         | Description                         |
+|----------|------|---------------|-------------------------------------|
+| 1        | u8   | inner_type    | Type ID of the optional value       |
+| 1        | u8   | present       | 0 = None, 1 = Some                  |
+| variable | T    | value         | Value data (only if present = 1)    |
+
+**Struct / Embedded:**
+
+| Size     | Type   | Field          | Description                          |
+|----------|--------|----------------|--------------------------------------|
+| 4        | u32    | class_hash     | FNV-1a hash of the metaclass name    |
+| 4        | u32    | data_size      | Total size of object data in bytes   |
+| 2        | u16    | property_count | Number of properties                 |
+| variable | prop[] | properties     | Nested property array                |
+
+## Version Differences
+
+| Version | Key Changes                                                    |
+|---------|----------------------------------------------------------------|
+| 1       | Baseline format - PROP magic, objects with typed properties    |
+| 2       | Adds dependency string table after header                      |
+| 3       | Adds support for data overrides when inside a PTCH wrapper     |
+
+### Data Overrides (Version 3 + PTCH)
+
+When a PTCH file contains a version 3 PROP section, data override entries follow the object data. These overrides allow patch files to selectively modify specific properties without replacing entire objects.
+
+| Size     | Type   | Field                | Description                                  |
+|----------|--------|----------------------|----------------------------------------------|
+| 4        | u32    | data_override_count  | Number of override entries                   |
+
+Each data override entry:
+
+| Size     | Type   | Field          | Description                                          |
+|----------|--------|----------------|------------------------------------------------------|
+| 4        | u32    | object_hash    | Path hash of the target object to override           |
+| 4        | u32    | entry_size     | Size of the remaining override data                  |
+| 1        | u8     | property_type  | Type ID of the property value                        |
+| 2        | u16    | path_length    | Length of the property path string                   |
+| N        | u8[]   | property_path  | ASCII property path string                           |
+| variable | varies | value          | Property value encoded per type (without header)     |
+
+## Related Formats
+
+- [Ritobin](/reference/file-formats/ritobin/) - Human-readable text representation of BIN data
+- [Metaclasses](/reference/metaclasses/overview/) - Type schemas that define the structure of BIN objects
+- [Hashing Algorithms](/reference/hashing/algorithms/) - FNV-1a used for all name/path/class hashes in BIN
+- [WAD Archives](/reference/file-formats/wad/) - BIN files are stored inside WAD packages
+
+## Implementation References
+
+- **Rust**: [`league-toolkit` - `ltk_meta` crate](https://github.com/LeagueToolkit/league-toolkit) - `PropertyBinFile`, `BinObject`, property type system
+- **C#**: [`LeagueToolkit` - `Core/Meta/`](https://github.com/LeagueToolkit/LeagueToolkit) - `BinTree.cs`, `BinTreeObject.cs`, `MetaSerializer.cs`, property types in `Properties/` subdirectory

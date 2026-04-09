@@ -3,7 +3,9 @@ title: Architecture
 description: Overview of the ltk-manager codebase structure, technology stack, and design decisions.
 ---
 
-LTK Manager is built with [Tauri v2](https://v2.tauri.app/) — a Rust backend with a React (TypeScript) frontend rendered in a native webview.
+import { FileTree } from '@astrojs/starlight/components';
+
+LTK Manager is built with [Tauri v2](https://v2.tauri.app/) - a Rust backend with a React (TypeScript) frontend rendered in a native webview.
 
 ## High-Level Overview
 
@@ -32,19 +34,19 @@ LTK Manager is built with [Tauri v2](https://v2.tauri.app/) — a Rust backend w
 | `main.rs` | Tauri setup, command registration, logging initialization |
 | `error.rs` | Error types, IPC result wrapper, error codes |
 | `state.rs` | Tauri-managed state (settings, patcher) |
-| `commands/` | IPC command handlers — thin wrappers over business logic |
-| `mods/` | Mod management — install, uninstall, toggle, profiles, library index |
-| `overlay/` | Overlay building — combines mods into patchable output |
-| `patcher/` | Patcher lifecycle — background thread, start/stop, status |
-| `workshop/` | Project management — CRUD, packing, importing, validation |
+| `commands/` | IPC command handlers - thin wrappers over business logic |
+| `mods/` | Mod management - install, uninstall, toggle, profiles, library index |
+| `overlay/` | Overlay building - combines mods into patchable output |
+| `patcher/` | Patcher lifecycle - background thread, start/stop, status |
+| `workshop/` | Project management - CRUD, packing, importing, validation |
 | `legacy_patcher/` | FFI integration with cslol patcher DLL |
 
 ### State Management
 
 Two Tauri-managed states:
 
-- **SettingsState** — `Mutex<Settings>` for app configuration
-- **PatcherState** — Patcher thread handle and `Arc<AtomicBool>` stop flag
+- **SettingsState** - `Mutex<Settings>` for app configuration
+- **PatcherState** - Patcher thread handle and `Arc<AtomicBool>` stop flag
 
 ### Error Handling
 
@@ -67,13 +69,13 @@ All commands return `IpcResult<T>`, which serializes to `{ ok: true, value: T }`
 
 Each feature lives in `src/modules/{name}/`:
 
-```
-src/modules/library/
-├── api/           # TanStack Query hooks
-├── components/    # Feature-specific UI components
-├── utils/         # Helpers
-└── index.ts       # Public barrel export
-```
+<FileTree>
+- src/modules/library/
+  - api/ TanStack Query hooks
+  - components/ Feature-specific UI components
+  - utils/ Helpers
+  - index.ts Public barrel export
+</FileTree>
 
 Modules export through barrel files. Consumers import from `@/modules/{name}`, never from subdirectories.
 

@@ -1,0 +1,149 @@
+---
+title: 'SKN (Skinned Meshes)'
+description: Technical reference for the SKN skinned mesh format.
+---
+
+SKN files store skinned mesh data for League of Legends champions, skins, and other animated 3D models. A skinned mesh is bound to a [skeleton](/reference/file-formats/skl/) and deformed by [animations](/reference/file-formats/anm/) at runtime.
+
+## Overview
+
+Each SKN file contains the geometry for a single character model: vertex positions, normals, texture coordinates, bone weights, and one or more named submesh ranges that map to different materials. The format has evolved across several versions, with newer versions adding vertex color, tangent data, and bounding volume information.
+
+SKN files are found inside [WAD archives](/reference/file-formats/wad/) at paths like `DATA/Characters/{name}/Skins/Base/{name}.skn`.
+
+## Use Cases
+
+- **Custom skins** - Replacing champion model geometry with modified meshes
+- **Model extraction** - Exporting champion models to 3D software (via glTF conversion)
+- **Mesh analysis** - Inspecting vertex counts, submesh structure, and material assignments
+
+## File Structure
+
+All multi-byte values are **little-endian**.
+
+### Header
+
+| Offset | Size | Type | Field         | Description                              |
+|--------|------|------|---------------|------------------------------------------|
+| 0x00   | 4    | u32  | magic         | `0x00112233`                             |
+| 0x04   | 2    | u16  | version_major | Major version (0, 2, or 4)               |
+| 0x06   | 2    | u16  | version_minor | Minor version (always 1)                 |
+
+### Version 0 (Legacy)
+
+The simplest format with a single implicit submesh:
+
+| Offset | Size | Type | Field       | Description                   |
+|--------|------|------|-------------|-------------------------------|
+| 0x08   | 4    | i32  | index_count | Number of triangle indices    |
+| 0x0C   | 4    | i32  | vertex_count| Number of vertices            |
+
+A single implicit mesh range named `"Base"` covers all vertices and indices.
+
+### Version 2
+
+Introduces multiple named submesh ranges:
+
+| Offset | Size    | Type   | Field       | Description                          |
+|--------|---------|--------|-------------|--------------------------------------|
+| 0x08   | 4       | u32    | range_count | Number of submesh ranges             |
+| 0x0C   | N × 80  | range[]| ranges      | Array of SkinnedMeshRange entries    |
+| ...    | 4       | i32    | index_count | Total number of triangle indices     |
+| ...    | 4       | i32    | vertex_count| Total number of vertices             |
+
+### Version 4
+
+Full-featured format with vertex type flags and bounding volumes:
+
+| Offset | Size    | Type   | Field        | Description                          |
+|--------|---------|--------|--------------|--------------------------------------|
+| 0x08   | 4       | u32    | range_count  | Number of submesh ranges             |
+| 0x0C   | N × 80  | range[]| ranges       | Array of SkinnedMeshRange entries    |
+| ...    | 4       | u32    | flags        | Format flags                         |
+| ...    | 4       | i32    | index_count  | Total number of triangle indices     |
+| ...    | 4       | i32    | vertex_count | Total number of vertices             |
+| ...    | 4       | u32    | vertex_size  | Size of each vertex in bytes         |
+| ...    | 4       | u32    | vertex_type  | Vertex type identifier (see below)   |
+| ...    | 24      | AABB   | bounding_box | Axis-aligned bounding box (2× Vec3) |
+| ...    | 16      | Sphere | bounding_sphere | Bounding sphere (Vec3 center + f32 radius) |
+
+### Submesh Range (80 bytes)
+
+Each submesh range entry:
+
+| Offset | Size | Type   | Field         | Description                                |
+|--------|------|--------|---------------|--------------------------------------------|
+| 0x00   | 64   | char[] | name          | Null-padded ASCII material/submesh name    |
+| 0x40   | 4    | i32    | start_vertex  | Starting vertex index                      |
+| 0x44   | 4    | i32    | vertex_count  | Number of vertices in this range           |
+| 0x48   | 4    | i32    | start_index   | Starting index in the index buffer         |
+| 0x4C   | 4    | i32    | index_count   | Number of indices in this range            |
+
+**Total size: 80 bytes** (64 name + 4×4 offsets/counts)
+
+### Index Buffer
+
+Immediately follows the header/range data:
+
+| Size       | Type  | Description                           |
+|------------|-------|---------------------------------------|
+| count × 2  | u16[] | Triangle indices (3 indices per face) |
+
+### Vertex Buffer
+
+Follows the index buffer. Vertex layout depends on the vertex type:
+
+## Vertex Types
+
+### Basic (52 bytes)
+
+| Offset | Size | Type   | Attribute      | Description                        |
+|--------|------|--------|----------------|------------------------------------|
+| 0x00   | 12   | Vec3   | position       | Vertex position (x, y, z)         |
+| 0x0C   | 4    | u8[4]  | bone_indices   | Indices of up to 4 influencing bones |
+| 0x10   | 16   | f32[4] | bone_weights   | Weights for each bone influence    |
+| 0x20   | 12   | Vec3   | normal         | Vertex normal (x, y, z)           |
+| 0x2C   | 8    | Vec2   | texcoord       | UV texture coordinates (u, v)     |
+
+### Color (56 bytes)
+
+| Offset | Size | Type   | Attribute      | Description                        |
+|--------|------|--------|----------------|------------------------------------|
+| 0x00   | 52   | -      | (basic fields) | Same layout as Basic               |
+| 0x34   | 4    | u8[4]  | color          | BGRA vertex color (packed 8888)    |
+
+### Tangent (72 bytes)
+
+| Offset | Size | Type   | Attribute      | Description                        |
+|--------|------|--------|----------------|------------------------------------|
+| 0x00   | 56   | -      | (color fields) | Same layout as Color               |
+| 0x38   | 16   | Vec4   | tangent        | Tangent vector (x, y, z, w)       |
+
+The `vertex_type` field in version 4 headers identifies which layout is used:
+
+| Value | Type    | Vertex Size | Description                    |
+|-------|---------|-------------|--------------------------------|
+| 0     | Basic   | 52 bytes    | Position, normals, UVs, weights |
+| 1     | Color   | 56 bytes    | Basic + vertex color            |
+| 2     | Tangent | 72 bytes    | Color + tangent vector          |
+
+## Version Differences
+
+| Version | Submesh Ranges | Vertex Types | Bounding Volumes | Notes              |
+|---------|---------------|--------------|------------------|--------------------|
+| 0.1     | 1 implicit    | Basic only   | No               | Legacy format      |
+| 2.1     | Multiple      | Basic only   | No               | Named ranges       |
+| 4.1     | Multiple      | All three    | Yes (AABB + Sphere) | Full featured   |
+
+## Related Formats
+
+- [SKL (Skeletons)](/reference/file-formats/skl/) - The skeleton that this mesh is bound to; bone indices in vertices reference skeleton joints
+- [ANM (Animations)](/reference/file-formats/anm/) - Animations that drive skeleton deformation of this mesh
+- [TEX (Textures)](/reference/file-formats/tex/) - Textures applied to submesh materials
+- [BIN (Property Bins)](/reference/file-formats/bin/) - Material and shader configuration for submeshes
+- [WAD Archives](/reference/file-formats/wad/) - SKN files are stored inside WAD packages
+
+## Implementation References
+
+- **Rust**: [`league-toolkit` - `ltk_mesh` crate, `skinned` module](https://github.com/LeagueToolkit/league-toolkit)
+- **C#**: [`LeagueToolkit` - `Core/Mesh/SkinnedMesh.cs`](https://github.com/LeagueToolkit/LeagueToolkit)

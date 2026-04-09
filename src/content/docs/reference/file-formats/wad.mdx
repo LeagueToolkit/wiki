@@ -1,0 +1,160 @@
+---
+title: WAD Archives
+description: Technical reference for the WAD archive format used by League of Legends.
+---
+
+WAD is the primary archive format used by League of Legends to bundle game assets. WAD files contain compressed chunks of data identified by path hashes, enabling efficient storage and retrieval of game resources.
+
+## Overview
+
+WAD archives package all game content - textures, models, animations, configuration, audio, and more - into versioned, signed containers. Each file within a WAD is stored as a **chunk** identified by the [xxHash64](/reference/hashing/algorithms/#xxhash64) of its original file path.
+
+WAD files use the extension `.wad.client` in the game installation and are found in the `Game/DATA/FINAL/` directory tree.
+
+## Use Cases
+
+- **Asset extraction** - Extracting game files for modding and analysis
+- **Mod packaging** - Creating modified WAD archives with custom assets
+- **Content browsing** - Enumerating game content via known path hash dictionaries
+
+## File Structure
+
+All multi-byte values are **little-endian**.
+
+### Header
+
+| Offset | Size | Type   | Field         | Description                                   |
+|--------|------|--------|---------------|-----------------------------------------------|
+| 0x00   | 2    | char[] | magic         | `RW` (ASCII, 2 bytes)                         |
+| 0x02   | 1    | u8     | version_major | Major version (1, 2, or 3)                    |
+| 0x03   | 1    | u8     | version_minor | Minor version                                 |
+
+### Signature Block (version-dependent)
+
+**Version 1:**
+No signature block. Header is followed directly by the TOC.
+
+| Offset | Size | Type | Field             | Description                     |
+|--------|------|------|-------------------|---------------------------------|
+| 0x04   | 2    | u16  | toc_start_offset  | Offset to table of contents     |
+| 0x06   | 2    | u16  | toc_entry_size    | Size of each TOC entry in bytes |
+
+**Version 2:**
+
+| Offset | Size | Type    | Field          | Description                                 |
+|--------|------|---------|----------------|---------------------------------------------|
+| 0x04   | 83   | u8[83]  | ecdsa_signature| ECDSA signature (83 bytes)                  |
+| 0x57   | 8    | u64     | data_checksum  | Checksum of file data                       |
+| 0x5F   | 2    | u16     | toc_start_offset| Offset to table of contents                |
+| 0x61   | 2    | u16     | toc_entry_size | Size of each TOC entry in bytes             |
+
+**Version 3:**
+
+| Offset | Size | Type     | Field           | Description                                |
+|--------|------|----------|-----------------|--------------------------------------------|
+| 0x04   | 256  | u8[256]  | ecdsa_signature | ECDSA signature (256 bytes)                |
+| 0x104  | 8    | u64      | data_checksum   | Checksum of file data                      |
+| 0x10C  | 4    | u32      | toc_entry_count | Number of TOC entries                      |
+
+### Table of Contents
+
+The TOC is an array of chunk entries. In version 3, entries immediately follow the header. Each entry describes one chunk:
+
+#### TOC Entry (Version 3.0–3.3)
+
+| Offset | Size | Type | Field              | Description                                    |
+|--------|------|------|--------------------|------------------------------------------------|
+| 0x00   | 8    | u64  | path_hash          | xxHash64 of the chunk's file path              |
+| 0x08   | 4    | u32  | data_offset        | Byte offset to chunk data from file start      |
+| 0x0C   | 4    | u32  | compressed_size    | Size of compressed data in bytes               |
+| 0x10   | 4    | u32  | uncompressed_size  | Size after decompression                       |
+| 0x14   | 1    | u8   | compression_type   | Compression algorithm (see Compression Types)  |
+| 0x15   | 1    | bool | is_duplicated      | Whether this chunk is duplicated               |
+| 0x16   | 2    | u16  | subchunk_start     | Start frame for ZstdChunked                    |
+| 0x18   | 1    | u8   | subchunk_count     | Number of sub-chunks (ZstdChunked only)        |
+| 0x19   | 8    | u64  | checksum           | Chunk data checksum                            |
+
+#### TOC Entry (Version 3.4+)
+
+| Offset | Size | Type | Field              | Description                                    |
+|--------|------|------|--------------------|------------------------------------------------|
+| 0x00   | 8    | u64  | path_hash          | xxHash64 of the chunk's file path              |
+| 0x08   | 4    | u32  | data_offset        | Byte offset to chunk data from file start      |
+| 0x0C   | 4    | u32  | compressed_size    | Size of compressed data in bytes               |
+| 0x10   | 4    | u32  | uncompressed_size  | Size after decompression                       |
+| 0x14   | 4    | u32  | type_subchunk_packed | Packed field (see below)                     |
+| 0x18   | 8    | u64  | checksum           | Chunk data checksum                            |
+
+The `type_subchunk_packed` field in v3.4+ packs multiple values:
+- Bits 0–3: compression type (4 bits)
+- Bits 4–11: sub-chunk count (8 bits)
+- Bits 12–35: sub-chunk start frame (24 bits)
+
+### Chunk Data
+
+Chunk data is stored at the `data_offset` specified in the TOC entry. The data is compressed according to the `compression_type` field and is `compressed_size` bytes long. After decompression, the result is `uncompressed_size` bytes.
+
+## Compression Types
+
+| Value | Name         | Description                                                      |
+|-------|--------------|------------------------------------------------------------------|
+| 0     | None         | Uncompressed - data stored as-is                                 |
+| 1     | GZip         | Deflate compression (zlib/gzip)                                  |
+| 2     | Satellite    | Data stored in a separate satellite file                         |
+| 3     | Zstd         | Zstandard single-frame compression                               |
+| 4     | ZstdChunked  | Zstandard with independently-compressed sub-chunks               |
+
+### ZstdChunked Sub-chunks
+
+When `compression_type` is `ZstdChunked` (4), the chunk is divided into multiple independently-compressed sub-chunks. This allows partial decompression - a tool can decompress only the needed portion without reading the entire chunk.
+
+Sub-chunk metadata (start frame and count) is stored in the TOC entry. Each sub-chunk is a self-contained Zstandard frame that can be decompressed independently.
+
+### Default Compression by File Type
+
+| File Type        | Default Compression |
+|------------------|---------------------|
+| Wwise Bank (.bnk)| None                |
+| Wwise Package (.wpk)| None             |
+| All other types  | Zstd                |
+
+## Path Hash Resolution
+
+Chunk paths are not stored in the WAD - only their [xxHash64](/reference/hashing/algorithms/#xxhash64) values. To resolve hashes to human-readable paths, tools rely on:
+
+1. **Game manifests** - Riot's patch manifests contain file listings
+2. **Known path dictionaries** - Community-maintained hash-to-path mappings
+3. **Directory structure conventions** - Predictable path patterns (e.g., `data/characters/{champion_name}/`)
+
+Unresolved hashes are typically displayed as hexadecimal (e.g., `0x1234567890ABCDEF`).
+
+## WAD Naming Conventions
+
+WAD files in the game client follow this naming pattern:
+
+```
+{name}.wad.client
+```
+
+Common WAD files include character-specific archives (e.g., `Annie.wad.client`), map data, and shared resources.
+
+## Version Differences
+
+| Version | Signature | TOC Format | Key Changes                          |
+|---------|-----------|------------|--------------------------------------|
+| 1       | None      | Offset-based | Basic format, no signing           |
+| 2       | 83-byte ECDSA | Offset-based | Added ECDSA signature, data checksum |
+| 3.0–3.3 | 256-byte ECDSA | Inline count | Larger signature, inline TOC count, chunk duplication flag |
+| 3.4+    | 256-byte ECDSA | Inline count | Packed type/subchunk field, removed duplication flag |
+
+## Related Formats
+
+- [Hashing Algorithms](/reference/hashing/algorithms/) - xxHash64 used for chunk path identification
+- [BIN](/reference/file-formats/bin/) - Configuration data commonly stored in WAD archives
+- [TEX](/reference/file-formats/tex/) - Texture assets stored in WAD archives
+- [SKN](/reference/file-formats/skn/), [SKL](/reference/file-formats/skl/), [ANM](/reference/file-formats/anm/) - Model and animation assets stored in WAD archives
+
+## Implementation References
+
+- **Rust**: [`league-toolkit` - `ltk_wad` crate](https://github.com/LeagueToolkit/league-toolkit)
+- **C#**: [`LeagueToolkit` - `Core/Wad/`](https://github.com/LeagueToolkit/LeagueToolkit) - `WadFile.cs`, `WadBuilder.cs`, `WadChunk.cs`

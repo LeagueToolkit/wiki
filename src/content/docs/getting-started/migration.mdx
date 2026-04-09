@@ -3,7 +3,17 @@ title: Migrating from cslol-manager
 description: How to migrate your mods and configuration from cslol-manager to ltk-manager.
 ---
 
-If you're coming from cslol-manager, LTK Manager can import your existing mods so you don't have to reinstall them.
+LTK Manager is the official successor to cslol-manager. If you're still using cslol-manager, you should migrate to LTK Manager - all future development and new features are happening here.
+
+## Why Migrate?
+
+- **cslol-manager is deprecated** - It will no longer receive new features. LTK Manager is where active development continues.
+- **Same patcher, new home** - The cslol patcher is still maintained, but it has been adopted into LTK Manager through the `ltk_overlay` Rust crate. You get the same patching engine with a modern interface.
+- **Modern features** - LTK Manager adds a creator workshop, multi-layer mods, the `.modpkg` format, profiles, drag-and-drop, auto-updates, hotkeys, and more.
+
+:::caution[macOS users]
+The cslol patcher stopped working on macOS. A new macOS patcher is being developed alongside a native macOS LTK Manager release, targeted for Q2/Summer 2026. Until then, there is no working mod manager for macOS.
+:::
 
 ## Migration Wizard
 

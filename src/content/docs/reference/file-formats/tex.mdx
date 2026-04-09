@@ -1,0 +1,108 @@
+---
+title: 'TEX (Textures)'
+description: Technical reference for the TEX texture format.
+---
+
+TEX is League of Legends' custom texture format for storing compressed and uncompressed image data. It supports multiple compression formats, mipmap chains, and resource types including standard textures, cubemaps, and volume textures.
+
+## Overview
+
+TEX files are found throughout the game client inside [WAD archives](/reference/file-formats/wad/), storing champion textures, splash art, map textures, UI elements, and other image data. The format wraps pixel data with a compact header that describes dimensions, compression, and mipmap layout.
+
+Standard DDS (DirectDraw Surface) textures are also supported by the engine and tooling, but TEX is the native League format.
+
+## Use Cases
+
+- **Skin textures** - Diffuse, normal, and mask maps for champion models
+- **Map textures** - Terrain, foliage, and environment textures referenced by [MapGeo](/reference/file-formats/mapgeo/)
+- **UI assets** - Icons, splash art, loading screen images
+- **Cubemaps** - Environment reflection maps
+
+## File Structure
+
+All multi-byte values are **little-endian**.
+
+### Header
+
+| Offset | Size | Type  | Field           | Description                              |
+|--------|------|-------|-----------------|------------------------------------------|
+| 0x00   | 4    | u32   | magic           | `0x00584554` - ASCII `TEX\0`             |
+| 0x04   | 2    | u16   | width           | Texture width in pixels                  |
+| 0x06   | 2    | u16   | height          | Texture height in pixels                 |
+| 0x08   | 1    | u8    | extended_format | Extended format flags                    |
+| 0x09   | 1    | u8    | format          | Pixel format (see Compression Formats)   |
+| 0x0A   | 1    | u8    | resource_type   | Resource type (see Resource Types)       |
+| 0x0B   | 1    | u8    | flags           | Texture flags bitfield                   |
+
+**Total header size: 12 bytes**
+
+### Pixel Data
+
+Immediately following the header, mipmap levels are stored in order from **smallest to largest** (mip N, mip N-1, ..., mip 0). Mip 0 is the full-resolution image.
+
+The number of mipmap levels is calculated as:
+
+```
+mip_count = floor(log2(max(width, height))) + 1
+```
+
+Each mipmap level is half the dimensions of the previous (rounding down), with a minimum size of 1×1.
+
+For block-compressed formats (BC1, BC3), each mipmap is stored in 4×4 pixel blocks. For uncompressed formats (BGRA8), pixels are stored directly.
+
+## Resource Types
+
+| Value | Name           | Description                                   |
+|-------|----------------|-----------------------------------------------|
+| 0     | Texture        | Standard 2D texture                           |
+| 1     | CubeMap        | 6-face cubemap for environment reflections    |
+| 2     | Surface        | Render target surface                         |
+| 3     | VolumeTexture  | 3D volume texture                             |
+
+## Texture Flags
+
+| Bit | Name        | Description                      |
+|-----|-------------|----------------------------------|
+| 0   | HasMipMaps  | Texture includes mipmap chain    |
+
+## Compression Formats
+
+| Value | Name     | Block Size    | Bytes Per Block | Description                              |
+|-------|----------|---------------|-----------------|------------------------------------------|
+| 0     | BGRA8    | 1×1 pixel     | 4               | Uncompressed 8-bit BGRA                  |
+| 1     | BC1      | 4×4 pixels    | 8               | Block Compression 1 (DXT1) - RGB + 1-bit alpha |
+| 3     | BC3      | 4×4 pixels    | 16              | Block Compression 3 (DXT5) - RGB + interpolated alpha |
+| 4     | ETC1     | 4×4 pixels    | 8               | Ericsson Texture Compression 1 (mobile)  |
+| 5     | ETC2_EAC | 4×4 pixels    | 16              | ETC2 + EAC alpha (mobile)                |
+
+### Block Layout
+
+For block-compressed formats, the number of blocks per mipmap level is:
+
+```
+blocks_x = max(1, ceil(width / 4))
+blocks_y = max(1, ceil(height / 4))
+mip_size = blocks_x * blocks_y * bytes_per_block
+```
+
+For BGRA8 (uncompressed):
+
+```
+mip_size = width * height * 4
+```
+
+## Version Differences
+
+The TEX format does not use explicit versioning. Format evolution is handled through the `extended_format` byte and the `flags` field.
+
+## Related Formats
+
+- **DDS** - DirectDraw Surface textures are also supported by LeagueToolkit and can be converted to/from TEX
+- [WAD Archives](/reference/file-formats/wad/) - TEX files are stored inside WAD packages
+- [MapGeo](/reference/file-formats/mapgeo/) - Environment meshes reference TEX textures for lightmaps and materials
+- [BIN](/reference/file-formats/bin/) - Material definitions in BIN files reference TEX texture paths
+
+## Implementation References
+
+- **Rust**: [`league-toolkit` - `ltk_texture` crate](https://github.com/LeagueToolkit/league-toolkit)
+- **C#**: [`LeagueToolkit` - `Core/Renderer/Texture.cs`](https://github.com/LeagueToolkit/LeagueToolkit)

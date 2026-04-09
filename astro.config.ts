@@ -13,7 +13,7 @@ export default defineConfig({
       },
       favicon: '/favicon.svg',
       description:
-        'Documentation and knowledge base for the LeagueToolkit ecosystem — guides, tooling docs, and reference material for League of Legends modding.',
+        'Documentation and knowledge base for the LeagueToolkit ecosystem - guides, tooling docs, and reference material for League of Legends modding.',
       social: [
         {
           icon: 'github',
@@ -21,6 +21,7 @@ export default defineConfig({
           href: 'https://github.com/LeagueToolkit',
         },
       ],
+      customCss: ['./src/styles/tailwind.css', './src/styles/custom.css'],
       sidebar: [
         {
           label: 'Getting Started',
@@ -97,6 +98,9 @@ export default defineConfig({
                 { label: 'TEX (Textures)', slug: 'reference/file-formats/tex' },
                 { label: 'MapGeo', slug: 'reference/file-formats/mapgeo' },
                 { label: 'Ritobin', slug: 'reference/file-formats/ritobin' },
+                { label: 'SCB/SCO (Static Meshes)', slug: 'reference/file-formats/scb-sco' },
+                { label: 'WGEO (World Geometry)', slug: 'reference/file-formats/wgeo' },
+                { label: 'Legacy Formats', slug: 'reference/file-formats/legacy' },
               ],
             },
             {
@@ -117,7 +121,6 @@ export default defineConfig({
           ],
         },
       ],
-      customCss: ['./src/styles/custom.css'],
     }),
     svelte(),
   ],

@@ -1,0 +1,149 @@
+---
+title: 'SCB/SCO (Static Meshes)'
+description: Technical reference for the SCB and SCO static mesh formats.
+---
+
+SCB and SCO are League of Legends' static mesh formats for non-animated 3D objects. Unlike [skinned meshes](/reference/file-formats/skn/) which are bound to skeletons, static meshes have fixed geometry and are used for props, environmental objects, and other non-deforming elements.
+
+## Overview
+
+Static meshes come in two variants:
+- **SCB** (`.scb`) - Binary format with compact encoding
+- **SCO** (`.sco`) - ASCII text format, human-readable
+
+Both formats store the same data: vertex positions, face topology, material assignments, optional vertex colors, and bounding information. The binary format is used in the shipped game client; the ASCII format is used during development and by some tools.
+
+## Use Cases
+
+- **Prop replacement** - Swapping environment objects like turrets, inhibitors, and decorations
+- **Model extraction** - Exporting static objects for 3D editing
+- **Map object inspection** - Analyzing geometry used in map scenes
+
+## SCB Binary Format
+
+All multi-byte values are **little-endian**.
+
+### Header
+
+| Offset | Size | Type   | Field         | Description                              |
+|--------|------|--------|---------------|------------------------------------------|
+| 0x00   | 8    | char[] | magic         | `r3d2Mesh` (ASCII, 8 bytes)             |
+| 0x08   | 2    | u16    | version_major | Major version (2 or 3)                   |
+| 0x0A   | 2    | u16    | version_minor | Minor version (1)                        |
+| 0x0C   | 128  | char[] | name          | Null-padded ASCII mesh name              |
+| 0x8C   | 4    | i32    | vertex_count  | Number of vertices                       |
+| 0x90   | 4    | i32    | face_count    | Number of faces (triangles)              |
+| 0x94   | 4    | u32    | flags         | Format flags (see Flags)                 |
+| 0x98   | 24   | AABB   | bounding_box  | Axis-aligned bounding box (2× Vec3)     |
+
+### Version 3.2 Extension
+
+After the bounding box, version 3.2 adds:
+
+| Size | Type | Field             | Description                              |
+|------|------|-------------------|------------------------------------------|
+| 4    | u32  | has_vertex_colors | 1 if vertex colors present, 0 otherwise  |
+
+### Vertex Data
+
+Array of `vertex_count` vertices:
+
+| Size | Type | Description          |
+|------|------|----------------------|
+| 12   | Vec3 | Vertex position (x, y, z) |
+
+### Vertex Colors (Optional)
+
+If `has_vertex_colors` is 1 (version 3.2+), an array of `vertex_count` colors follows:
+
+| Size | Type  | Description                    |
+|------|-------|--------------------------------|
+| 4    | u8[4] | BGRA color (blue, green, red, alpha) |
+
+### Central Point
+
+| Size | Type | Description                     |
+|------|------|---------------------------------|
+| 12   | Vec3 | Central point of the mesh       |
+
+### Face Data
+
+Array of `face_count` faces. Each face:
+
+| Size | Type  | Field          | Description                            |
+|------|-------|----------------|----------------------------------------|
+| 12   | u32[3]| indices        | Three vertex indices forming a triangle|
+| 4    | u32   | material_hash  | Material name hash                     |
+| 24   | Vec2[3]| uvs           | UV coordinates per vertex (u, v × 3)  |
+
+### Face Vertex Colors (Optional)
+
+If the `HAS_VCP` flag is set, additional per-face vertex colors follow:
+
+| Size | Type   | Description                                |
+|------|--------|--------------------------------------------|
+| 12   | u8[12] | RGB color per face vertex (3 vertices × RGB) |
+
+### Flags
+
+| Bit | Name                          | Description                        |
+|-----|-------------------------------|------------------------------------|
+| 0   | HAS_VCP                       | Face vertex colors present         |
+| 1   | HAS_LOCAL_ORIGIN_LOCATOR_AND_PIVOT | Standard pivot data present  |
+
+## SCO ASCII Format
+
+The SCO format is a text-based equivalent with the following structure:
+
+```
+[ObjectBegin]
+Name= MeshName
+CentralPoint= 0.000000 0.000000 0.000000
+PivotPoint= 0.000000 0.000000 0.000000
+Verts= 100
+-1.234567 2.345678 -3.456789
+...
+Faces= 50
+3	0 1 2	MaterialName	0.0 0.0 1.0 0.0 0.5 0.5
+...
+[ObjectEnd]
+```
+
+### Sections
+
+| Section        | Description                                         |
+|----------------|-----------------------------------------------------|
+| `[ObjectBegin]`| Marks the start of a mesh object                    |
+| `Name=`        | Mesh name string                                    |
+| `CentralPoint=`| Central point (3 floats, space-separated)           |
+| `PivotPoint=`  | Pivot point (optional, 3 floats)                    |
+| `Verts=`       | Vertex count, followed by vertex positions (one per line) |
+| `Faces=`       | Face count, followed by face data (one per line)    |
+| `VertexColors=`| Vertex color count, followed by RGBA values (optional) |
+| `[ObjectEnd]`  | Marks the end of the mesh object                    |
+
+### Face Line Format
+
+Each face line contains:
+```
+vertex_count  idx0 idx1 idx2  MaterialName  u0 v0 u1 v1 u2 v2
+```
+
+## Version Differences
+
+| Version | Vertex Colors | Notes                          |
+|---------|---------------|--------------------------------|
+| 2.1     | Face only (VCP flag) | Original format         |
+| 3.2     | Per-vertex BGRA + face VCP | Added vertex color array |
+
+## Related Formats
+
+- [SKN (Skinned Meshes)](/reference/file-formats/skn/) - Animated mesh format for characters (as opposed to static)
+- [MapGeo](/reference/file-formats/mapgeo/) - Modern environment geometry format that incorporates static meshes
+- [BIN (Property Bins)](/reference/file-formats/bin/) - Material configuration for static mesh materials
+- [WAD Archives](/reference/file-formats/wad/) - Static mesh files are stored inside WAD packages
+
+## Implementation References
+
+- **Rust**: [`league-toolkit` - `ltk_mesh` crate, `static` module](https://github.com/LeagueToolkit/league-toolkit)
+- **C#**: [`LeagueToolkit` - `Core/Mesh/StaticMesh.cs`](https://github.com/LeagueToolkit/LeagueToolkit)

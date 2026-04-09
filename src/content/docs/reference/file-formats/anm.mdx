@@ -1,0 +1,265 @@
+---
+title: 'ANM (Animations)'
+description: Technical reference for the ANM animation format.
+---
+
+ANM files contain animation data that drives skeletal movement in League of Legends. The format comes in two variants: **uncompressed** animations with direct keyframe data and **compressed** animations using quantization and spline interpolation for reduced file sizes.
+
+## Overview
+
+Each ANM file stores a sequence of transforms (rotation, translation, scale) for a set of skeleton joints over time. Animations reference joints by their [FNV-1a name hash](/reference/hashing/algorithms/#fnv-1a), which corresponds to joints defined in a [SKL skeleton](/reference/file-formats/skl/).
+
+ANM files are found inside [WAD archives](/reference/file-formats/wad/) at paths like `DATA/Characters/{name}/Animations/{anim_name}.anm`.
+
+## Use Cases
+
+- **Custom animations** - Creating or modifying champion animations (idle, attack, dance, etc.)
+- **Animation analysis** - Inspecting keyframe data, frame counts, and joint mappings
+- **Animation retargeting** - Understanding transform encoding for cross-skeleton animation
+
+## Format Detection
+
+The two ANM variants are distinguished by their 8-byte magic:
+
+| Magic        | Variant      | Description                      |
+|--------------|--------------|----------------------------------|
+| `r3d2anmd`   | Uncompressed | Direct keyframe data per joint   |
+| `r3d2canm`   | Compressed   | Quantized data with spline interpolation |
+
+All multi-byte values are **little-endian**.
+
+---
+
+## Uncompressed Animation (`r3d2anmd`)
+
+### Header
+
+| Offset | Size | Type   | Field         | Description                           |
+|--------|------|--------|---------------|---------------------------------------|
+| 0x00   | 8    | char[] | magic         | `r3d2anmd` (ASCII, 8 bytes)          |
+| 0x08   | 4    | u32    | version       | Format version (3, 4, or 5)           |
+
+The fields following the version depend on the version number.
+
+### Common Fields (All Versions)
+
+| Field         | Type | Description                             |
+|---------------|------|-----------------------------------------|
+| resource_size | u32  | Size of the animation resource data     |
+| format_token  | u32  | Format identifier token                 |
+| flags         | u32  | Animation flags                         |
+| joint_count   | u32  | Number of animated joints               |
+| frame_count   | u32  | Number of keyframes                     |
+| fps           | f32  | Playback frame rate (frames per second) |
+| duration      | f32  | Total animation duration in seconds     |
+
+### Data Organization
+
+Uncompressed animations use a **palette-based** system:
+
+1. **Translation Palette** - Array of Vec3 values for joint positions
+2. **Scale Palette** - Array of Vec3 values for joint scales
+3. **Rotation Palette** - Array of Quat values for joint rotations (encoding varies by version)
+
+Each joint's data per frame is a set of **palette indices** - indices into the translation, scale, and rotation palettes:
+
+| Size | Type | Field          | Description                      |
+|------|------|----------------|----------------------------------|
+| 2    | u16  | translation_id | Index into translation palette   |
+| 2    | u16  | scale_id       | Index into scale palette         |
+| 2    | u16  | rotation_id    | Index into rotation palette      |
+
+### Version 3 (Legacy)
+
+- Joint names stored as 32-byte null-padded ASCII strings
+- Rotations stored as full quaternions (16 bytes: 4× f32)
+- Frame data organized by joint, then by frame
+
+### Version 4
+
+- Joint hashes (u32 FNV-1a) stored inline with frame data
+- Rotations stored as full quaternions (16 bytes: 4× f32)
+- Improved data layout
+
+### Version 5 (Current)
+
+- Joint hashes (u32 FNV-1a) stored in a separate section before frame data
+- Rotations stored as **quantized quaternions** (6 bytes) for reduced size
+- Most compact encoding
+
+### Quantized Quaternion (Version 5)
+
+Version 5 uses a 6-byte (48-bit) quantized quaternion encoding. The 6 bytes are read as 3× u16 LE and assembled into a 48-bit integer:
+
+```
+bits = u16[0] | (u16[1] << 16) | (u16[2] << 32)
+```
+
+Bit layout:
+
+| Bits  | Width | Description                                   |
+|-------|-------|-----------------------------------------------|
+| 45–46 | 2     | Max index: which component was omitted (0=X, 1=Y, 2=Z, 3=W) |
+| 30–44 | 15    | Component A (first non-omitted)               |
+| 15–29 | 15    | Component B (second non-omitted)              |
+| 0–14  | 15    | Component C (third non-omitted)               |
+
+**Decompression** of each 15-bit component to float:
+
+```
+float = value / 32767.0 * sqrt(2) - 1/sqrt(2)
+```
+
+Range per component: `[-1/√2, +1/√2]` (≈ `[-0.7071, +0.7071]`).
+
+The omitted component D is reconstructed: `D = sqrt(max(0, 1 - A² - B² - C²))`.
+
+The quaternion is assembled based on `max_index`:
+- 0: `(D, A, B, C)` - X was largest
+- 1: `(A, D, B, C)` - Y was largest
+- 2: `(A, B, D, C)` - Z was largest
+- 3: `(A, B, C, D)` - W was largest
+
+This reduces each quaternion from 16 bytes to 6 bytes with minimal precision loss. The same encoding is used in compressed animations.
+
+### Interpolation
+
+Uncompressed animations use **linear interpolation** between frames:
+- Translations and scales: linear lerp
+- Rotations: spherical linear interpolation (slerp)
+
+---
+
+## Compressed Animation (`r3d2canm`)
+
+### Header
+
+| Offset | Size | Type   | Field         | Description                           |
+|--------|------|--------|---------------|---------------------------------------|
+| 0x00   | 8    | char[] | magic         | `r3d2canm` (ASCII, 8 bytes)          |
+| 0x08   | 4    | u32    | version       | Format version (1, 2, or 3)           |
+
+### Header (128 bytes)
+
+| Offset | Size | Type   | Field              | Description                                    |
+|--------|------|--------|--------------------|------------------------------------------------|
+| 0x00   | 8    | char[] | magic              | `r3d2canm`                                     |
+| 0x08   | 4    | u32    | version            | Format version (1, 2, or 3)                    |
+| 0x0C   | 4    | u32    | resource_size      | Size of the animation resource                 |
+| 0x10   | 4    | u32    | format_token       | Format identifier                              |
+| 0x14   | 4    | u32    | flags              | Animation flags (bit 2: parametrized tangents)  |
+| 0x18   | 4    | i32    | joint_count        | Number of animated joints                      |
+| 0x1C   | 4    | i32    | frame_count        | Number of keyframes                            |
+| 0x20   | 4    | i32    | jump_cache_count   | Number of jump cache entries                   |
+| 0x24   | 4    | f32    | duration           | Total duration in seconds                      |
+| 0x28   | 4    | f32    | fps                | Playback frame rate                            |
+| 0x2C   | 8    | 2×f32  | rotation_error     | Margin + discontinuity threshold               |
+| 0x34   | 8    | 2×f32  | translation_error  | Margin + discontinuity threshold               |
+| 0x3C   | 8    | 2×f32  | scale_error        | Margin + discontinuity threshold               |
+| 0x44   | 12   | Vec3   | translation_min    | Minimum translation bounds                     |
+| 0x50   | 12   | Vec3   | translation_max    | Maximum translation bounds                     |
+| 0x5C   | 12   | Vec3   | scale_min          | Minimum scale bounds                           |
+| 0x68   | 12   | Vec3   | scale_max          | Maximum scale bounds                           |
+| 0x74   | 4    | i32    | frames_offset      | Offset to frame data                           |
+| 0x78   | 4    | i32    | jump_caches_offset | Offset to jump cache data                      |
+| 0x7C   | 4    | i32    | joint_hashes_offset| Offset to joint name hash array                |
+
+**Note:** All section reads add +12 to the stored offset before reading data.
+
+### Quantization
+
+Compressed animations use **bounds-based quantization** for vectors:
+
+```
+quantized_value = (value - min) / (max - min)
+```
+
+Translation and scale values are stored as normalized values between their respective min/max bounds. At decompression time, the original value is reconstructed:
+
+```
+value = min + quantized_value * (max - min)
+```
+
+Rotations use a **quantized quaternion** encoding (16-bit components).
+
+### Compressed Frame (10 bytes, packed)
+
+Each frame entry is a tightly packed 10-byte structure:
+
+| Offset | Size | Type | Field      | Description                              |
+|--------|------|------|------------|------------------------------------------|
+| 0x00   | 2    | u16  | time       | Compressed time (0–65535 maps to 0–duration) |
+| 0x02   | 2    | u16  | joint_type | Packed joint ID + transform type         |
+| 0x04   | 6    | u16[3] | value    | Compressed transform value               |
+
+**joint_type decoding:**
+- Joint ID: `raw & 0x3FFF` (lower 14 bits)
+- Transform type: `raw >> 14` (upper 2 bits): 0=Rotation, 1=Translation, 2=Scale
+
+**Time decompression:** `time = (compressed_time / 65535.0) * duration`
+
+**Value decompression** depends on transform type:
+- **Rotation**: 3× u16 decoded as a 48-bit quantized quaternion (same encoding as uncompressed v5)
+- **Translation**: Bounds-based decompression - `value.xyz = (u16.xyz / 65535.0) * (max - min) + min`
+- **Scale**: Same bounds-based decompression as translation, using scale min/max bounds
+
+Frames are sorted by time within the data.
+
+### Jump Caches
+
+Jump caches enable O(1) random access to any frame without sequential decompression.
+
+**Frame key size**: If `frame_count < 65537`, 16-bit keys are used (24 bytes per joint). Otherwise, 32-bit keys (48 bytes per joint).
+
+**Jump frame (u16 variant, 24 bytes per joint):**
+
+| Offset | Size | Type    | Description                              |
+|--------|------|---------|------------------------------------------|
+| 0x00   | 8    | u16[4]  | Rotation frame indices (P0, P1, P2, P3)  |
+| 0x08   | 8    | u16[4]  | Translation frame indices                 |
+| 0x10   | 8    | u16[4]  | Scale frame indices                       |
+
+The 4 indices per transform (P0–P3) provide the initial control points for Catmull-Rom spline interpolation. Total cache size = `jump_cache_count × joint_count × jump_frame_size`.
+
+### Joint Hashes
+
+At the end of the compressed data, an array of u32 [FNV-1a](/reference/hashing/algorithms/#fnv-1a) joint name hashes identifies which skeleton joints the animation targets.
+
+### Interpolation
+
+Compressed animations use **Catmull-Rom spline interpolation** for smooth playback between keyframes. The "hot frame" evaluator maintains a window of 4 frames for the spline calculation, providing smoother results than linear interpolation.
+
+For sequential playback (playing the animation forward), a `CompressedEvaluator` maintains state between evaluations for better performance.
+
+---
+
+## Version Differences
+
+### Uncompressed (`r3d2anmd`)
+
+| Version | Joint IDs    | Rotation Encoding      | Notes                   |
+|---------|--------------|------------------------|-------------------------|
+| 3       | 32-byte names| Full quaternion (16B)  | Legacy format           |
+| 4       | Inline hashes| Full quaternion (16B)  | Hash-based joint IDs    |
+| 5       | Separate section| Quantized (6B)      | Most compact            |
+
+### Compressed (`r3d2canm`)
+
+| Version | Key Changes                                            |
+|---------|--------------------------------------------------------|
+| 1       | Baseline compressed format                             |
+| 2       | Updated frame encoding                                 |
+| 3       | Current format with refined quantization               |
+
+## Related Formats
+
+- [SKL (Skeletons)](/reference/file-formats/skl/) - Defines the joints that animations target; animations reference joints by FNV-1a name hash
+- [SKN (Skinned Meshes)](/reference/file-formats/skn/) - The mesh deformed by skeleton animation
+- [Hashing Algorithms](/reference/hashing/algorithms/) - FNV-1a used for joint name identification
+- [BIN (Property Bins)](/reference/file-formats/bin/) - Animation configuration and blend trees defined in BIN data
+- [WAD Archives](/reference/file-formats/wad/) - ANM files are stored inside WAD packages
+
+## Implementation References
+
+- **Rust**: [`league-toolkit` - `ltk_anim` crate](https://github.com/LeagueToolkit/league-toolkit) - `asset/uncompressed` and `asset/compressed` modules
+- **C#**: [`LeagueToolkit` - `Core/Animation/`](https://github.com/LeagueToolkit/LeagueToolkit) - `UncompressedAnimationAsset.cs`, `CompressedAnimationAsset.cs`, `CompressedFrame.cs`, `HotFrame.cs`

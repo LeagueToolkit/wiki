@@ -1,0 +1,134 @@
+---
+title: Hashing Algorithms
+description: Reference for hash functions used in League of Legends file formats.
+---
+
+League of Legends uses several hashing algorithms to identify assets, properties, and entries across its file formats. Hashes replace human-readable strings at build time, reducing file sizes and enabling fast lookups.
+
+## FNV-1a
+
+**Fowler–Noll–Vo 1a** is the primary hashing algorithm used throughout the League engine. It is used for BIN property name hashes, BIN object path hashes, BIN class hashes, and general string identification.
+
+### Parameters
+
+| Parameter     | Value          | Type |
+|---------------|----------------|------|
+| Offset basis  | `0x811c9dc5`   | u32  |
+| Prime         | `0x01000193`   | u32  |
+| Output size   | 32 bits        | u32  |
+
+### Algorithm
+
+```
+hash = offset_basis
+for each byte in input:
+    hash = hash XOR byte
+    hash = hash * prime
+return hash
+```
+
+### Input normalization
+
+Before hashing, strings are converted to **lowercase**. Path separators are normalized to forward slashes (`/`). This ensures consistent hash values regardless of casing or platform-specific path conventions.
+
+### Usage
+
+| Context | Format | Notes |
+|---------|--------|-------|
+| Property name hashes | [BIN](/reference/file-formats/bin/) | Identifies property fields within objects |
+| Object path hashes | [BIN](/reference/file-formats/bin/) | Identifies top-level objects |
+| Class hashes | [BIN](/reference/file-formats/bin/) | Identifies metaclass types |
+| General string identification | Various | Fallback hash for miscellaneous contexts |
+
+---
+
+## xxHash64
+
+**xxHash64** is a fast, non-cryptographic 64-bit hash function used for WAD archive chunk identification in version 3.
+
+### Parameters
+
+| Parameter     | Value | Type |
+|---------------|-------|------|
+| Seed          | `0`   | u64  |
+| Output size   | 64 bits | u64 |
+
+### Usage
+
+| Context | Format | Notes |
+|---------|--------|-------|
+| Chunk path hashes | [WAD](/reference/file-formats/wad/) v3 | Identifies files within WAD archives |
+
+WAD path hashes are computed from the lowercase, forward-slash-normalized file path relative to the WAD root. For example, the path `DATA/Characters/Annie/Annie.bin` would be lowercased to `data/characters/annie/annie.bin` before hashing.
+
+---
+
+## ELF Hash
+
+The **ELF hash** (Executable and Linkable Format hash) is used for skeleton joint identification and animation joint references.
+
+### Usage
+
+| Context | Format | Notes |
+|---------|--------|-------|
+| Joint name hashes | [SKL](/reference/file-formats/skl/) | Identifies skeleton joints (lowercased input) |
+| Animation joint hashes | [ANM](/reference/file-formats/anm/) | References joints in animation data |
+
+### Algorithm
+
+```
+hash = 0
+for each byte in input:
+    hash = (hash << 4) + byte
+    high = hash & 0xF0000000
+    if high != 0:
+        hash = hash XOR (high >> 24)
+    hash = hash & ~high
+return hash
+```
+
+### Parameters
+
+| Parameter     | Value | Type |
+|---------------|-------|------|
+| Output size   | 32 bits | u32 |
+
+---
+
+## SDBM
+
+The **SDBM hash** is another auxiliary hash function found in some legacy League file handling.
+
+### Algorithm
+
+```
+hash = 0
+for each byte in input:
+    hash = byte + (hash << 6) + (hash << 16) - hash
+return hash
+```
+
+### Parameters
+
+| Parameter     | Value | Type |
+|---------------|-------|------|
+| Output size   | 32 bits | u32 |
+
+---
+
+## Hash Resolution
+
+Because hashing is a one-way operation, tools rely on **hash dictionaries** to resolve numeric hashes back to human-readable names. The community maintains lists of known hashes for:
+
+- BIN property and class names (from metaclass definitions)
+- WAD file paths (from game manifests and known directory structures)
+- Joint/bone names (from model metadata)
+
+When a hash cannot be resolved, it is typically displayed in hexadecimal format (e.g., `0xDEADBEEF`). The [Ritobin](/reference/file-formats/ritobin/) text format uses resolved names where available and falls back to hex hashes for unknown entries.
+
+---
+
+## Implementation References
+
+- **Rust**: [`league-toolkit` - `ltk_hash` crate](https://github.com/LeagueToolkit/league-toolkit)
+- **C#**: [`LeagueToolkit` - `Hashing/` directory](https://github.com/LeagueToolkit/LeagueToolkit) - `Fnv1a.cs`, `Elf.cs`, `Sdbm.cs`, `XxHash64Ext.cs`
