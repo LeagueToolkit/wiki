@@ -4,6 +4,7 @@ import svelte from '@astrojs/svelte';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
+  site: 'https://wiki.leaguetoolkit.dev',
   output: 'static',
   integrations: [
     starlight({
