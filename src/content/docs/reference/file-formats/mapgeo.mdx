@@ -3,6 +3,8 @@ title: MapGeo
 description: Technical reference for the MapGeo map geometry format.
 ---
 
+import VersionMatrix from '../../../../components/VersionMatrix.svelte';
+
 MapGeo is the primary environment geometry format for League of Legends maps. It stores the static 3D geometry, materials, lighting data, and spatial acceleration structures that make up Summoner's Rift and other game maps.
 
 ## Overview
@@ -131,19 +133,22 @@ The scene graph organizes meshes into a spatial hierarchy with bounding volumes,
 
 ## Version Feature Matrix
 
-The MapGeo format has undergone significant evolution. Key features by version:
+The MapGeo format has undergone significant evolution. Select a version to see which features it supports:
 
-| Feature                   | v5 | v6 | v7 | v9 | v11 | v12 | v13 | v14 | v15 | v17 | v18 |
-|---------------------------|----|----|----|----|-----|-----|-----|-----|-----|-----|-----|
-| Vertex/Index buffers      | ✓  | ✓  | ✓  | ✓  | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   |
-| Environment meshes        | ✓  | ✓  | ✓  | ✓  | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   |
-| Bucketed geometry         | ✓  | ✓  | ✓  | ✓  | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   |
-| Planar reflectors         |    | ✓  | ✓  | ✓  | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   |
-| Scene graph               |    |    | ✓  | ✓  | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   |
-| Quality level flags       |    |    |    | ✓  | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   |
-| Texture channel overrides |    |    |    |    |     | ✓   | ✓   | ✓   | ✓   | ✓   | ✓   |
-| Shader overrides          |    |    |    |    |     |     | ✓   | ✓   | ✓   | ✓   | ✓   |
-| Visibility controller     |    |    |    |    |     |     |     |     | ✓   | ✓   | ✓   |
+<VersionMatrix client:visible
+  allVersions={[5, 6, 7, 9, 11, 12, 13, 14, 15, 17, 18]}
+  features={[
+    { name: "Vertex/Index buffers", versions: [5, 6, 7, 9, 11, 12, 13, 14, 15, 17, 18], description: "Raw vertex and index data shared across meshes" },
+    { name: "Environment meshes", versions: [5, 6, 7, 9, 11, 12, 13, 14, 15, 17, 18], description: "Geometry entries referencing buffers with material assignments" },
+    { name: "Bucketed geometry", versions: [5, 6, 7, 9, 11, 12, 13, 14, 15, 17, 18], description: "Spatial partitioning for visibility and rendering" },
+    { name: "Planar reflectors", versions: [6, 7, 9, 11, 12, 13, 14, 15, 17, 18], description: "Reflection plane definitions for water rendering" },
+    { name: "Scene graph", versions: [7, 9, 11, 12, 13, 14, 15, 17, 18], description: "Spatial hierarchy with bounding volumes" },
+    { name: "Quality level flags", versions: [9, 11, 12, 13, 14, 15, 17, 18], description: "Per-mesh quality level filtering" },
+    { name: "Texture channel overrides", versions: [12, 13, 14, 15, 17, 18], description: "Per-sampler texture channel override mappings" },
+    { name: "Shader overrides", versions: [13, 14, 15, 17, 18], description: "Global shader and sampler override definitions" },
+    { name: "Visibility controller", versions: [15, 17, 18], description: "Visibility controller path hash for dynamic mesh visibility" }
+  ]}
+/>
 
 **Note:** Versions 8, 10, and 16 are not supported by either library implementation, suggesting they were internal/transitional versions.
 

@@ -4,6 +4,7 @@ description: A breakdown of ltk-manager's feature set including mod management, 
 ---
 
 import { FileTree } from '@astrojs/starlight/components';
+import PatchingPipeline from '../../../../components/PatchingPipeline.svelte';
 
 Patching is the process of applying your enabled mods to League of Legends. LTK Manager builds an overlay of all enabled mod files and injects them into the game.
 
@@ -12,6 +13,8 @@ The patcher used by LTK Manager is based on the original cslol patcher, which co
 ## How Patching Works
 
 The patching process has two main phases:
+
+<PatchingPipeline client:visible />
 
 ### 1. Building the Overlay
 

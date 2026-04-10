@@ -3,20 +3,61 @@ title: Wiki Authoring
 description: Learn how to contribute content to the LTK Wiki, including writing guides, formatting conventions, and submission workflow.
 ---
 
-import Counter from '../../../../components/Counter.svelte';
-
 This guide covers everything you need to know about authoring and contributing content to the LTK Wiki.
 
 ## Interactive Components
 
-The wiki supports interactive Svelte components embedded in MDX pages. Here's an example:
-
-<Counter client:visible label="Example Counter" />
-
-Components use Astro's island architecture - they render statically at build time and hydrate on the client when needed. Available hydration strategies:
+The wiki supports interactive Svelte components embedded in MDX pages. Components use Astro's island architecture - they render statically at build time and hydrate on the client when needed. Available hydration strategies:
 
 - `client:load` - Hydrate immediately (critical interactivity)
 - `client:visible` - Hydrate when scrolled into view
 - `client:idle` - Hydrate when the browser is idle
+
+### Available Components
+
+The following custom components are available for use in MDX pages:
+
+| Component | Import path | Description |
+|-----------|-------------|-------------|
+| `HashCalculator` | `components/HashCalculator.svelte` | Interactive hash calculator for FNV-1a, ELF, and SDBM |
+| `FormatComparison` | `components/FormatComparison.svelte` | Side-by-side modpkg vs fantome feature comparison |
+| `BinaryStructure` | `components/BinaryStructure.svelte` | Visual byte layout diagram for binary format specs |
+| `VersionMatrix` | `components/VersionMatrix.svelte` | Interactive version-feature matrix with filtering |
+| `ProjectScaffold` | `components/ProjectScaffold.svelte` | Live config builder with file tree preview |
+| `BeforeAfter` | `components/BeforeAfter.svelte` | Image comparison slider for before/after screenshots |
+| `PatchingPipeline` | `components/PatchingPipeline.svelte` | Animated patching pipeline step-through diagram |
+| `GlossarySearch` | `components/GlossarySearch.svelte` | Searchable, filterable glossary with category tags |
+| `PlatformBadges` | `components/PlatformBadges.svelte` | Platform support status badges |
+| `Collapsible` | `components/Collapsible.svelte` | Expandable/collapsible content sections with badges |
+| `Mermaid` | `components/Mermaid.svelte` | Mermaid diagram renderer (client-side) |
+
+### BinaryStructure
+
+Renders an interactive byte-level diagram of a binary structure. Hover over fields to highlight them.
+
+```mdx
+import BinaryStructure from '../../../../components/BinaryStructure.svelte';
+
+<BinaryStructure client:visible title="Header" fields={[
+  { name: "magic", type: "char[]", size: 4, description: "Magic bytes" },
+  { name: "version", type: "u32", size: 4, description: "Format version" }
+]} />
+```
+
+### BeforeAfter
+
+Image comparison slider. Provide two image paths and drag to compare.
+
+```mdx
+import BeforeAfter from '../../../../components/BeforeAfter.svelte';
+
+<BeforeAfter client:visible
+  beforeSrc="/images/before.png"
+  afterSrc="/images/after.png"
+  beforeLabel="Original"
+  afterLabel="Modded"
+  height="24rem"
+/>
+```
 
 _The rest of this page is a placeholder. Full authoring guide content will be added here._

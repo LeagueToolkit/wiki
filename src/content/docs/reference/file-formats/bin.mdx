@@ -3,6 +3,9 @@ title: 'BIN (Property Bins)'
 description: Technical reference for the BIN property bin format.
 ---
 
+import Collapsible from '../../../../components/Collapsible.svelte';
+import BinaryStructure from '../../../../components/BinaryStructure.svelte';
+
 BIN files are League of Legends' primary typed property container format. They store all game configuration data - champion stats, ability definitions, particle systems, UI layouts, map settings, and more. BIN is the most widely used data format in the engine.
 
 ## Overview
@@ -145,45 +148,55 @@ Properties inside structs and embedded objects **do** include the full 5-byte he
 
 `WadChunkLink` (ID 18) was added to the primitive range after the format's initial release. In legacy files, type IDs 18+ in the primitive range are shifted - they actually represent complex types. Both library implementations detect this by attempting a standard read first, then falling back to legacy unpacking if an invalid type ID is encountered.
 
-Struct and Embedded are encoded identically - the distinction is semantic. Structs are value types (copied), while Embedded objects have identity and can be referenced. If `class_hash` is 0, the struct/embedded is null and no further data follows (total value = 4 bytes).
-
 ### Container Encoding Details
 
-**Container / UnorderedContainer:**
+<Collapsible client:visible title="Container / UnorderedContainer" badge="ID 128-129">
 
-| Size     | Type | Field         | Description                         |
-|----------|------|---------------|-------------------------------------|
-| 1        | u8   | element_type  | Type ID of contained elements       |
-| 4        | u32  | data_size     | Total size of element data in bytes |
-| 4        | u32  | count         | Number of elements                  |
-| variable | T[]  | elements      | Array of typed elements             |
+<BinaryStructure client:visible fields={[
+  { name: "element_type", type: "u8", size: 1, description: "Type ID of contained elements" },
+  { name: "data_size", type: "u32", size: 4, description: "Total size of element data in bytes" },
+  { name: "count", type: "u32", size: 4, description: "Number of elements" }
+]} />
 
-**Map:**
+Elements are encoded back-to-back without per-element headers.
 
-| Size     | Type | Field         | Description                         |
-|----------|------|---------------|-------------------------------------|
-| 1        | u8   | key_type      | Type ID of map keys                 |
-| 1        | u8   | value_type    | Type ID of map values               |
-| 4        | u32  | data_size     | Total size of key-value data        |
-| 4        | u32  | count         | Number of key-value pairs           |
-| variable | KV[] | entries       | Array of (key, value) pairs         |
+</Collapsible>
 
-**Optional:**
+<Collapsible client:visible title="Map" badge="ID 134">
 
-| Size     | Type | Field         | Description                         |
-|----------|------|---------------|-------------------------------------|
-| 1        | u8   | inner_type    | Type ID of the optional value       |
-| 1        | u8   | present       | 0 = None, 1 = Some                  |
-| variable | T    | value         | Value data (only if present = 1)    |
+<BinaryStructure client:visible fields={[
+  { name: "key_type", type: "u8", size: 1, description: "Type ID of map keys" },
+  { name: "value_type", type: "u8", size: 1, description: "Type ID of map values" },
+  { name: "data_size", type: "u32", size: 4, description: "Total size of key-value data" },
+  { name: "count", type: "u32", size: 4, description: "Number of key-value pairs" }
+]} />
 
-**Struct / Embedded:**
+Entries are encoded as alternating (key, value) pairs.
 
-| Size     | Type   | Field          | Description                          |
-|----------|--------|----------------|--------------------------------------|
-| 4        | u32    | class_hash     | FNV-1a hash of the metaclass name    |
-| 4        | u32    | data_size      | Total size of object data in bytes   |
-| 2        | u16    | property_count | Number of properties                 |
-| variable | prop[] | properties     | Nested property array                |
+</Collapsible>
+
+<Collapsible client:visible title="Optional" badge="ID 133">
+
+<BinaryStructure client:visible fields={[
+  { name: "inner_type", type: "u8", size: 1, description: "Type ID of the optional value" },
+  { name: "present", type: "u8", size: 1, description: "0 = None, 1 = Some" }
+]} />
+
+Value data follows only if `present = 1`.
+
+</Collapsible>
+
+<Collapsible client:visible title="Struct / Embedded" badge="ID 130-131">
+
+<BinaryStructure client:visible fields={[
+  { name: "class_hash", type: "u32", size: 4, description: "FNV-1a hash of the metaclass name" },
+  { name: "data_size", type: "u32", size: 4, description: "Total size of object data in bytes" },
+  { name: "property_count", type: "u16", size: 2, description: "Number of properties" }
+]} />
+
+Struct and Embedded are encoded identically: the distinction is semantic. If `class_hash` is 0, the struct/embedded is null and no further data follows.
+
+</Collapsible>
 
 ## Version Differences
 

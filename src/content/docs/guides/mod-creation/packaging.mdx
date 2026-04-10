@@ -3,6 +3,8 @@ title: Packaging
 description: How to package completed mods for distribution, including export formats, versioning, and sharing with other ltk-manager users.
 ---
 
+import FormatComparison from '../../../../components/FormatComparison.svelte';
+
 This page documents the `.modpkg` and `.fantome` mod package formats used by the LeagueToolkit ecosystem.
 
 ## modpkg
@@ -57,7 +59,6 @@ Compared to modpkg, fantome files:
 
 ## Choosing a Format
 
-- **For new mods:** Use `.modpkg` - it supports all features, is more efficient for the launcher, and is the standard going forward
-- **For legacy mods:** Importing `.fantome` files works but support is experimental - expect to review and adjust the converted project
+<FormatComparison client:visible />
 
 Both formats can be created using the [Creator Workshop](/guides/mod-creation/workshop-overview/) pack feature.

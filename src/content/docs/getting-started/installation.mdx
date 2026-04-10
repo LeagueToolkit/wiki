@@ -3,15 +3,17 @@ title: Installation
 description: Install and set up ltk-manager for League of Legends modding.
 ---
 
+import PlatformBadges from '../../../components/PlatformBadges.svelte';
+
 This guide walks you through installing LTK Manager and applying your first mod.
 
 ## Platform Support
 
-| Platform | Status |
-|----------|--------|
-| Windows 10+ (64-bit) | Supported |
-| macOS | Coming Q2/Summer 2026 |
-| Linux | Planned (no timeline) |
+<PlatformBadges client:visible platforms={[
+  { name: "Windows 10+", platform: "windows", status: "supported", note: "64-bit" },
+  { name: "macOS", platform: "macos", status: "coming-soon", note: "Q2/Summer 2026" },
+  { name: "Linux", platform: "linux", status: "coming-soon", note: "Planned" }
+]} />
 
 :::caution[macOS and Linux users]
 LTK Manager is currently Windows-only. The cslol patcher stopped working on macOS, and a new macOS patcher is in development alongside a native macOS LTK Manager release, targeted for Q2/Summer 2026. Linux support is planned but has no release date yet.

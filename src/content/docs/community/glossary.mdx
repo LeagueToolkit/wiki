@@ -3,7 +3,30 @@ title: Glossary
 description: Common terms and definitions used in League of Legends modding.
 ---
 
+import GlossarySearch from '../../../components/GlossarySearch.svelte';
+
 A reference of common terms and definitions used throughout the League of Legends modding community.
+
+<GlossarySearch client:visible terms={[
+  { name: "ANM", category: "Format", description: "Animation file format. Stores per-joint keyframe data for champion and map animations.", link: "/reference/file-formats/anm/" },
+  { name: "BIN", category: "Format", description: "Binary property file format (magic PROP). Stores configuration, game data, and asset metadata. The most complex and widely-used data format in the engine.", link: "/reference/file-formats/bin/" },
+  { name: "cslol-manager", category: "Tool", description: "Legacy community mod manager for League of Legends, written in C++/Qt. Being deprecated in favor of LTK Manager.", link: "/getting-started/migration/" },
+  { name: "Fantome", category: "Format", description: "Legacy mod archive format (.fantome) based on ZIP. Contains WAD file entries and basic metadata. Superseded by modpkg." },
+  { name: "Layer", category: "Concept", description: "A named group of files within a mod project. Layers let mod creators offer optional components that users can toggle independently.", link: "/guides/mod-creation/layers/" },
+  { name: "LTK Manager", category: "Tool", description: "Current-generation desktop mod manager for League of Legends, built with Tauri (Rust + React). Successor to cslol-manager.", link: "/tools/ltk-manager/overview/" },
+  { name: "Metaclass", category: "Concept", description: "A typed schema defining the structure of a BIN object: its class hash, property names, types, and defaults.", link: "/reference/metaclasses/overview/" },
+  { name: "modpkg", category: "Format", description: "Modern mod package format (.modpkg). Supports full metadata, multi-layer content, thumbnails, and author information. Recommended for new mods." },
+  { name: "modtools.exe", category: "Tool", description: "Legacy CLI tool bundled with cslol-manager for command-line mod operations." },
+  { name: "Overlay", category: "Concept", description: "A directory that mirrors League's game data structure but contains only files modified by your mods. The patcher redirects the game to read from the overlay.", link: "/tools/ltk-manager/features/#the-core-idea-overlays" },
+  { name: "Patcher", category: "Concept", description: "The component that applies mod overlays to League of Legends at runtime by hooking into the game's file reading mechanism." },
+  { name: "Profile", category: "Concept", description: "A named mod configuration in LTK Manager. Each profile has its own enabled mods, load order, and overlay.", link: "/guides/mod-management/profiles/" },
+  { name: "Ritobin", category: "Format", description: "Human-readable text serialization of BIN files, using the header #PROP_text. Used for editing BIN data with text editors.", link: "/reference/file-formats/ritobin/" },
+  { name: "SKL", category: "Format", description: "Skeleton file format. Defines the joint hierarchy and bind pose for character models.", link: "/reference/file-formats/skl/" },
+  { name: "SKN", category: "Format", description: "Skinned mesh file format. Contains vertex data, bone weights, and material references for character models.", link: "/reference/file-formats/skn/" },
+  { name: "TEX", category: "Format", description: "Texture file format. Stores compressed image data with mipmaps.", link: "/reference/file-formats/tex/" },
+  { name: "WAD", category: "Format", description: "Primary archive format (magic RW) used by League of Legends to bundle game assets. Each WAD contains compressed files identified by path hashes.", link: "/reference/file-formats/wad/" },
+  { name: "Workshop", category: "Tool", description: "Integrated mod creation environment in LTK Manager. Provides a project-based workflow for building, editing, validating, and packaging mods.", link: "/guides/mod-creation/workshop-overview/" }
+]} />
 
 ## A
 

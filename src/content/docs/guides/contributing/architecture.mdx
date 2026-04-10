@@ -4,26 +4,23 @@ description: Overview of the ltk-manager codebase structure, technology stack, a
 ---
 
 import { FileTree } from '@astrojs/starlight/components';
+import Mermaid from '../../../../components/Mermaid.svelte';
 
 LTK Manager is built with [Tauri v2](https://v2.tauri.app/) - a Rust backend with a React (TypeScript) frontend rendered in a native webview.
 
 ## High-Level Overview
 
-```
-┌─────────────────────────────────────────┐
-│              React Frontend              │
-│  (TanStack Router, Query, Base UI)       │
-├─────────────────────────────────────────┤
-│           Tauri IPC Bridge               │
-│     (invoke commands, event listeners)   │
-├─────────────────────────────────────────┤
-│              Rust Backend                │
-│  (Commands, Business Logic, Patcher)     │
-├─────────────────────────────────────────┤
-│         LeagueToolkit Libraries          │
-│  (ltk_modpkg, ltk_wad, ltk_overlay)     │
-└─────────────────────────────────────────┘
-```
+<Mermaid client:visible chart={`
+graph TD
+    A["React Frontend\nTanStack Router, Query, Base UI"]
+    B["Tauri IPC Bridge\ninvoke commands, event listeners"]
+    C["Rust Backend\nCommands, Business Logic, Patcher"]
+    D["LeagueToolkit Libraries\nltk_modpkg, ltk_wad, ltk_overlay"]
+
+    A --> B
+    B --> C
+    C --> D
+`} />
 
 ## Backend (Rust)
 

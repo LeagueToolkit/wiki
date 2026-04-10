@@ -3,6 +3,8 @@ title: WAD Archives
 description: Technical reference for the WAD archive format used by League of Legends.
 ---
 
+import BinaryStructure from '../../../../components/BinaryStructure.svelte';
+
 WAD is the primary archive format used by League of Legends to bundle game assets. WAD files contain compressed chunks of data identified by path hashes, enabling efficient storage and retrieval of game resources.
 
 ## Overview
@@ -28,6 +30,12 @@ All multi-byte values are **little-endian**.
 | 0x00   | 2    | char[] | magic         | `RW` (ASCII, 2 bytes)                         |
 | 0x02   | 1    | u8     | version_major | Major version (1, 2, or 3)                    |
 | 0x03   | 1    | u8     | version_minor | Minor version                                 |
+
+<BinaryStructure client:visible title="Header Layout" fields={[
+  { name: "magic", type: "char[]", size: 2, description: "RW (ASCII, 2 bytes)" },
+  { name: "version_major", type: "u8", size: 1, description: "Major version (1, 2, or 3)" },
+  { name: "version_minor", type: "u8", size: 1, description: "Minor version" }
+]} />
 
 ### Signature Block (version-dependent)
 
@@ -73,6 +81,18 @@ The TOC is an array of chunk entries. In version 3, entries immediately follow t
 | 0x16   | 2    | u16  | subchunk_start     | Start frame for ZstdChunked                    |
 | 0x18   | 1    | u8   | subchunk_count     | Number of sub-chunks (ZstdChunked only)        |
 | 0x19   | 8    | u64  | checksum           | Chunk data checksum                            |
+
+<BinaryStructure client:visible title="TOC Entry v3.0-3.3 Layout" fields={[
+  { name: "path_hash", type: "u64", size: 8, description: "xxHash64 of the chunk's file path" },
+  { name: "data_offset", type: "u32", size: 4, description: "Byte offset to chunk data from file start" },
+  { name: "compressed_size", type: "u32", size: 4, description: "Size of compressed data in bytes" },
+  { name: "uncompressed_size", type: "u32", size: 4, description: "Size after decompression" },
+  { name: "compression_type", type: "u8", size: 1, description: "Compression algorithm" },
+  { name: "is_duplicated", type: "bool", size: 1, description: "Whether this chunk is duplicated" },
+  { name: "subchunk_start", type: "u16", size: 2, description: "Start frame for ZstdChunked" },
+  { name: "subchunk_count", type: "u8", size: 1, description: "Number of sub-chunks (ZstdChunked only)" },
+  { name: "checksum", type: "u64", size: 8, description: "Chunk data checksum" }
+]} />
 
 #### TOC Entry (Version 3.4+)
 

@@ -4,6 +4,7 @@ description: An introduction to the ltk-manager Creator Workshop, the integrated
 ---
 
 import { FileTree, Tabs, TabItem } from '@astrojs/starlight/components';
+import ProjectScaffold from '../../../../components/ProjectScaffold.svelte';
 
 The Creator Workshop is where you build, edit, and package mods. It provides a project-based workflow for mod development.
 
@@ -97,6 +98,12 @@ The project config file stores all project metadata. LTK Manager supports both `
     ```
   </TabItem>
 </Tabs>
+
+### Try It
+
+Use the interactive builder below to see how your project configuration and file tree structure look together:
+
+<ProjectScaffold client:visible />
 
 ## Editing Projects
 
