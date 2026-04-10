@@ -26,6 +26,12 @@ export default defineConfig({
         },
       ],
       customCss: ['./src/styles/tailwind.css', './src/styles/custom.css'],
+      head: [
+        {
+          tag: 'script',
+          content: `document.addEventListener('DOMContentLoaded',()=>{requestAnimationFrame(()=>{document.querySelector('.sidebar-pane')?.classList.add('sl-sidebar-loaded')})})`,
+        },
+      ],
       sidebar: [
         {
           label: 'Getting Started',

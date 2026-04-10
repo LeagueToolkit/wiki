@@ -146,12 +146,14 @@ nav.sidebar a[aria-current='page'] {
   font-weight: 600;
 }
 
-/* Animate sidebar group expand/collapse */
+/* Animate sidebar group expand/collapse.
+   The .sl-sidebar-loaded class is added after page load so that
+   the initial open state renders instantly without animating. */
 .sidebar-pane {
   interpolate-size: allow-keywords;
 }
 
-.sidebar-pane details::details-content {
+.sidebar-pane.sl-sidebar-loaded details::details-content {
   overflow: clip;
   height: 0;
   opacity: 0;
@@ -161,16 +163,9 @@ nav.sidebar a[aria-current='page'] {
     content-visibility 0.2s allow-discrete;
 }
 
-.sidebar-pane details[open]::details-content {
+.sidebar-pane.sl-sidebar-loaded details[open]::details-content {
   height: auto;
   opacity: 1;
-}
-
-@starting-style {
-  .sidebar-pane details[open]::details-content {
-    height: 0;
-    opacity: 0;
-  }
 }
 
 /* Indent guide lines for nested sidebar items */
