@@ -3,9 +3,12 @@ import starlight from '@astrojs/starlight';
 import svelte from '@astrojs/svelte';
 import tailwindcss from '@tailwindcss/vite';
 
+import cloudflare from "@astrojs/cloudflare";
+
 export default defineConfig({
   site: 'https://wiki.leaguetoolkit.dev',
   output: 'static',
+
   integrations: [
     starlight({
       title: 'LTK Wiki',
@@ -125,7 +128,10 @@ export default defineConfig({
     }),
     svelte(),
   ],
+
   vite: {
     plugins: [tailwindcss()],
   },
+
+  adapter: cloudflare()
 });

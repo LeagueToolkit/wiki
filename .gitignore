@@ -30,3 +30,8 @@ Thumbs.db
 
 # Temporary files
 *.tmp
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
