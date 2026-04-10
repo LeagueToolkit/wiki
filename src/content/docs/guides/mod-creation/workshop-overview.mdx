@@ -117,7 +117,7 @@ Layers organize your mod's content into separate groups. Common uses:
 - **alternate** - Alternative versions or color variants
 - **particles** - Optional particle effect modifications
 
-Each layer has a priority that determines load order when multiple layers are active. See [Layers](/guides/mod-creation/layers/) for details.
+Each layer's directory contains `.wad.client` folders that assign raw files to their target WAD. The manager builds the WAD archives at overlay time. Each layer has a priority that determines load order when multiple layers are active. See [Layers](/guides/mod-creation/layers/) for details.
 
 ## Importing Projects
 
@@ -125,6 +125,7 @@ You can create projects from existing sources:
 
 - **[From .modpkg](/guides/mod-creation/creating-a-project/#from-modpkg)** - Extract an existing mod package into a project
 - **[From .fantome](/guides/mod-creation/creating-a-project/#from-fantome)** - Convert a legacy fantome archive
+- **[From fantome WAD/RAW folders](/guides/mod-creation/creating-a-project/#from-fantome-wadraw-folders)** - Migrate raw files from fantome folder structures
 - **[From Git](/guides/mod-creation/creating-a-project/#from-git)** - Clone a Git repository as a project
 
 ## Packing and Exporting
