@@ -24,25 +24,32 @@ A modpkg file is a binary archive containing:
 - Multi-layer support with configurable priorities
 - Thumbnail embedding
 - String override support per layer
-- Efficient binary format
+- Efficient binary format that mimics the WAD chunk structure, allowing data to be copied directly into overlay WAD files
 
 ## fantome
 
-The `.fantome` format is a legacy format used by older mod tools. LTK Manager supports fantome files for backwards compatibility.
+The `.fantome` format is a legacy format used by older mod tools. A `.fantome` file is essentially a renamed `.zip` archive containing WAD file entries and basic metadata. LTK Manager includes experimental support for fantome files for backwards compatibility, but it is not recommended for future use.
 
-### Behavior on Install
+### Behavior on Import
 
-When you install a `.fantome` file, LTK Manager:
+When you import a `.fantome` file, LTK Manager understands the legacy format and attempts to extend it with modern modpkg features:
 
-1. Extracts the archive contents
+1. Extracts the ZIP archive contents
 2. Parses the WAD file structure
-3. Converts the content to the internal mod format
+3. Converts the content to the internal mod format, adding modpkg capabilities where possible
 4. Stores it as a standard mod in the library
+
+This conversion is best-effort: not all modpkg features can be reliably inferred from a fantome archive, so the result may need manual adjustment.
+
+### Why modpkg replaced fantome
+
+ZIP-based archives like `.fantome` are difficult for the launcher to process efficiently. The launcher needs to extract and repack data during overlay building, which is slow with generic ZIP streams. The `.modpkg` format was designed to solve this: its binary structure mimics the WAD chunk layout, so data can be copied directly from the archive into overlay WAD files without costly decompression and repacking.
 
 ### Limitations
 
 Compared to modpkg, fantome files:
 
+- Are ZIP-based, making them inefficient for the launcher to process
 - Have limited metadata support
 - Don't support multiple layers natively
 - Don't include author roles or detailed categorization
@@ -50,7 +57,7 @@ Compared to modpkg, fantome files:
 
 ## Choosing a Format
 
-- **For new mods:** Use `.modpkg` - it supports all features and is the standard going forward
-- **For compatibility with older tools:** Export as `.fantome` when sharing with users who haven't migrated yet
+- **For new mods:** Use `.modpkg` - it supports all features, is more efficient for the launcher, and is the standard going forward
+- **For legacy mods:** Importing `.fantome` files works but support is experimental - expect to review and adjust the converted project
 
 Both formats can be created using the [Creator Workshop](/guides/mod-creation/workshop-overview/) pack feature.

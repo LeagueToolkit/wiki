@@ -3,6 +3,8 @@ title: Creating a Project
 description: How to start a new mod project in the Creator Workshop, including project setup, configuration, and initial structure.
 ---
 
+import { FileTree } from '@astrojs/starlight/components';
+
 The Workshop supports importing projects from several sources. This lets you start from existing mods instead of building from scratch.
 
 ## From .modpkg
@@ -39,6 +41,76 @@ Clone a Git repository containing a mod project.
 The repository is cloned into your workshop directory. It must contain a `mod.config.json` or `mod.config.toml` at the root to be recognized as a project.
 
 This is useful for collaborative mod development or importing projects hosted on GitHub.
+
+## From Fantome WAD/RAW Folders
+
+Fantome archives use two folder structures for shipping mod content. Understanding the difference helps when migrating to mod projects.
+
+### WAD/ folder (common)
+
+The `WAD/` folder is the standard approach. It can contain either:
+
+- **`.wad.client` folders** (recommended) - Directories of raw files named after their target WAD (e.g. `Ahri.wad.client/`). The manager packs these into the corresponding WAD during overlay building. This is the best option because you ship raw files with explicit WAD assignment.
+- **Pre-packaged `.wad` files** - Complete WAD archives ready to use
+
+:::caution[Avoid pre-packaged .wad files]
+Shipping pre-packaged `.wad` files is fragile. The WAD file format version can change between game patches, and the game or manager may have issues processing outdated WAD versions in the future. Prefer `.wad.client` folders with raw files instead: the manager builds the WAD at overlay time using the correct format version.
+:::
+
+<FileTree>
+- my-mod.fantome (ZIP)
+  - WAD/
+    - Ahri.wad.client/
+      - DATA/
+        - Characters/
+          - Ahri/
+            - Skins/
+              - …
+  - META/
+    - info.json
+</FileTree>
+
+### RAW/ folder (legacy, avoid)
+
+:::danger[Avoid RAW/ in new mods]
+The `RAW/` folder is a completely legacy approach and should not be used in new mods.
+:::
+
+The `RAW/` folder lets users ship raw files without specifying which WAD they belong to. To resolve this, the manager must index the game installation and assign each file to the correct WAD based on that index. This is slow, fragile, and depends on having a complete game index available.
+
+<FileTree>
+- my-mod.fantome (ZIP)
+  - RAW/
+    - DATA/
+      - Characters/
+        - Ahri/
+          - Skins/
+            - …
+  - META/
+    - info.json
+</FileTree>
+
+### Migrating to a mod project
+
+The recommended migration path is to create a new mod project and move your files into the project's content directory, organized by layer. Each layer folder contains `.wad.client` folders that map raw files to their target WAD.
+
+1. In the Workshop, click **New Project** and fill in your mod's metadata
+2. Copy your `.wad.client` folders (or reorganize your `RAW/` files into `.wad.client` folders) into the project's `content/base/` directory
+
+<FileTree>
+- my-mod/
+  - mod.config.json
+  - content/
+    - base/
+      - Ahri.wad.client/
+        - DATA/
+          - Characters/
+            - Ahri/
+              - Skins/
+                - …
+</FileTree>
+
+This gives you access to all modern features: multi-layer support, full metadata, thumbnails, and efficient `.modpkg` packaging. If your mod has variants or optional parts, you can split them into separate [layers](/guides/mod-creation/layers/) under `content/` instead of bundling everything into a single folder.
 
 ## After Importing
 

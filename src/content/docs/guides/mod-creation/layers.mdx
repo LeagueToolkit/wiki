@@ -65,17 +65,19 @@ Each layer maps to a directory under `content/` in the project:
   - mod.config.json
   - content/
     - base/
-      - DATA/
-        - Characters/
-          - Ahri/
-            - Skins/
-              - …
+      - Ahri.wad.client/
+        - DATA/
+          - Characters/
+            - Ahri/
+              - Skins/
+                - …
     - high-res/
-      - DATA/
-        - Characters/
-          - Ahri/
-            - Skins/
-              - …
+      - Ahri.wad.client/
+        - DATA/
+          - Characters/
+            - Ahri/
+              - Skins/
+                - …
 </FileTree>
 
-Place your mod files in the appropriate layer directory using the game's file path structure.
+Each layer contains `.wad.client` folders that assign raw files to their target WAD. Place your mod files inside the appropriate `.wad.client` directory using the game's file path structure.
