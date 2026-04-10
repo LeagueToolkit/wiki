@@ -146,6 +146,59 @@ nav.sidebar a[aria-current='page'] {
   font-weight: 600;
 }
 
+/* Animate sidebar group expand/collapse */
+.sidebar-pane {
+  interpolate-size: allow-keywords;
+}
+
+.sidebar-pane details::details-content {
+  overflow: clip;
+  height: 0;
+  opacity: 0;
+  transition:
+    height 0.2s ease-out,
+    opacity 0.2s ease-out,
+    content-visibility 0.2s allow-discrete;
+}
+
+.sidebar-pane details[open]::details-content {
+  height: auto;
+  opacity: 1;
+}
+
+@starting-style {
+  .sidebar-pane details[open]::details-content {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+/* Indent guide lines for nested sidebar items */
+.sidebar-pane ul ul li {
+  border-inline-start-color: var(--sl-color-gray-4);
+  transition: border-inline-start-color 0.15s ease;
+}
+
+.sidebar-pane ul ul li:hover {
+  border-inline-start-color: var(--sl-color-gray-3);
+}
+
+.sidebar-pane ul ul li:has(a[aria-current='page']) {
+  border-inline-start-color: var(--sl-color-accent);
+}
+
+.sidebar-pane ul ul ul li {
+  border-inline-start-color: var(--sl-color-gray-5);
+}
+
+.sidebar-pane ul ul ul li:hover {
+  border-inline-start-color: var(--sl-color-gray-3);
+}
+
+.sidebar-pane ul ul ul li:has(a[aria-current='page']) {
+  border-inline-start-color: var(--sl-color-accent);
+}
+
 /* ── Content Width ──────────────────────────────────────────── */
 
 :root {
