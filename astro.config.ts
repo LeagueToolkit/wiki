@@ -92,6 +92,12 @@ export default defineConfig({
                 { label: 'Crate Guide', slug: 'tools/league-toolkit/crate-guide' },
               ],
             },
+            {
+              label: 'wadtools',
+              items: [
+                { label: 'Overview', slug: 'tools/wadtools/overview' },
+              ],
+            },
           ],
         },
         {
