@@ -1,0 +1,247 @@
+---
+title: wadtools Overview
+description: A guide to wadtools, the high-performance CLI utility for extracting, listing, and comparing League of Legends WAD archive files.
+---
+
+[wadtools](https://github.com/LeagueToolkit/wadtools) is a command-line utility for working with League of Legends [WAD archive](/reference/file-formats/wad/) files. Built in Rust on top of [league-toolkit](/tools/league-toolkit/overview/)'s `ltk_wad` crate, it provides fast, parallel extraction, content listing, and diffing of `.wad.client` archives.
+
+WAD files bundle all game assets - textures, models, animations, configuration, audio - into compressed archives where each file is identified by the [xxHash64](/reference/hashing/algorithms/#xxhash64) of its original path. wadtools resolves these hashes back to human-readable filenames using community-maintained hashtable files.
+
+## Installation
+
+### Pre-built Binaries (Recommended)
+
+Download the latest release for your platform from the [GitHub Releases page](https://github.com/LeagueToolkit/wadtools/releases):
+
+| Platform | Binary |
+|----------|--------|
+| Windows (x64) | `wadtools-windows.exe` |
+| Linux (x64) | `wadtools-linux` |
+| macOS (x64) | `wadtools-macos` |
+
+### Windows Quick Install
+
+Run this PowerShell one-liner to install automatically:
+
+```powershell
+irm https://raw.githubusercontent.com/LeagueToolkit/wadtools/main/scripts/install-wadtools.ps1 | iex
+```
+
+### Build from Source
+
+Requires the Rust nightly toolchain:
+
+```bash
+git clone https://github.com/LeagueToolkit/wadtools.git
+cd wadtools
+cargo build --release
+```
+
+The binary will be at `target/release/wadtools`.
+
+## Getting Started
+
+### Setting Up Hashtables
+
+WAD archives identify files by hash, not by name. To see human-readable file paths when extracting or listing, you need hashtable files that map hashes back to paths.
+
+wadtools can download these automatically from [CommunityDragon](https://communitydragon.org/):
+
+```bash
+wadtools download-hashes
+```
+
+This saves `hashes.game.txt` and `hashes.lcu.txt` to the default hashtable directory. To check where that directory is:
+
+```bash
+wadtools hashtable-dir
+```
+
+On Windows, the default location is `Documents/LeagueToolkit/wad_hashtables`.
+
+### Your First Extraction
+
+Extract the contents of a WAD file:
+
+```bash
+wadtools extract -i "C:/Riot Games/League of Legends/Game/DATA/FINAL/Champions/Annie.wad.client"
+```
+
+This creates a directory named `Annie.wad.client/` next to the WAD file containing all extracted assets with their original directory structure (where hash resolution succeeds).
+
+## Commands
+
+### extract (alias: e)
+
+Extract files from one or more WAD archives.
+
+```bash
+wadtools extract -i <WAD_PATH> [OPTIONS]
+```
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--input <PATH>` | `-i` | Input WAD file(s). Supports repeated flags or semicolon-delimited paths |
+| `--output <DIR>` | `-o` | Output directory (default: sibling directory named after the WAD) |
+| `--hashtable <PATH>` | `-H` | Additional hashtable file for name resolution |
+| `--filter-type <TYPE>` | `-f` | Filter by detected file type (e.g., `png`, `bin`, `dds`). Repeatable |
+| `--pattern <REGEX>` | `-x` | Filter by regex on resolved path (case-insensitive) |
+| `--hash <HASH>` | | Filter by specific 16-character hex path hashes. Repeatable |
+| `--filter-invert` | `-v` | Invert all filters (exclude matches instead of including) |
+| `--overwrite` | | Overwrite existing files (default: skip) |
+| `--stats` | `-s` | Show summary statistics (default: true) |
+| `--list-filters` | `-l` | List available filter types |
+
+**Examples**:
+
+Extract only PNG textures:
+
+```bash
+wadtools extract -i Annie.wad.client -f png
+```
+
+Extract everything except BIN files:
+
+```bash
+wadtools extract -i Annie.wad.client -f bin -v
+```
+
+Extract files matching a path pattern:
+
+```bash
+wadtools extract -i Annie.wad.client -x "assets/characters/annie/skins"
+```
+
+Extract multiple WADs at once:
+
+```bash
+wadtools extract -i Annie.wad.client -i Ahri.wad.client -o ./extracted
+```
+
+### list (alias: ls)
+
+List all chunks in a WAD file with metadata, without extracting anything.
+
+```bash
+wadtools list -i <WAD_PATH> [OPTIONS]
+```
+
+Supports the same filtering options as `extract`, plus:
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--format <FORMAT>` | `-F` | Output format: `table` (default), `json`, `csv`, `flat` |
+| `--stats` | `-s` | Show summary statistics |
+
+**Examples**:
+
+List all files in a WAD:
+
+```bash
+wadtools list -i Annie.wad.client
+```
+
+Output as JSON for scripting:
+
+```bash
+wadtools list -i Annie.wad.client -F json
+```
+
+List only DDS textures:
+
+```bash
+wadtools list -i Annie.wad.client -f dds
+```
+
+### diff (alias: d)
+
+Compare two WAD files and show differences. Detects new, removed, modified, and renamed chunks.
+
+```bash
+wadtools diff -r <REFERENCE_WAD> -t <TARGET_WAD> [OPTIONS]
+```
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--reference <PATH>` | `-r` | Reference (old) WAD file |
+| `--target <PATH>` | `-t` | Target (new) WAD file |
+| `--hashtable <PATH>` | `-H` | Hashtable file for name resolution |
+| `--output <PATH>` | `-o` | Output diffs to CSV file |
+| `--pattern <REGEX>` | `-x` | Filter diffs by regex |
+| `--hash <HASH>` | | Filter by specific hashes. Repeatable |
+| `--filter-invert` | `-v` | Invert filters |
+
+**Example**:
+
+Compare two versions of a champion WAD after a patch:
+
+```bash
+wadtools diff -r Annie_old.wad.client -t Annie_new.wad.client
+```
+
+Export diff to CSV:
+
+```bash
+wadtools diff -r Annie_old.wad.client -t Annie_new.wad.client -o annie_changes.csv
+```
+
+### download-hashes (alias: dl)
+
+Download community-maintained hashtable files from CommunityDragon to the configured hashtable directory.
+
+```bash
+wadtools download-hashes
+```
+
+Downloads `hashes.game.txt` and `hashes.lcu.txt`. These files map xxHash64 values to their original file paths, enabling human-readable output in `extract`, `list`, and `diff` commands.
+
+### hashtable-dir (alias: hd)
+
+Print the default hashtable directory path for the current platform.
+
+```bash
+wadtools hashtable-dir
+```
+
+## Global Options
+
+These options apply to all commands:
+
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--verbosity <LEVEL>` | `-L` | Log verbosity: `error`, `warning`, `info` (default), `debug`, `trace` |
+| `--config <FILE>` | | Path to TOML config file (default: `wadtools.toml` next to the binary) |
+| `--progress <true\|false>` | | Show or hide progress bars (persisted to config) |
+| `--hashtable-dir <DIR>` | | Recursively load hashtable files from this directory |
+
+## Configuration
+
+wadtools stores its configuration in a `wadtools.toml` file located next to the binary. This file is created automatically on first run.
+
+```toml
+show_progress = true
+hashtable_dir = "C:\\Users\\YourName\\Documents\\LeagueToolkit\\wad_hashtables"
+```
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `show_progress` | boolean | Show progress bars during extraction (default: true) |
+| `hashtable_dir` | string | Default directory for hashtable files |
+
+### Hashtable Discovery
+
+wadtools resolves hashtable files in the following order:
+
+1. `--hashtable-dir <DIR>` CLI flag (highest priority)
+2. `hashtable_dir` from config file
+3. Default platform directory (Windows: `Documents/LeagueToolkit/wad_hashtables`)
+4. `-H/--hashtable <PATH>` loads an additional specific hashtable file on top of the above
+
+Files without a resolved hash are extracted using their hexadecimal hash as the filename (e.g., `0x1234567890ABCDEF`).
+
+## Related
+
+- [WAD Archives](/reference/file-formats/wad/) - Technical reference for the WAD file format
+- [Hashing Algorithms](/reference/hashing/algorithms/) - xxHash64 used for WAD chunk identification
+- [league-toolkit](/tools/league-toolkit/overview/) - Rust library that wadtools is built on (`ltk_wad` crate)
+- [wadtools on GitHub](https://github.com/LeagueToolkit/wadtools) - Source code and releases

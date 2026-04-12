@@ -25,6 +25,7 @@ A reference of common terms and definitions used throughout the League of Legend
   { name: "SKN", category: "Format", description: "Skinned mesh file format. Contains vertex data, bone weights, and material references for character models.", link: "/reference/file-formats/skn/" },
   { name: "TEX", category: "Format", description: "Texture file format. Stores compressed image data with mipmaps.", link: "/reference/file-formats/tex/" },
   { name: "WAD", category: "Format", description: "Primary archive format (magic RW) used by League of Legends to bundle game assets. Each WAD contains compressed files identified by path hashes.", link: "/reference/file-formats/wad/" },
+  { name: "wadtools", category: "Tool", description: "High-performance CLI utility for extracting, listing, and diffing WAD archive files. Built on league-toolkit's ltk_wad crate.", link: "/tools/wadtools/overview/" },
   { name: "Workshop", category: "Tool", description: "Integrated mod creation environment in LTK Manager. Provides a project-based workflow for building, editing, validating, and packaging mods.", link: "/guides/mod-creation/workshop-overview/" }
 ]} />
 
@@ -102,6 +103,9 @@ Texture file format used by League of Legends. Stores compressed image data with
 
 ### WAD
 The primary archive format (magic `RW`) used by League of Legends to bundle game assets. Each WAD contains compressed files identified by path hashes. See [WAD reference](/reference/file-formats/wad/).
+
+### wadtools
+A high-performance CLI utility for extracting, listing, and diffing [WAD](#wad) archive files. Built in Rust on [league-toolkit](/tools/league-toolkit/overview/)'s `ltk_wad` crate. Supports parallel extraction, multiple output formats, and community-maintained hashtable files for resolving path hashes to human-readable filenames. See [wadtools overview](/tools/wadtools/overview/).
 
 ### Workshop
 The integrated mod creation environment in LTK Manager. Provides a project-based workflow for building, editing, validating, and packaging mods. See [Workshop overview](/guides/mod-creation/workshop-overview/).

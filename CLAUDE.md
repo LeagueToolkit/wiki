@@ -158,6 +158,8 @@ This project uses SpecKit for structured feature development:
 Specs live in `.specify/specs/{feature}/`. Constitution at `.specify/memory/constitution.md`.
 
 ## Active Technologies
+- TypeScript (strict mode), Node >= 20 LTS + Astro + Starlight, Svelte 5, Tailwind CSS v4 (20260412-195002-wadtools-wiki-docs)
+- N/A (static site, content as Markdown/MDX files) (20260412-195002-wadtools-wiki-docs)
 
 - TypeScript (strict mode) on Node >= 20 LTS + Astro, @astrojs/starlight, Svelte 5 (@astrojs/svelte), Tailwind CSS v4 (@astrojs/tailwind), Pagefind (bundled with Starlight) (20260329-082123-project-scaffolding)
 - N/A (static site, no database) (20260329-082123-project-scaffolding)
