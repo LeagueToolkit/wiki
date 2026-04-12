@@ -4,6 +4,7 @@ description: Technical reference for the MapGeo map geometry format.
 ---
 
 import VersionMatrix from '../../../../components/VersionMatrix.svelte';
+import BinaryStructure from '../../../../components/BinaryStructure.svelte';
 
 MapGeo is the primary environment geometry format for League of Legends maps. It stores the static 3D geometry, materials, lighting data, and spatial acceleration structures that make up Summoner's Rift and other game maps.
 
@@ -27,10 +28,10 @@ All multi-byte values are **little-endian**.
 
 ### Header
 
-| Offset | Size | Type   | Field   | Description                                    |
-|--------|------|--------|---------|------------------------------------------------|
-| 0x00   | 4    | char[] | magic   | `OEGM` (ASCII, 4 bytes)                       |
-| 0x04   | 4    | u32    | version | Format version (5–18)                          |
+<BinaryStructure client:visible title="Header" fields={[
+  { name: "magic", type: "char[]", size: 4, description: "OEGM (ASCII, 4 bytes)" },
+  { name: "version", type: "u32", size: 4, description: "Format version (5-18)" }
+]} />
 
 ### Major Sections
 

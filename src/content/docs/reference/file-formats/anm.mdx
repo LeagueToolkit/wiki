@@ -3,6 +3,8 @@ title: 'ANM (Animations)'
 description: Technical reference for the ANM animation format.
 ---
 
+import BinaryStructure from '../../../../components/BinaryStructure.svelte';
+
 ANM files contain animation data that drives skeletal movement in League of Legends. The format comes in two variants: **uncompressed** animations with direct keyframe data and **compressed** animations using quantization and spline interpolation for reduced file sizes.
 
 ## Overview
@@ -34,10 +36,10 @@ All multi-byte values are **little-endian**.
 
 ### Header
 
-| Offset | Size | Type   | Field         | Description                           |
-|--------|------|--------|---------------|---------------------------------------|
-| 0x00   | 8    | char[] | magic         | `r3d2anmd` (ASCII, 8 bytes)          |
-| 0x08   | 4    | u32    | version       | Format version (3, 4, or 5)           |
+<BinaryStructure client:visible title="Uncompressed Header" fields={[
+  { name: "magic", type: "char[]", size: 8, description: "r3d2anmd (ASCII, 8 bytes)" },
+  { name: "version", type: "u32", size: 4, description: "Format version (3, 4, or 5)" }
+]} />
 
 The fields following the version depend on the version number.
 
@@ -134,35 +136,35 @@ Uncompressed animations use **linear interpolation** between frames:
 
 ### Header
 
-| Offset | Size | Type   | Field         | Description                           |
-|--------|------|--------|---------------|---------------------------------------|
-| 0x00   | 8    | char[] | magic         | `r3d2canm` (ASCII, 8 bytes)          |
-| 0x08   | 4    | u32    | version       | Format version (1, 2, or 3)           |
+<BinaryStructure client:visible title="Compressed Magic" fields={[
+  { name: "magic", type: "char[]", size: 8, description: "r3d2canm (ASCII, 8 bytes)" },
+  { name: "version", type: "u32", size: 4, description: "Format version (1, 2, or 3)" }
+]} />
 
 ### Header (128 bytes)
 
-| Offset | Size | Type   | Field              | Description                                    |
-|--------|------|--------|--------------------|------------------------------------------------|
-| 0x00   | 8    | char[] | magic              | `r3d2canm`                                     |
-| 0x08   | 4    | u32    | version            | Format version (1, 2, or 3)                    |
-| 0x0C   | 4    | u32    | resource_size      | Size of the animation resource                 |
-| 0x10   | 4    | u32    | format_token       | Format identifier                              |
-| 0x14   | 4    | u32    | flags              | Animation flags (bit 2: parametrized tangents)  |
-| 0x18   | 4    | i32    | joint_count        | Number of animated joints                      |
-| 0x1C   | 4    | i32    | frame_count        | Number of keyframes                            |
-| 0x20   | 4    | i32    | jump_cache_count   | Number of jump cache entries                   |
-| 0x24   | 4    | f32    | duration           | Total duration in seconds                      |
-| 0x28   | 4    | f32    | fps                | Playback frame rate                            |
-| 0x2C   | 8    | 2×f32  | rotation_error     | Margin + discontinuity threshold               |
-| 0x34   | 8    | 2×f32  | translation_error  | Margin + discontinuity threshold               |
-| 0x3C   | 8    | 2×f32  | scale_error        | Margin + discontinuity threshold               |
-| 0x44   | 12   | Vec3   | translation_min    | Minimum translation bounds                     |
-| 0x50   | 12   | Vec3   | translation_max    | Maximum translation bounds                     |
-| 0x5C   | 12   | Vec3   | scale_min          | Minimum scale bounds                           |
-| 0x68   | 12   | Vec3   | scale_max          | Maximum scale bounds                           |
-| 0x74   | 4    | i32    | frames_offset      | Offset to frame data                           |
-| 0x78   | 4    | i32    | jump_caches_offset | Offset to jump cache data                      |
-| 0x7C   | 4    | i32    | joint_hashes_offset| Offset to joint name hash array                |
+<BinaryStructure client:visible title="Compressed Header (128 bytes)" fields={[
+  { name: "magic", type: "char[]", size: 8, description: "r3d2canm" },
+  { name: "version", type: "u32", size: 4, description: "Format version (1, 2, or 3)" },
+  { name: "resource_size", type: "u32", size: 4, description: "Size of the animation resource" },
+  { name: "format_token", type: "u32", size: 4, description: "Format identifier" },
+  { name: "flags", type: "u32", size: 4, description: "Animation flags (bit 2: parametrized tangents)" },
+  { name: "joint_count", type: "i32", size: 4, description: "Number of animated joints" },
+  { name: "frame_count", type: "i32", size: 4, description: "Number of keyframes" },
+  { name: "jump_cache_count", type: "i32", size: 4, description: "Number of jump cache entries" },
+  { name: "duration", type: "f32", size: 4, description: "Total duration in seconds" },
+  { name: "fps", type: "f32", size: 4, description: "Playback frame rate" },
+  { name: "rotation_error", type: "2xf32", size: 8, description: "Margin + discontinuity threshold" },
+  { name: "translation_error", type: "2xf32", size: 8, description: "Margin + discontinuity threshold" },
+  { name: "scale_error", type: "2xf32", size: 8, description: "Margin + discontinuity threshold" },
+  { name: "translation_min", type: "Vec3", size: 12, description: "Minimum translation bounds" },
+  { name: "translation_max", type: "Vec3", size: 12, description: "Maximum translation bounds" },
+  { name: "scale_min", type: "Vec3", size: 12, description: "Minimum scale bounds" },
+  { name: "scale_max", type: "Vec3", size: 12, description: "Maximum scale bounds" },
+  { name: "frames_offset", type: "i32", size: 4, description: "Offset to frame data" },
+  { name: "jump_caches_offset", type: "i32", size: 4, description: "Offset to jump cache data" },
+  { name: "joint_hashes_offset", type: "i32", size: 4, description: "Offset to joint name hash array" }
+]} />
 
 **Note:** All section reads add +12 to the stored offset before reading data.
 
@@ -186,11 +188,11 @@ Rotations use a **quantized quaternion** encoding (16-bit components).
 
 Each frame entry is a tightly packed 10-byte structure:
 
-| Offset | Size | Type | Field      | Description                              |
-|--------|------|------|------------|------------------------------------------|
-| 0x00   | 2    | u16  | time       | Compressed time (0–65535 maps to 0–duration) |
-| 0x02   | 2    | u16  | joint_type | Packed joint ID + transform type         |
-| 0x04   | 6    | u16[3] | value    | Compressed transform value               |
+<BinaryStructure client:visible title="Compressed Frame (10 bytes)" fields={[
+  { name: "time", type: "u16", size: 2, description: "Compressed time (0-65535 maps to 0-duration)" },
+  { name: "joint_type", type: "u16", size: 2, description: "Packed joint ID + transform type" },
+  { name: "value", type: "u16[3]", size: 6, description: "Compressed transform value" }
+]} />
 
 **joint_type decoding:**
 - Joint ID: `raw & 0x3FFF` (lower 14 bits)

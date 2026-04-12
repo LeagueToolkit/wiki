@@ -194,6 +194,16 @@ nav.sidebar a[aria-current='page'] {
   border-inline-start-color: var(--sl-color-accent);
 }
 
+/* ── Not-content spacing ───────────────────────────────────── */
+
+/* Starlight strips margin between headings and .not-content
+   islands. Restore a comfortable gap so titles don't collide
+   with interactive components placed directly after them. */
+.sl-markdown-content .sl-heading-wrapper + .not-content,
+.sl-markdown-content .sl-heading-wrapper + astro-island > .not-content {
+  margin-top: 1rem;
+}
+
 /* ── Content Width ──────────────────────────────────────────── */
 
 :root {

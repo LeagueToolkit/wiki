@@ -3,6 +3,8 @@ title: 'TEX (Textures)'
 description: Technical reference for the TEX texture format.
 ---
 
+import BinaryStructure from '../../../../components/BinaryStructure.svelte';
+
 TEX is League of Legends' custom texture format for storing compressed and uncompressed image data. It supports multiple compression formats, mipmap chains, and resource types including standard textures, cubemaps, and volume textures.
 
 ## Overview
@@ -24,17 +26,15 @@ All multi-byte values are **little-endian**.
 
 ### Header
 
-| Offset | Size | Type  | Field           | Description                              |
-|--------|------|-------|-----------------|------------------------------------------|
-| 0x00   | 4    | u32   | magic           | `0x00584554` - ASCII `TEX\0`             |
-| 0x04   | 2    | u16   | width           | Texture width in pixels                  |
-| 0x06   | 2    | u16   | height          | Texture height in pixels                 |
-| 0x08   | 1    | u8    | extended_format | Extended format flags                    |
-| 0x09   | 1    | u8    | format          | Pixel format (see Compression Formats)   |
-| 0x0A   | 1    | u8    | resource_type   | Resource type (see Resource Types)       |
-| 0x0B   | 1    | u8    | flags           | Texture flags bitfield                   |
-
-**Total header size: 12 bytes**
+<BinaryStructure client:visible title="Header (12 bytes)" fields={[
+  { name: "magic", type: "u32", size: 4, description: "0x00584554 - ASCII TEX\\0" },
+  { name: "width", type: "u16", size: 2, description: "Texture width in pixels" },
+  { name: "height", type: "u16", size: 2, description: "Texture height in pixels" },
+  { name: "extended_format", type: "u8", size: 1, description: "Extended format flags" },
+  { name: "format", type: "u8", size: 1, description: "Pixel format (see Compression Formats)" },
+  { name: "resource_type", type: "u8", size: 1, description: "Resource type (see Resource Types)" },
+  { name: "flags", type: "u8", size: 1, description: "Texture flags bitfield" }
+]} />
 
 ### Pixel Data
 

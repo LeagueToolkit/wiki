@@ -3,6 +3,8 @@ title: 'SCB/SCO (Static Meshes)'
 description: Technical reference for the SCB and SCO static mesh formats.
 ---
 
+import BinaryStructure from '../../../../components/BinaryStructure.svelte';
+
 SCB and SCO are League of Legends' static mesh formats for non-animated 3D objects. Unlike [skinned meshes](/reference/file-formats/skn/) which are bound to skeletons, static meshes have fixed geometry and are used for props, environmental objects, and other non-deforming elements.
 
 ## Overview
@@ -25,16 +27,16 @@ All multi-byte values are **little-endian**.
 
 ### Header
 
-| Offset | Size | Type   | Field         | Description                              |
-|--------|------|--------|---------------|------------------------------------------|
-| 0x00   | 8    | char[] | magic         | `r3d2Mesh` (ASCII, 8 bytes)             |
-| 0x08   | 2    | u16    | version_major | Major version (2 or 3)                   |
-| 0x0A   | 2    | u16    | version_minor | Minor version (1)                        |
-| 0x0C   | 128  | char[] | name          | Null-padded ASCII mesh name              |
-| 0x8C   | 4    | i32    | vertex_count  | Number of vertices                       |
-| 0x90   | 4    | i32    | face_count    | Number of faces (triangles)              |
-| 0x94   | 4    | u32    | flags         | Format flags (see Flags)                 |
-| 0x98   | 24   | AABB   | bounding_box  | Axis-aligned bounding box (2× Vec3)     |
+<BinaryStructure client:visible title="SCB Header" fields={[
+  { name: "magic", type: "char[]", size: 8, description: "r3d2Mesh (ASCII, 8 bytes)" },
+  { name: "version_major", type: "u16", size: 2, description: "Major version (2 or 3)" },
+  { name: "version_minor", type: "u16", size: 2, description: "Minor version (1)" },
+  { name: "name", type: "char[]", size: 128, description: "Null-padded ASCII mesh name" },
+  { name: "vertex_count", type: "i32", size: 4, description: "Number of vertices" },
+  { name: "face_count", type: "i32", size: 4, description: "Number of faces (triangles)" },
+  { name: "flags", type: "u32", size: 4, description: "Format flags (see Flags)" },
+  { name: "bounding_box", type: "AABB", size: 24, description: "Axis-aligned bounding box (2x Vec3)" }
+]} />
 
 ### Version 3.2 Extension
 
@@ -70,11 +72,11 @@ If `has_vertex_colors` is 1 (version 3.2+), an array of `vertex_count` colors fo
 
 Array of `face_count` faces. Each face:
 
-| Size | Type  | Field          | Description                            |
-|------|-------|----------------|----------------------------------------|
-| 12   | u32[3]| indices        | Three vertex indices forming a triangle|
-| 4    | u32   | material_hash  | Material name hash                     |
-| 24   | Vec2[3]| uvs           | UV coordinates per vertex (u, v × 3)  |
+<BinaryStructure client:visible title="Face Data" fields={[
+  { name: "indices", type: "u32[3]", size: 12, description: "Three vertex indices forming a triangle" },
+  { name: "material_hash", type: "u32", size: 4, description: "Material name hash" },
+  { name: "uvs", type: "Vec2[3]", size: 24, description: "UV coordinates per vertex (u, v x 3)" }
+]} />
 
 ### Face Vertex Colors (Optional)
 

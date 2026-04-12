@@ -39,10 +39,10 @@ BIN files come in two variants identified by their magic bytes:
 
 ### PROP Header
 
-| Offset | Size | Type   | Field            | Description                                 |
-|--------|------|--------|------------------|---------------------------------------------|
-| 0x00   | 4    | char[] | magic            | `PROP` (ASCII, 4 bytes)                     |
-| 0x04   | 4    | u32    | version          | Format version (1, 2, or 3)                 |
+<BinaryStructure client:visible title="PROP Header" fields={[
+  { name: "magic", type: "char[]", size: 4, description: "PROP (ASCII, 4 bytes)" },
+  { name: "version", type: "u32", size: 4, description: "Format version (1, 2, or 3)" }
+]} />
 
 #### Version 2+ Dependencies
 
@@ -64,12 +64,11 @@ Each dependency string is encoded as:
 
 Patch files wrap a PROP section:
 
-| Offset | Size | Type   | Field              | Description                                 |
-|--------|------|--------|--------------------|---------------------------------------------|
-| 0x00   | 4    | char[] | magic              | `PTCH` (ASCII, 4 bytes)                     |
-| 0x04   | 4    | u32    | patch_version      | Patch format version (must be 1)            |
-| 0x08   | 4    | u32    | override_object_count | Number of override targets               |
-| 0x0C   | ...  | PROP   | prop_section       | Full PROP section (magic + data)            |
+<BinaryStructure client:visible title="PTCH Header" fields={[
+  { name: "magic", type: "char[]", size: 4, description: "PTCH (ASCII, 4 bytes)" },
+  { name: "patch_version", type: "u32", size: 4, description: "Patch format version (must be 1)" },
+  { name: "override_object_count", type: "u32", size: 4, description: "Number of override targets" }
+]} />
 
 When the inner PROP section is version 3, data override entries follow the object data.
 

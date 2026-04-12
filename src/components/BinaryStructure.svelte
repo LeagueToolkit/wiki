@@ -1,4 +1,6 @@
 <script lang="ts">
+  import * as Tooltip from './ui/tooltip/index.js';
+
   interface Field {
     name: string;
     type: string;
@@ -6,12 +8,19 @@
     description: string;
   }
 
+  interface Row {
+    fields: { field: Field; index: number }[];
+    startOffset: number;
+    rowSize: number;
+  }
+
   interface Props {
     fields: Field[];
     title?: string;
+    bytesPerRow?: number;
   }
 
-  let { fields, title }: Props = $props();
+  let { fields, title, bytesPerRow }: Props = $props();
 
   let hoveredIndex = $state<number | null>(null);
 
@@ -38,6 +47,40 @@
       return acc;
     }, []),
   );
+
+  let targetBytesPerRow = $derived(bytesPerRow ?? (totalSize <= 32 ? totalSize : 32));
+
+  // The widest row determines the scale so all rows are proportional
+  let maxRowBytes = $derived(Math.max(targetBytesPerRow, ...fields.map((f) => f.size)));
+
+  let rows = $derived.by(() => {
+    const result: Row[] = [];
+    let currentRow: Row = { fields: [], startOffset: 0, rowSize: 0 };
+
+    for (let i = 0; i < fields.length; i++) {
+      const field = fields[i];
+
+      // Start a new row if adding this field would exceed the budget
+      // (unless the current row is empty - a field always gets at least one row)
+      if (currentRow.fields.length > 0 && currentRow.rowSize + field.size > targetBytesPerRow) {
+        result.push(currentRow);
+        currentRow = {
+          fields: [],
+          startOffset: fieldOffsets[i],
+          rowSize: 0,
+        };
+      }
+
+      currentRow.fields.push({ field, index: i });
+      currentRow.rowSize += field.size;
+    }
+
+    if (currentRow.fields.length > 0) {
+      result.push(currentRow);
+    }
+
+    return result;
+  });
 </script>
 
 <div class="binary-structure not-content">
@@ -45,31 +88,51 @@
     <div class="structure-title">{title}</div>
   {/if}
 
-  <div class="byte-bar">
-    {#each fields as field, i}
-      <button
-        class="byte-segment"
-        class:hovered={hoveredIndex === i}
-        style="
-          --segment-color: {colors[i % colors.length]};
-          flex: {field.size};
-        "
-        onmouseenter={() => (hoveredIndex = i)}
-        onmouseleave={() => (hoveredIndex = null)}
-        onfocus={() => (hoveredIndex = i)}
-        onblur={() => (hoveredIndex = null)}
-      >
-        {#if field.size >= 3}
-          <span class="segment-label">{field.name}</span>
-        {/if}
-      </button>
-    {/each}
-  </div>
-
-  <div class="offset-ruler">
-    <span>0x00</span>
-    <span>0x{totalSize.toString(16).padStart(2, '0')}</span>
-  </div>
+  <Tooltip.Provider delayDuration={0}>
+    <div class="byte-rows">
+      {#each rows as row}
+        <div class="byte-row">
+          <div class="byte-bar" style="width: {(row.rowSize / maxRowBytes) * 100}%;">
+            {#each row.fields as { field, index: i }}
+              <Tooltip.Root>
+                <Tooltip.Trigger
+                  class="byte-segment {hoveredIndex === i ? 'hovered' : ''}"
+                  style="
+                    --segment-color: {colors[i % colors.length]};
+                    --tick-interval: {(4 / field.size) * 100}%;
+                    flex: {field.size};
+                  "
+                  onmouseenter={() => (hoveredIndex = i)}
+                  onmouseleave={() => (hoveredIndex = null)}
+                >
+                  {#if field.size >= 3}
+                    <span class="segment-label">{field.name}</span>
+                  {/if}
+                </Tooltip.Trigger>
+                <Tooltip.Content side="top" sideOffset={8}>
+                  <div class="bar-tooltip-header">
+                    <span class="bar-tooltip-name">{field.name}</span>
+                    <code class="bar-tooltip-type">{field.type}</code>
+                  </div>
+                  <div class="bar-tooltip-meta">
+                    <span>Offset: 0x{fieldOffsets[i].toString(16).padStart(2, '0')}</span>
+                    <span>{field.size} byte{field.size !== 1 ? 's' : ''}</span>
+                  </div>
+                  {#if field.description}
+                    <div class="bar-tooltip-desc">{field.description}</div>
+                  {/if}
+                </Tooltip.Content>
+              </Tooltip.Root>
+            {/each}
+          </div>
+          <div class="offset-ruler" style="width: {(row.rowSize / maxRowBytes) * 100}%;">
+            <span>0x{row.startOffset.toString(16).padStart(2, '0')}</span>
+            <span>0x{(row.startOffset + row.rowSize).toString(16).padStart(2, '0')}</span>
+          </div>
+        </div>
+      {/each}
+    </div>
+  </Tooltip.Provider>
 
   <div class="field-list">
     {#each fields as field, i}
@@ -113,6 +176,17 @@
     margin-bottom: 0.25rem;
   }
 
+  .byte-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .byte-row {
+    display: flex;
+    flex-direction: column;
+  }
+
   .byte-bar {
     display: flex;
     height: 2.5rem;
@@ -121,11 +195,19 @@
     border: 1px solid var(--sl-color-gray-5);
   }
 
-  .byte-segment {
+  :global(.byte-segment) {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: color-mix(in srgb, var(--segment-color) 25%, transparent);
+    background:
+      repeating-linear-gradient(
+        to right,
+        transparent 0%,
+        transparent calc(var(--tick-interval) - 1px),
+        rgba(255, 255, 255, 0.08) calc(var(--tick-interval) - 1px),
+        rgba(255, 255, 255, 0.08) var(--tick-interval)
+      ),
+      color-mix(in srgb, var(--segment-color) 25%, transparent);
     border: none;
     border-right: 1px solid var(--sl-color-gray-5);
     cursor: pointer;
@@ -138,13 +220,21 @@
     min-width: 0;
   }
 
-  .byte-segment:last-child {
+  :global(.byte-segment:last-child) {
     border-right: none;
   }
 
-  .byte-segment:hover,
-  .byte-segment.hovered {
-    background: color-mix(in srgb, var(--segment-color) 50%, transparent);
+  :global(.byte-segment:hover),
+  :global(.byte-segment.hovered) {
+    background:
+      repeating-linear-gradient(
+        to right,
+        transparent 0%,
+        transparent calc(var(--tick-interval) - 1px),
+        rgba(255, 255, 255, 0.12) calc(var(--tick-interval) - 1px),
+        rgba(255, 255, 255, 0.12) var(--tick-interval)
+      ),
+      color-mix(in srgb, var(--segment-color) 50%, transparent);
   }
 
   .segment-label {
@@ -241,5 +331,42 @@
     color: var(--sl-color-gray-2);
     line-height: 1.4;
     padding-top: 0.125rem;
+  }
+
+  /* Tooltip content styling */
+  .bar-tooltip-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .bar-tooltip-name {
+    font-weight: 600;
+    font-size: 0.8125rem;
+    color: var(--sl-color-white);
+  }
+
+  .bar-tooltip-type {
+    font-family: var(--sl-font-mono);
+    font-size: 0.6875rem;
+    color: var(--sl-color-accent);
+    background: none;
+    padding: 0;
+  }
+
+  .bar-tooltip-meta {
+    display: flex;
+    gap: 0.75rem;
+    font-family: var(--sl-font-mono);
+    font-size: 0.6875rem;
+    color: var(--sl-color-gray-3);
+  }
+
+  .bar-tooltip-desc {
+    font-size: 0.6875rem;
+    color: var(--sl-color-gray-2);
+    margin-top: 0.25rem;
+    max-width: 20rem;
   }
 </style>

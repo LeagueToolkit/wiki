@@ -3,6 +3,8 @@ title: 'WGEO (World Geometry)'
 description: Technical reference for the legacy WGEO world geometry format.
 ---
 
+import BinaryStructure from '../../../../components/BinaryStructure.svelte';
+
 WGEO is the legacy world geometry format that was used for League of Legends maps before being replaced by [MapGeo](/reference/file-formats/mapgeo/). It stores map terrain geometry with a bucket-grid spatial partitioning system for visibility culling.
 
 ## Overview
@@ -23,12 +25,12 @@ All multi-byte values are **little-endian**.
 
 ### Header
 
-| Offset | Size | Type   | Field        | Description                              |
-|--------|------|--------|--------------|------------------------------------------|
-| 0x00   | 4    | char[] | magic        | `WGEO` (ASCII, 4 bytes)                 |
-| 0x04   | 4    | u32    | version      | Format version                           |
-| 0x08   | 4    | u32    | model_count  | Number of mesh models                    |
-| 0x0C   | 4    | u32    | face_count   | Total number of faces                    |
+<BinaryStructure client:visible title="Header" fields={[
+  { name: "magic", type: "char[]", size: 4, description: "WGEO (ASCII, 4 bytes)" },
+  { name: "version", type: "u32", size: 4, description: "Format version" },
+  { name: "model_count", type: "u32", size: 4, description: "Number of mesh models" },
+  { name: "face_count", type: "u32", size: 4, description: "Total number of faces" }
+]} />
 
 ### Models
 
