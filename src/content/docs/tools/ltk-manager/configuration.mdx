@@ -54,6 +54,44 @@ Choose the default view for the mod library:
 
 When enabled, the patcher also includes Teamfight Tactics game files in the overlay. Disabled by default since most mods only target Summoner's Rift.
 
+### WAD Blocklist
+
+The WAD Blocklist tells the patcher which game WAD files mods are not allowed to modify. Anything in the list is skipped during overlay building, so no mod can change those files regardless of what is enabled.
+
+Use this to protect specific game data: client scripts, anti-cheat-sensitive files, or content you want to keep stock while running other mods.
+
+#### Exact entries
+
+Use **Exact filename** mode to block a single WAD by name. As you type, LTK Manager autocompletes from the actual WAD files in your League install (read from `Game/DATA/`), so you do not need to memorize exact filenames.
+
+Filenames are matched case-insensitively. Example: `Aatrox.wad.client`.
+
+#### Regex entries
+
+Use **Regex pattern** mode to block many WADs with a single rule. The pattern is compiled case-insensitively and matched against every WAD filename in your install.
+
+A live preview shows how many files the pattern currently matches and lists them, so you can confirm the rule does what you expect before saving it. Invalid patterns are flagged inline and cannot be added.
+
+Examples:
+
+| Pattern | Matches |
+|---------|---------|
+| `^map\d+\.en_us\.wad\.client$` | All English map WADs (Map11, Map12, Map22, etc.) |
+| `^aatrox` | Every WAD whose name starts with `aatrox` |
+
+If a regex fails to compile at patch time (for example, after a corrupted edit to `settings.json`), it is logged and skipped: one bad pattern will not break the rest of the list.
+
+#### Managing the list
+
+The blocklist editor supports:
+
+- **Filter:** type into the search box to narrow the visible entries
+- **Sort:** by name (A to Z or Z to A) or by kind (exact vs. regex)
+- **Clear all:** removes every entry after a confirmation step
+- **Counter:** the footer shows the total entry count and the exact/regex split
+
+Entries you saved with an older version of LTK Manager (plain strings) are migrated automatically to exact entries the first time the new editor loads.
+
 ## Data Locations
 
 Settings and data are stored in the app data directory:
