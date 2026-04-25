@@ -1,64 +1,64 @@
 ---
 title: Packaging
-description: How to package completed mods for distribution, including export formats, versioning, and sharing with other ltk-manager users.
+description: How to package completed mods for distribution, including the .modpkg and .fantome formats supported by ltk-manager.
 ---
 
 import FormatComparison from '../../../../components/FormatComparison.svelte';
 
-This page documents the `.modpkg` and `.fantome` mod package formats used by the LeagueToolkit ecosystem.
+LeagueToolkit ships two mod package formats: `.modpkg` and `.fantome`. Both are first-class citizens in the ecosystem. The right choice comes down to whether you want the full project surface or maximum reach across the wider modding community.
+
+<FormatComparison client:visible />
 
 ## modpkg
 
-The `.modpkg` format is the modern, recommended format for distributing League of Legends mods.
+The `.modpkg` format is the modern container we recommend for new projects. It's purpose-built for the LeagueToolkit launcher and exposes the full surface area of the project model.
 
 ### Structure
 
 A modpkg file is a binary archive containing:
 
-- **Metadata** - Mod name, version, authors, description, tags, champions, maps
-- **Thumbnail** - Optional preview image (webp or png)
-- **Layers** - One or more content layers, each containing game files
-- **Configuration** - Layer priorities, string overrides, and other settings
+- **Metadata**: name, version, authors, description, tags, champions, maps
+- **Thumbnail**: optional preview image (webp or png)
+- **Layers**: one or more content layers, each containing game files
+- **Configuration**: layer priorities, string overrides, and other settings
 
-### Advantages
+### Why it's the default
 
-- Full metadata support (authors with roles, tags, champions, maps)
-- Multi-layer support with configurable priorities
-- Thumbnail embedding
-- String override support per layer
-- Efficient binary format that mimics the WAD chunk structure, allowing data to be copied directly into overlay WAD files
+- Full project metadata, including authors with roles and rich tagging
+- Multi-layer composition with configurable priorities
+- Per-layer string overrides
+- Embedded thumbnails
+- Binary layout aligned with the WAD chunk format, so the launcher can copy chunks straight into the overlay WAD without re-encoding
 
 ## fantome
 
-The `.fantome` format is a legacy format used by older mod tools. A `.fantome` file is essentially a renamed `.zip` archive containing WAD file entries and basic metadata. LTK Manager includes experimental support for fantome files for backwards compatibility, but it is not recommended for future use.
+The `.fantome` format originated in cslol-manager and remains the lingua franca of the League modding community. ltk-manager provides first-class support for it: import, export, and library management all work the same as for modpkg, and the implementation handles metadata fields beyond the original cslol-manager specification, so existing libraries continue to work without conversion.
 
-### Behavior on Import
+### When to choose fantome
 
-When you import a `.fantome` file, LTK Manager understands the legacy format and attempts to extend it with modern modpkg features:
+Pick fantome when reach matters more than the latest project features. Mods packaged as `.fantome` work in cslol-manager and across the existing ecosystem of tools and mod sites, which is invaluable while users migrate to ltk-manager.
+
+### Behavior on import
+
+When you import a `.fantome` file, ltk-manager treats it as a real project and bridges it onto the modern model:
 
 1. Extracts the ZIP archive contents
 2. Parses the WAD file structure
-3. Converts the content to the internal mod format, adding modpkg capabilities where possible
+3. Converts the content into the internal mod representation, lifting in modpkg capabilities where they map cleanly
 4. Stores it as a standard mod in the library
 
-This conversion is best-effort: not all modpkg features can be reliably inferred from a fantome archive, so the result may need manual adjustment.
+The bridging is best-effort: not every modpkg feature has a fantome equivalent, so converted mods may need a light pass in the editor before they round-trip cleanly.
 
-### Why modpkg replaced fantome
+### Trade-offs vs modpkg
 
-ZIP-based archives like `.fantome` are difficult for the launcher to process efficiently. The launcher needs to extract and repack data during overlay building, which is slow with generic ZIP streams. The `.modpkg` format was designed to solve this: its binary structure mimics the WAD chunk layout, so data can be copied directly from the archive into overlay WAD files without costly decompression and repacking.
+The fantome format is a renamed ZIP archive. That's its strength for portability and its weakness for runtime cost. Compared to modpkg, fantome:
 
-### Limitations
+- Is single-layer by design
+- Has no concept of per-layer string overrides
+- Requires the launcher to decompress and repack ZIP entries when building the overlay, instead of the direct chunk copy that modpkg enables
 
-Compared to modpkg, fantome files:
+These are limitations of the format, not the implementation: ltk-manager supports everything fantome itself can express.
 
-- Are ZIP-based, making them inefficient for the launcher to process
-- Have limited metadata support
-- Don't support multiple layers natively
-- Don't include author roles or detailed categorization
-- Don't support string overrides
+## Choosing a format
 
-## Choosing a Format
-
-<FormatComparison client:visible />
-
-Both formats can be created using the [Creator Workshop](/guides/mod-creation/workshop-overview/) pack feature.
+Both formats can be produced from the [Creator Workshop](/guides/mod-creation/workshop-overview/) pack feature, so you don't have to commit upfront. A common pattern is to author in modpkg and export a fantome alongside it for distribution to users on older tools.
