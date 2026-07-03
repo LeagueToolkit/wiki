@@ -25,10 +25,10 @@
   --sl-color-accent: #4B7DFA;
   --sl-color-accent-high: #B9E5FB;
 
-  --sl-color-white: #e8eaf0;
-  --sl-color-gray-1: #c4c8d4;
-  --sl-color-gray-2: #8b8fa3;
-  --sl-color-gray-3: #5a5e72;
+  --sl-color-white: #f0f2f8;
+  --sl-color-gray-1: #d3d7e4;
+  --sl-color-gray-2: #aeb4ca;
+  --sl-color-gray-3: #8189a6;
   --sl-color-gray-4: #33364a;
   --sl-color-gray-5: #1e2035;
   --sl-color-gray-6: #14152a;
@@ -74,9 +74,11 @@
   font-weight: 700;
 }
 
-/* Comfortable body reading */
-.sl-markdown-content p,
-.sl-markdown-content li {
+/* Comfortable body reading. Plain prose only: classed elements are
+   component parts (Card/aside titles, tabs) that set their own
+   line-height, and this unlayered rule would beat their layered one. */
+.sl-markdown-content p:not([class]),
+.sl-markdown-content li:not([class]) {
   line-height: 1.7;
 }
 
@@ -222,6 +224,29 @@ nav.sidebar a[aria-current='page'] {
   border-left: 3px solid var(--sl-color-accent);
   padding-left: 1rem;
   color: var(--sl-color-gray-2);
+}
+
+/* ── Asides ─────────────────────────────────────────────────── */
+
+/* Align note (blue) and tip (purple) hues with the logo palette
+   (#4B7DFA → 223, #7D4BFA → 257). */
+:root {
+  --sl-hue-blue: 223;
+  --sl-hue-purple: 257;
+}
+
+/* Replace Starlight's flat saturated panels with the site's card
+   language: rounded corners, hairline outline, and a background
+   tinted from each variant's accent so it sits on the dark surface. */
+.starlight-aside {
+  border: 1px solid color-mix(in srgb, var(--sl-color-asides-border) 30%, transparent);
+  border-inline-start: 3px solid var(--sl-color-asides-border);
+  border-radius: 0.5rem;
+  background-color: color-mix(in srgb, var(--sl-color-asides-border) 8%, var(--sl-color-gray-6));
+}
+
+.starlight-aside code {
+  background-color: color-mix(in srgb, var(--sl-color-asides-border) 15%, var(--sl-color-gray-6));
 }
 
 /* ── Scrollbars ────────────────────────────────────────────── */

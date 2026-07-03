@@ -60,6 +60,7 @@ export default defineConfig({
                 { label: 'Workshop Overview', slug: 'guides/mod-creation/workshop-overview' },
                 { label: 'Creating a Project', slug: 'guides/mod-creation/creating-a-project' },
                 { label: 'Layers', slug: 'guides/mod-creation/layers' },
+                { label: 'String Overrides', slug: 'guides/mod-creation/string-overrides' },
                 { label: 'Packaging', slug: 'guides/mod-creation/packaging' },
               ],
             },
