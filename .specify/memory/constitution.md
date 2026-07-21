@@ -10,9 +10,9 @@
     - Governance
   Removed sections: N/A
   Templates requiring updates:
-    - .specify/templates/plan-template.md — no update needed (generic)
-    - .specify/templates/spec-template.md — no update needed (generic)
-    - .specify/templates/tasks-template.md — no update needed (generic)
+    - .specify/templates/plan-template.md - no update needed (generic)
+    - .specify/templates/spec-template.md - no update needed (generic)
+    - .specify/templates/tasks-template.md - no update needed (generic)
   Follow-up TODOs: None
 -->
 

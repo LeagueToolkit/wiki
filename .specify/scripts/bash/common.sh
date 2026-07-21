@@ -281,15 +281,15 @@ except Exception:
     sys.exit(1)
 " 2>/dev/null); then
                 if [ -n "$sorted_presets" ]; then
-                    # python3 succeeded and returned preset IDs — search in priority order
+                    # python3 succeeded and returned preset IDs - search in priority order
                     while IFS= read -r preset_id; do
                         local candidate="$presets_dir/$preset_id/templates/${template_name}.md"
                         [ -f "$candidate" ] && echo "$candidate" && return 0
                     done <<< "$sorted_presets"
                 fi
-                # python3 succeeded but registry has no presets — nothing to search
+                # python3 succeeded but registry has no presets - nothing to search
             else
-                # python3 failed (missing, or registry parse error) — fall back to unordered directory scan
+                # python3 failed (missing, or registry parse error) - fall back to unordered directory scan
                 for preset in "$presets_dir"/*/; do
                     [ -d "$preset" ] || continue
                     local candidate="$preset/templates/${template_name}.md"

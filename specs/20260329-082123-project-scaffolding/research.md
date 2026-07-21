@@ -11,8 +11,8 @@
 
 **Alternatives considered**:
 
-- Manual Astro setup without Starlight template — rejected because it requires recreating sidebar, search, and theme infrastructure that Starlight bundles
-- Cloning an existing Starlight site — rejected because it brings opinionated content we'd need to strip out
+- Manual Astro setup without Starlight template - rejected because it requires recreating sidebar, search, and theme infrastructure that Starlight bundles
+- Cloning an existing Starlight site - rejected because it brings opinionated content we'd need to strip out
 
 ## R2: Svelte 5 Integration with Astro
 
@@ -22,8 +22,8 @@
 
 **Alternatives considered**:
 
-- React islands — rejected per constitution (Principle V mandates Svelte)
-- Svelte 4 — rejected as Svelte 5 is the current stable version with better performance
+- React islands - rejected per constitution (Principle V mandates Svelte)
+- Svelte 4 - rejected as Svelte 5 is the current stable version with better performance
 
 ## R3: Tailwind CSS v4 Integration
 
@@ -33,8 +33,8 @@
 
 **Alternatives considered**:
 
-- Tailwind v3 — rejected as v4 is current and offers simpler configuration
-- Pure CSS with Starlight tokens only — rejected because Tailwind utilities accelerate custom component styling significantly
+- Tailwind v3 - rejected as v4 is current and offers simpler configuration
+- Pure CSS with Starlight tokens only - rejected because Tailwind utilities accelerate custom component styling significantly
 
 ## R4: Content Collection Schema Design
 
@@ -44,8 +44,8 @@
 
 **Alternatives considered**:
 
-- Fully custom Zod schema — rejected because it would lose Starlight's built-in features (sidebar labels, badges, pagination control)
-- No schema validation — rejected per constitution (Principle I mandates Zod validation)
+- Fully custom Zod schema - rejected because it would lose Starlight's built-in features (sidebar labels, badges, pagination control)
+- No schema validation - rejected per constitution (Principle I mandates Zod validation)
 
 ## R5: Sidebar Navigation Configuration
 
@@ -55,8 +55,8 @@
 
 **Alternatives considered**:
 
-- Auto-generated sidebar from file structure — rejected per constitution (Content & Contribution Workflow requires declarative sidebar definition)
-- Separate sidebar config file — rejected as Starlight expects it in `astro.config.ts`
+- Auto-generated sidebar from file structure - rejected per constitution (Content & Contribution Workflow requires declarative sidebar definition)
+- Separate sidebar config file - rejected as Starlight expects it in `astro.config.ts`
 
 ## R6: Linting and Formatting Tooling
 
@@ -66,8 +66,8 @@
 
 **Alternatives considered**:
 
-- Biome — viable but lacks mature Astro/Svelte plugin support
-- ESLint only (with formatting rules) — rejected because Prettier handles formatting more consistently
+- Biome - viable but lacks mature Astro/Svelte plugin support
+- ESLint only (with formatting rules) - rejected because Prettier handles formatting more consistently
 
 ## R7: CI/CD Pipeline Design
 
@@ -77,8 +77,8 @@
 
 **Alternatives considered**:
 
-- Netlify/Vercel CI — rejected because GitHub Pages is the specified hosting target and GitHub Actions is the specified CI
-- Skip Lighthouse in CI — rejected per constitution (Principle VI requires CI-validated performance metrics)
+- Netlify/Vercel CI - rejected because GitHub Pages is the specified hosting target and GitHub Actions is the specified CI
+- Skip Lighthouse in CI - rejected per constitution (Principle VI requires CI-validated performance metrics)
 
 ## R8: Placeholder Content Strategy
 
@@ -88,5 +88,5 @@
 
 **Alternatives considered**:
 
-- Single index page only — rejected because it doesn't validate the navigation structure or content collection routing
-- Full content authoring — out of scope for scaffolding
+- Single index page only - rejected because it doesn't validate the navigation structure or content collection routing
+- Full content authoring - out of scope for scaffolding
