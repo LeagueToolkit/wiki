@@ -1,0 +1,89 @@
+---
+title: Where to Find Mods
+description: Where League of Legends mods are shared, what the .modpkg and .fantome formats mean, and how to check a download before installing it.
+---
+
+LeagueToolkit builds the tools, not the mods. Mods themselves are made and
+shared by the community, so finding them means knowing where the community
+gathers.
+
+## Runeforge
+
+[**Runeforge**](https://runeforge.dev/) is an **official LeagueToolkit
+partner** and the best place to start. It is a mod browser and creator
+platform, and the one distribution site we work with directly - so it is where
+LeagueToolkit support and tooling line up most closely with what you download.
+
+If you only ever use one source, use this one.
+
+## Other places mods are shared
+
+| Source                                                    | What it is                                          |
+| --------------------------------------------------------- | --------------------------------------------------- |
+| [DivineSkins](https://divineskins.gg/)                    | Community hub for custom skins                      |
+| [LeagueToolkit Discord](https://discord.gg/leaguetoolkit) | Tool support, and creators sharing work in progress |
+
+Individual creators also publish directly - GitHub releases, personal Discord
+servers, and social posts are all common. There is no single complete index.
+
+:::caution[Everything outside Runeforge is a community site]
+We link these because that is where people actually go. We do not operate them,
+review what is uploaded to them, or vouch for individual downloads. Apply the
+same judgement you would to any file from the internet - see
+[Checking a download](#checking-a-download) below.
+
+Partnering with Runeforge is not a guarantee about any individual upload
+either. The habits below are worth keeping wherever you download from.
+:::
+
+## File formats you'll encounter
+
+- **`.fantome`** - the ZIP-based format from the cslol era, and still what most
+  mods on distribution sites are packaged as. LTK Manager installs and reads
+  them directly.
+- **`.modpkg`** - the modern format. Carries full metadata (name, version,
+  authors, description, thumbnail) and supports [layers](/making-mods/layers/)
+  you can toggle individually. Most common on mods published directly by their
+  author rather than through a site.
+- **A folder of raw WAD files** - some older distributions are just
+  directories. These can be imported as a project; see
+  [Creating a Project](/making-mods/project/).
+
+Anything else - an `.exe`, an installer, a "mod loader" that isn't a tool you
+recognize - is not a mod. Do not run it.
+
+## Checking a download
+
+Before installing, LTK Manager can show you a mod's metadata without adding it
+to your library. Use the inspect feature to see the name, version, authors,
+description, and layers first. See
+[Managing Your Library](/using-mods/library/).
+
+A few habits worth having:
+
+- **Prefer a source with a track record** over a fresh anonymous upload.
+- **Check the file extension is `.modpkg` or `.fantome`.** Executables are the
+  main real risk in this ecosystem, and mods are never executables.
+- **Be skeptical of anything asking for your Riot login.** No mod, and no
+  LeagueToolkit tool, ever needs your account credentials. See
+  [FAQ & Safety](/start-here/faq/).
+- **Note which patch it was built for.** A mod from several patches ago may
+  simply not work; see [Updating After a Patch](/using-mods/patch-updates/).
+
+## What mods can and can't be
+
+Mods in this ecosystem replace **game assets** - models, textures, animations,
+sounds, and in-game text. That means custom skins, map re-textures, VFX
+recolors, and UI changes.
+
+They do not add scripts, alter game logic, or change what your client sends to
+Riot's servers. The [overlay](/start-here/how-modding-works/) only ever swaps
+which asset file the game reads. If something advertises itself as giving you a
+gameplay advantage, it is not this kind of mod, and none of the tools documented
+here will install it.
+
+## Next
+
+- [Your First Mod](/start-here/first-mod/) - install what you found
+- [FAQ & Safety](/start-here/faq/)
+- [Managing Your Library](/using-mods/library/) - once you have more than a few

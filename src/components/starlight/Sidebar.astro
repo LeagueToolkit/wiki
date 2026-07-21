@@ -1,0 +1,82 @@
+---
+import Default from '@astrojs/starlight/components/Sidebar.astro';
+---
+
+<Default><slot /></Default>
+
+<script>
+  /**
+   * Starlight renders a sidebar group as `<details><summary>`, so the group
+   * name can only expand it. For a group that has an Overview page - every
+   * tool in the Tools section - clicking the name should open that page
+   * instead. Arriving there expands the group anyway, so nothing is lost.
+   *
+   * Rather than sorting clicks out by coordinate, the summary is rebuilt into
+   * two real elements: the label becomes an anchor, the caret gets a wrapper.
+   * Hit areas, hover states, focus, middle-click and "copy link address" then
+   * come from the browser, and the surrounding CSS keeps working because the
+   * anchor carries the same `group-label` class the div did.
+   */
+
+  /** Swap `<div class="group-label">` for an equivalent anchor, in place. */
+  function toAnchor(label: Element, href: string) {
+    const anchor = document.createElement('a');
+    // Carry every attribute over, not just the ones we know about: the class
+    // list holds Astro's `astro-*` scope hash, without which Starlight's own
+    // rules stop matching the label.
+    for (const { name, value } of label.attributes) anchor.setAttribute(name, value);
+    anchor.href = href;
+    anchor.append(...label.childNodes);
+    label.replaceWith(anchor);
+    return anchor;
+  }
+
+  /** Give the caret svg a wrapper, so a hoverable box surrounds the glyph. */
+  function wrapCaret(caret: Element) {
+    const zone = document.createElement('span');
+    zone.className = 'caret-zone';
+    caret.replaceWith(zone);
+    zone.append(caret);
+  }
+
+  function linkGroupSummaries() {
+    const groups = document.querySelectorAll('.sidebar-content details');
+
+    for (const group of groups) {
+      const summary = group.querySelector(':scope > summary');
+      if (!(summary instanceof HTMLElement) || summary.dataset.linked) continue;
+
+      // Match the label span, not the whole anchor: an entry may carry a badge
+      // whose text would otherwise be concatenated onto the label.
+      const links = group.querySelectorAll(':scope > ul > li > a');
+      const overview = Array.from(links).find(
+        (link) => link.querySelector('span')?.textContent?.trim() === 'Overview',
+      );
+      if (!(overview instanceof HTMLAnchorElement)) continue;
+
+      const label = summary.querySelector(':scope > .group-label');
+      const caret = summary.querySelector(':scope > .caret');
+      if (!label || !caret) continue;
+
+      summary.dataset.linked = 'true';
+      const anchor = toAnchor(label, overview.href);
+      wrapCaret(caret);
+
+      summary.addEventListener('click', (event) => {
+        if (!(event.target instanceof Element) || !event.target.closest('.group-label')) return;
+
+        // A modified click means open-in-new-tab or a download: leave it to the
+        // browser. The group toggling as well is a harmless side effect, and
+        // the alternative - cancelling the event - would break the gesture.
+        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+        // One event carries both defaults, so cancelling the group's toggle
+        // cancels the anchor's navigation too; re-issue it by hand.
+        event.preventDefault();
+        window.location.href = anchor.href;
+      });
+    }
+  }
+
+  linkGroupSummaries();
+</script>

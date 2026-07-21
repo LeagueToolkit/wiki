@@ -8,16 +8,16 @@ LTK Manager is the official mod manager for League of Legends, and the successor
 The patcher used by LTK Manager is based on the original cslol patcher, which is maintained for cslol-manager and has been adopted into LTK Manager through the `ltk_overlay` Rust crate.
 
 :::note
-cslol-manager is being deprecated. If you're still using it, see [Migrating from cslol-manager](/getting-started/migration/) to bring your mods over.
+cslol-manager is being deprecated. If you're still using it, see [Migrating from cslol-manager](/start-here/from-cslol/) to bring your mods over.
 :::
 
 ## Platform Support
 
-| Platform | Status |
-|----------|--------|
+| Platform             | Status                                                                                             |
+| -------------------- | -------------------------------------------------------------------------------------------------- |
 | Windows 10+ (64-bit) | Supported - download from [GitHub Releases](https://github.com/LeagueToolkit/ltk-manager/releases) |
-| macOS | Coming Q2/Summer 2026 (the cslol patcher broke on macOS - a new patcher is in development) |
-| Linux | Planned (no timeline yet) |
+| macOS                | Coming Q2/Summer 2026 (the cslol patcher broke on macOS - a new patcher is in development)         |
+| Linux                | Planned (no timeline yet)                                                                          |
 
 ## Features
 
@@ -39,18 +39,18 @@ cslol-manager is being deprecated. If you're still using it, see [Migrating from
 
 ## Pages
 
-- [Getting Started](/getting-started/installation/)
-- [Managing Mods](/guides/mod-management/installing-mods/)
-- [Profiles](/guides/mod-management/profiles/)
+- [Getting Started](/start-here/install/)
+- [Managing Mods](/using-mods/library/)
+- [Profiles](/using-mods/profiles/)
 - [Patching](/tools/ltk-manager/features/)
-- [Workshop Overview](/guides/mod-creation/workshop-overview/)
+- [Workshop Overview](/making-mods/workshop/)
 - [Settings](/tools/ltk-manager/configuration/)
-- [Migration from cslol-manager](/getting-started/migration/)
-- [Troubleshooting](/guides/mod-management/troubleshooting/)
+- [Migration from cslol-manager](/start-here/from-cslol/)
+- [Troubleshooting](/using-mods/troubleshooting/)
 
 ## Supported Mod Formats
 
-| Format | Extension | Description |
-|--------|-----------|-------------|
-| modpkg | `.modpkg` | Modern format with full metadata, multi-layer support, and thumbnails |
-| Fantome | `.fantome` | Legacy WAD-based format, auto-converted to modpkg on install |
+| Format  | Extension  | Description                                                           |
+| ------- | ---------- | --------------------------------------------------------------------- |
+| modpkg  | `.modpkg`  | Modern format with full metadata, multi-layer support, and thumbnails |
+| Fantome | `.fantome` | ZIP/WAD-based format from the cslol era, installed and read natively  |

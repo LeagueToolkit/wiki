@@ -34,12 +34,7 @@
     const normalized = normalize(str);
     let hash = 0;
     for (let i = 0; i < normalized.length; i++) {
-      hash =
-        (normalized.charCodeAt(i) +
-          ((hash << 6) >>> 0) +
-          ((hash << 16) >>> 0) -
-          hash) >>>
-        0;
+      hash = (normalized.charCodeAt(i) + ((hash << 6) >>> 0) + ((hash << 16) >>> 0) - hash) >>> 0;
     }
     return hash;
   }

@@ -1,0 +1,152 @@
+---
+/**
+ * A grid of link cards with an icon in the header.
+ *
+ * Starlight's `LinkCard` has no icon slot and its own icon set does not cover
+ * this vocabulary, so this renders the same shape with a Phosphor glyph. Icons
+ * are applied as masks rather than inline SVG - the same technique the sidebar
+ * section icons use in styles/custom.css - so each one takes its card's colour
+ * and hover state for free.
+ *
+ * Icon URLs are resolved at build time, which means the set has to be a static
+ * map: add an entry here before referencing its key from a page.
+ */
+import gear from '@phosphor-icons/core/assets/bold/gear-six-bold.svg';
+import shield from '@phosphor-icons/core/assets/bold/shield-check-bold.svg';
+import search from '@phosphor-icons/core/assets/bold/magnifying-glass-bold.svg';
+import brush from '@phosphor-icons/core/assets/bold/paint-brush-bold.svg';
+import fileCode from '@phosphor-icons/core/assets/bold/file-code-bold.svg';
+import toolbox from '@phosphor-icons/core/assets/bold/toolbox-bold.svg';
+
+const icons = { gear, shield, search, brush, fileCode, toolbox } as const;
+
+export type TopicIcon = keyof typeof icons;
+
+export interface Topic {
+  title: string;
+  href: string;
+  description: string;
+  icon: TopicIcon;
+}
+
+interface Props {
+  topics: Topic[];
+}
+
+const { topics } = Astro.props;
+---
+
+<div class="topics not-content">
+  {
+    topics.map((topic) => (
+      <a class="topic" href={topic.href} style={`--icon: url(${icons[topic.icon].src})`}>
+        <span class="head">
+          <span class="glyph" aria-hidden="true" />
+          <span class="title">{topic.title}</span>
+          <svg class="arrow" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <path
+              d="M2 8h11M9 4l4 4-4 4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
+        <span class="desc">{topic.description}</span>
+      </a>
+    ))
+  }
+</div>
+
+<style>
+  .topics {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 45rem) {
+    .topics {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .topic {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.25rem 1.375rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.75rem;
+    text-decoration: none;
+    transition:
+      transform 0.2s ease,
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .topic:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--sl-color-accent) 50%, transparent);
+    background-color: color-mix(in srgb, var(--sl-color-gray-6) 55%, transparent);
+  }
+
+  .topic:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 3px;
+  }
+
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+  }
+
+  .glyph {
+    flex-shrink: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+    background-color: var(--sl-color-gray-3);
+    mask: var(--icon) center / contain no-repeat;
+    transition: background-color 0.2s ease;
+  }
+
+  .topic:hover .glyph {
+    background-color: var(--sl-color-accent-high);
+  }
+
+  .title {
+    font-weight: 600;
+    color: var(--sl-color-white);
+  }
+
+  /* Pushes the arrow to the far edge of the header row. */
+  .arrow {
+    margin-inline-start: auto;
+    color: var(--sl-color-gray-3);
+    transition:
+      transform 0.15s ease,
+      color 0.2s ease;
+  }
+
+  .topic:hover .arrow {
+    transform: translateX(3px);
+    color: var(--sl-color-accent-high);
+  }
+
+  .desc {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--sl-color-gray-2);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .topic,
+    .topic:hover,
+    .arrow,
+    .topic:hover .arrow {
+      transform: none;
+    }
+  }
+</style>

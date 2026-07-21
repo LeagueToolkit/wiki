@@ -1,0 +1,48 @@
+---
+title: Using Mods
+description: Organize, apply, and maintain your League of Legends mod library with LTK Manager.
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+Everything about living with a mod collection day to day - once you have
+[installed your first mod](/start-here/first-mod/), this is where you go next.
+
+<CardGrid>
+  <LinkCard
+    title="Managing Your Library"
+    href="/using-mods/library/"
+    description="Install, enable, reorder, search, and uninstall mods."
+  />
+  <LinkCard
+    title="Profiles"
+    href="/using-mods/profiles/"
+    description="Separate mod sets you can switch between - one for ARAM, one for ranked, one for testing."
+  />
+  <LinkCard
+    title="Mod Folders"
+    href="/using-mods/folders/"
+    description="Group related mods so a large library stays navigable."
+  />
+  <LinkCard
+    title="Updating After a Patch"
+    href="/using-mods/patch-updates/"
+    description="What a League patch breaks, and the routine for getting back in game."
+  />
+  <LinkCard
+    title="Troubleshooting"
+    href="/using-mods/troubleshooting/"
+    description="Mods not appearing, patcher errors, log file locations."
+  />
+</CardGrid>
+
+## The two rules worth memorising
+
+Almost every "my mods stopped working" report comes down to one of these:
+
+1. **Enable first, patch second.** The patcher builds its overlay from whatever
+   is enabled at the moment you press **Patch**. Enabling a mod afterwards does
+   nothing until you stop and re-patch.
+2. **A game patch invalidates your overlay.** After League updates, mods need to
+   be re-applied and some need updating by their author. See
+   [Updating After a Patch](/using-mods/patch-updates/).

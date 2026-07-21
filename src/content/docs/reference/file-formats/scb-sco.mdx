@@ -10,6 +10,7 @@ SCB and SCO are League of Legends' static mesh formats for non-animated 3D objec
 ## Overview
 
 Static meshes come in two variants:
+
 - **SCB** (`.scb`) - Binary format with compact encoding
 - **SCO** (`.sco`) - ASCII text format, human-readable
 
@@ -27,71 +28,89 @@ All multi-byte values are **little-endian**.
 
 ### Header
 
-<BinaryStructure client:visible title="SCB Header" fields={[
-  { name: "magic", type: "char[]", size: 8, description: "r3d2Mesh (ASCII, 8 bytes)" },
-  { name: "version_major", type: "u16", size: 2, description: "Major version (2 or 3)" },
-  { name: "version_minor", type: "u16", size: 2, description: "Minor version (1)" },
-  { name: "name", type: "char[]", size: 128, description: "Null-padded ASCII mesh name" },
-  { name: "vertex_count", type: "i32", size: 4, description: "Number of vertices" },
-  { name: "face_count", type: "i32", size: 4, description: "Number of faces (triangles)" },
-  { name: "flags", type: "u32", size: 4, description: "Format flags (see Flags)" },
-  { name: "bounding_box", type: "AABB", size: 24, description: "Axis-aligned bounding box (2x Vec3)" }
-]} />
+<BinaryStructure
+  client:visible
+  title="SCB Header"
+  fields={[
+    { name: 'magic', type: 'char[]', size: 8, description: 'r3d2Mesh (ASCII, 8 bytes)' },
+    { name: 'version_major', type: 'u16', size: 2, description: 'Major version (2 or 3)' },
+    { name: 'version_minor', type: 'u16', size: 2, description: 'Minor version (1)' },
+    { name: 'name', type: 'char[]', size: 128, description: 'Null-padded ASCII mesh name' },
+    { name: 'vertex_count', type: 'i32', size: 4, description: 'Number of vertices' },
+    { name: 'face_count', type: 'i32', size: 4, description: 'Number of faces (triangles)' },
+    { name: 'flags', type: 'u32', size: 4, description: 'Format flags (see Flags)' },
+    {
+      name: 'bounding_box',
+      type: 'AABB',
+      size: 24,
+      description: 'Axis-aligned bounding box (2x Vec3)',
+    },
+  ]}
+/>
 
 ### Version 3.2 Extension
 
 After the bounding box, version 3.2 adds:
 
-| Size | Type | Field             | Description                              |
-|------|------|-------------------|------------------------------------------|
-| 4    | u32  | has_vertex_colors | 1 if vertex colors present, 0 otherwise  |
+| Size | Type | Field             | Description                             |
+| ---- | ---- | ----------------- | --------------------------------------- |
+| 4    | u32  | has_vertex_colors | 1 if vertex colors present, 0 otherwise |
 
 ### Vertex Data
 
 Array of `vertex_count` vertices:
 
-| Size | Type | Description          |
-|------|------|----------------------|
+| Size | Type | Description               |
+| ---- | ---- | ------------------------- |
 | 12   | Vec3 | Vertex position (x, y, z) |
 
 ### Vertex Colors (Optional)
 
 If `has_vertex_colors` is 1 (version 3.2+), an array of `vertex_count` colors follows:
 
-| Size | Type  | Description                    |
-|------|-------|--------------------------------|
+| Size | Type  | Description                          |
+| ---- | ----- | ------------------------------------ |
 | 4    | u8[4] | BGRA color (blue, green, red, alpha) |
 
 ### Central Point
 
-| Size | Type | Description                     |
-|------|------|---------------------------------|
-| 12   | Vec3 | Central point of the mesh       |
+| Size | Type | Description               |
+| ---- | ---- | ------------------------- |
+| 12   | Vec3 | Central point of the mesh |
 
 ### Face Data
 
 Array of `face_count` faces. Each face:
 
-<BinaryStructure client:visible title="Face Data" fields={[
-  { name: "indices", type: "u32[3]", size: 12, description: "Three vertex indices forming a triangle" },
-  { name: "material_hash", type: "u32", size: 4, description: "Material name hash" },
-  { name: "uvs", type: "Vec2[3]", size: 24, description: "UV coordinates per vertex (u, v x 3)" }
-]} />
+<BinaryStructure
+  client:visible
+  title="Face Data"
+  fields={[
+    {
+      name: 'indices',
+      type: 'u32[3]',
+      size: 12,
+      description: 'Three vertex indices forming a triangle',
+    },
+    { name: 'material_hash', type: 'u32', size: 4, description: 'Material name hash' },
+    { name: 'uvs', type: 'Vec2[3]', size: 24, description: 'UV coordinates per vertex (u, v x 3)' },
+  ]}
+/>
 
 ### Face Vertex Colors (Optional)
 
 If the `HAS_VCP` flag is set, additional per-face vertex colors follow:
 
-| Size | Type   | Description                                |
-|------|--------|--------------------------------------------|
+| Size | Type   | Description                                  |
+| ---- | ------ | -------------------------------------------- |
 | 12   | u8[12] | RGB color per face vertex (3 vertices × RGB) |
 
 ### Flags
 
-| Bit | Name                          | Description                        |
-|-----|-------------------------------|------------------------------------|
-| 0   | HAS_VCP                       | Face vertex colors present         |
-| 1   | HAS_LOCAL_ORIGIN_LOCATOR_AND_PIVOT | Standard pivot data present  |
+| Bit | Name                               | Description                 |
+| --- | ---------------------------------- | --------------------------- |
+| 0   | HAS_VCP                            | Face vertex colors present  |
+| 1   | HAS_LOCAL_ORIGIN_LOCATOR_AND_PIVOT | Standard pivot data present |
 
 ## SCO ASCII Format
 
@@ -113,29 +132,30 @@ Faces= 50
 
 ### Sections
 
-| Section        | Description                                         |
-|----------------|-----------------------------------------------------|
-| `[ObjectBegin]`| Marks the start of a mesh object                    |
-| `Name=`        | Mesh name string                                    |
-| `CentralPoint=`| Central point (3 floats, space-separated)           |
-| `PivotPoint=`  | Pivot point (optional, 3 floats)                    |
-| `Verts=`       | Vertex count, followed by vertex positions (one per line) |
-| `Faces=`       | Face count, followed by face data (one per line)    |
-| `VertexColors=`| Vertex color count, followed by RGBA values (optional) |
-| `[ObjectEnd]`  | Marks the end of the mesh object                    |
+| Section         | Description                                               |
+| --------------- | --------------------------------------------------------- |
+| `[ObjectBegin]` | Marks the start of a mesh object                          |
+| `Name=`         | Mesh name string                                          |
+| `CentralPoint=` | Central point (3 floats, space-separated)                 |
+| `PivotPoint=`   | Pivot point (optional, 3 floats)                          |
+| `Verts=`        | Vertex count, followed by vertex positions (one per line) |
+| `Faces=`        | Face count, followed by face data (one per line)          |
+| `VertexColors=` | Vertex color count, followed by RGBA values (optional)    |
+| `[ObjectEnd]`   | Marks the end of the mesh object                          |
 
 ### Face Line Format
 
 Each face line contains:
+
 ```
 vertex_count  idx0 idx1 idx2  MaterialName  u0 v0 u1 v1 u2 v2
 ```
 
 ## Version Differences
 
-| Version | Vertex Colors | Notes                          |
-|---------|---------------|--------------------------------|
-| 2.1     | Face only (VCP flag) | Original format         |
+| Version | Vertex Colors              | Notes                    |
+| ------- | -------------------------- | ------------------------ |
+| 2.1     | Face only (VCP flag)       | Original format          |
 | 3.2     | Per-vertex BGRA + face VCP | Added vertex color array |
 
 ## Related Formats

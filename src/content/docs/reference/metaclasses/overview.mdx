@@ -28,12 +28,12 @@ When a BIN object declares its class hash, tools look up the corresponding metac
 
 A metaclass defines its properties as a list of:
 
-| Field        | Description                                              |
-|--------------|----------------------------------------------------------|
-| Name hash    | FNV-1a hash of the property name                         |
-| Type         | One of the 28 BIN property types                         |
-| Default      | Default value (used when the property is omitted)        |
-| Offset       | Memory offset in the engine's runtime representation     |
+| Field     | Description                                          |
+| --------- | ---------------------------------------------------- |
+| Name hash | FNV-1a hash of the property name                     |
+| Type      | One of the 28 BIN property types                     |
+| Default   | Default value (used when the property is omitted)    |
+| Offset    | Memory offset in the engine's runtime representation |
 
 ### Inheritance
 
@@ -74,6 +74,7 @@ ChampionStatData {
 ### Hash Dictionaries
 
 Metaclass extraction produces hash dictionaries that map:
+
 - **Class hashes** → class names (e.g., `0xA1B2C3D4` → `ChampionStatData`)
 - **Property hashes** → property names (e.g., `0x1234ABCD` → `mBaseAttackDamage`)
 
@@ -83,15 +84,15 @@ These dictionaries are used by [Ritobin](/reference/file-formats/ritobin/) and o
 
 Metaclasses span all areas of game functionality:
 
-| Category          | Example Classes                                         | What They Configure                        |
-|-------------------|---------------------------------------------------------|--------------------------------------------|
-| Champions         | `CharacterRecord`, `SpellDataResource`                  | Stats, abilities, scaling                  |
-| Items             | `ItemData`                                              | Item stats, recipes, passives              |
-| Particles         | `VfxSystemDefinitionData`                               | Visual effects and particles               |
-| UI                | `HudMenuDataResource`                                   | HUD and menu configuration                 |
-| Audio             | `BankUnit`, `SkinCharacterDataProperties`               | Sound events and music                     |
-| Maps              | `MapData`, `MapGraphicsData`                            | Map configuration and rendering            |
-| AI / Gameplay     | `AIData`, `GameModeData`                                | Bot behavior, game rules                   |
+| Category      | Example Classes                           | What They Configure             |
+| ------------- | ----------------------------------------- | ------------------------------- |
+| Champions     | `CharacterRecord`, `SpellDataResource`    | Stats, abilities, scaling       |
+| Items         | `ItemData`                                | Item stats, recipes, passives   |
+| Particles     | `VfxSystemDefinitionData`                 | Visual effects and particles    |
+| UI            | `HudMenuDataResource`                     | HUD and menu configuration      |
+| Audio         | `BankUnit`, `SkinCharacterDataProperties` | Sound events and music          |
+| Maps          | `MapData`, `MapGraphicsData`              | Map configuration and rendering |
+| AI / Gameplay | `AIData`, `GameModeData`                  | Bot behavior, game rules        |
 
 ## Relationship to Other Formats
 

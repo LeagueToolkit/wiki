@@ -50,8 +50,7 @@
       id: 'hook',
       phase: 2,
       label: 'Hook File Reads',
-      description:
-        "Hooks into the game's file reading mechanism to intercept file access",
+      description: "Hooks into the game's file reading mechanism to intercept file access",
       icon: '6',
     },
     {
@@ -130,8 +129,7 @@
     <div class="phase-divider">
       <div
         class="divider-arrow"
-        class:active={activeStep !== null &&
-          steps.findIndex((s) => s.id === activeStep) >= 4}
+        class:active={activeStep !== null && steps.findIndex((s) => s.id === activeStep) >= 4}
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path

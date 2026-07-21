@@ -25,38 +25,74 @@ All multi-byte values are **little-endian**.
 
 ### Header
 
-<BinaryStructure client:visible title="Header Layout" fields={[
-  { name: "magic", type: "char[]", size: 2, description: "RW (ASCII, 2 bytes)" },
-  { name: "version_major", type: "u8", size: 1, description: "Major version (1, 2, or 3)" },
-  { name: "version_minor", type: "u8", size: 1, description: "Minor version" }
-]} />
+<BinaryStructure
+  client:visible
+  title="Header Layout"
+  fields={[
+    { name: 'magic', type: 'char[]', size: 2, description: 'RW (ASCII, 2 bytes)' },
+    { name: 'version_major', type: 'u8', size: 1, description: 'Major version (1, 2, or 3)' },
+    { name: 'version_minor', type: 'u8', size: 1, description: 'Minor version' },
+  ]}
+/>
 
 ### Signature Block (version-dependent)
 
 **Version 1:**
 No signature block. Header is followed directly by the TOC.
 
-<BinaryStructure client:visible title="V1 Signature Block" fields={[
-  { name: "toc_start_offset", type: "u16", size: 2, description: "Offset to table of contents" },
-  { name: "toc_entry_size", type: "u16", size: 2, description: "Size of each TOC entry in bytes" }
-]} />
+<BinaryStructure
+  client:visible
+  title="V1 Signature Block"
+  fields={[
+    { name: 'toc_start_offset', type: 'u16', size: 2, description: 'Offset to table of contents' },
+    {
+      name: 'toc_entry_size',
+      type: 'u16',
+      size: 2,
+      description: 'Size of each TOC entry in bytes',
+    },
+  ]}
+/>
 
 **Version 2:**
 
-<BinaryStructure client:visible title="V2 Signature Block" fields={[
-  { name: "ecdsa_signature", type: "u8[83]", size: 83, description: "ECDSA signature (83 bytes)" },
-  { name: "data_checksum", type: "u64", size: 8, description: "Checksum of file data" },
-  { name: "toc_start_offset", type: "u16", size: 2, description: "Offset to table of contents" },
-  { name: "toc_entry_size", type: "u16", size: 2, description: "Size of each TOC entry in bytes" }
-]} />
+<BinaryStructure
+  client:visible
+  title="V2 Signature Block"
+  fields={[
+    {
+      name: 'ecdsa_signature',
+      type: 'u8[83]',
+      size: 83,
+      description: 'ECDSA signature (83 bytes)',
+    },
+    { name: 'data_checksum', type: 'u64', size: 8, description: 'Checksum of file data' },
+    { name: 'toc_start_offset', type: 'u16', size: 2, description: 'Offset to table of contents' },
+    {
+      name: 'toc_entry_size',
+      type: 'u16',
+      size: 2,
+      description: 'Size of each TOC entry in bytes',
+    },
+  ]}
+/>
 
 **Version 3:**
 
-<BinaryStructure client:visible title="V3 Signature Block" fields={[
-  { name: "ecdsa_signature", type: "u8[256]", size: 256, description: "ECDSA signature (256 bytes)" },
-  { name: "data_checksum", type: "u64", size: 8, description: "Checksum of file data" },
-  { name: "toc_entry_count", type: "u32", size: 4, description: "Number of TOC entries" }
-]} />
+<BinaryStructure
+  client:visible
+  title="V3 Signature Block"
+  fields={[
+    {
+      name: 'ecdsa_signature',
+      type: 'u8[256]',
+      size: 256,
+      description: 'ECDSA signature (256 bytes)',
+    },
+    { name: 'data_checksum', type: 'u64', size: 8, description: 'Checksum of file data' },
+    { name: 'toc_entry_count', type: 'u32', size: 4, description: 'Number of TOC entries' },
+  ]}
+/>
 
 ### Table of Contents
 
@@ -64,30 +100,74 @@ The TOC is an array of chunk entries. In version 3, entries immediately follow t
 
 #### TOC Entry (Version 3.0-3.3)
 
-<BinaryStructure client:visible title="TOC Entry v3.0-3.3 Layout" fields={[
-  { name: "path_hash", type: "u64", size: 8, description: "xxHash64 of the chunk's file path" },
-  { name: "data_offset", type: "u32", size: 4, description: "Byte offset to chunk data from file start" },
-  { name: "compressed_size", type: "u32", size: 4, description: "Size of compressed data in bytes" },
-  { name: "uncompressed_size", type: "u32", size: 4, description: "Size after decompression" },
-  { name: "compression_type", type: "u8", size: 1, description: "Compression algorithm (see Compression Types)" },
-  { name: "is_duplicated", type: "bool", size: 1, description: "Whether this chunk is duplicated" },
-  { name: "subchunk_start", type: "u16", size: 2, description: "Start frame for ZstdChunked" },
-  { name: "subchunk_count", type: "u8", size: 1, description: "Number of sub-chunks (ZstdChunked only)" },
-  { name: "checksum", type: "u64", size: 8, description: "Chunk data checksum" }
-]} />
+<BinaryStructure
+  client:visible
+  title="TOC Entry v3.0-3.3 Layout"
+  fields={[
+    { name: 'path_hash', type: 'u64', size: 8, description: "xxHash64 of the chunk's file path" },
+    {
+      name: 'data_offset',
+      type: 'u32',
+      size: 4,
+      description: 'Byte offset to chunk data from file start',
+    },
+    {
+      name: 'compressed_size',
+      type: 'u32',
+      size: 4,
+      description: 'Size of compressed data in bytes',
+    },
+    { name: 'uncompressed_size', type: 'u32', size: 4, description: 'Size after decompression' },
+    {
+      name: 'compression_type',
+      type: 'u8',
+      size: 1,
+      description: 'Compression algorithm (see Compression Types)',
+    },
+    {
+      name: 'is_duplicated',
+      type: 'bool',
+      size: 1,
+      description: 'Whether this chunk is duplicated',
+    },
+    { name: 'subchunk_start', type: 'u16', size: 2, description: 'Start frame for ZstdChunked' },
+    {
+      name: 'subchunk_count',
+      type: 'u8',
+      size: 1,
+      description: 'Number of sub-chunks (ZstdChunked only)',
+    },
+    { name: 'checksum', type: 'u64', size: 8, description: 'Chunk data checksum' },
+  ]}
+/>
 
 #### TOC Entry (Version 3.4+)
 
-<BinaryStructure client:visible title="TOC Entry v3.4+ Layout" fields={[
-  { name: "path_hash", type: "u64", size: 8, description: "xxHash64 of the chunk's file path" },
-  { name: "data_offset", type: "u32", size: 4, description: "Byte offset to chunk data from file start" },
-  { name: "compressed_size", type: "u32", size: 4, description: "Size of compressed data in bytes" },
-  { name: "uncompressed_size", type: "u32", size: 4, description: "Size after decompression" },
-  { name: "type_subchunk_packed", type: "u32", size: 4, description: "Packed field (see below)" },
-  { name: "checksum", type: "u64", size: 8, description: "Chunk data checksum" }
-]} />
+<BinaryStructure
+  client:visible
+  title="TOC Entry v3.4+ Layout"
+  fields={[
+    { name: 'path_hash', type: 'u64', size: 8, description: "xxHash64 of the chunk's file path" },
+    {
+      name: 'data_offset',
+      type: 'u32',
+      size: 4,
+      description: 'Byte offset to chunk data from file start',
+    },
+    {
+      name: 'compressed_size',
+      type: 'u32',
+      size: 4,
+      description: 'Size of compressed data in bytes',
+    },
+    { name: 'uncompressed_size', type: 'u32', size: 4, description: 'Size after decompression' },
+    { name: 'type_subchunk_packed', type: 'u32', size: 4, description: 'Packed field (see below)' },
+    { name: 'checksum', type: 'u64', size: 8, description: 'Chunk data checksum' },
+  ]}
+/>
 
 The `type_subchunk_packed` field in v3.4+ packs multiple values:
+
 - Bits 0–3: compression type (4 bits)
 - Bits 4–11: sub-chunk count (8 bits)
 - Bits 12–35: sub-chunk start frame (24 bits)
@@ -98,13 +178,13 @@ Chunk data is stored at the `data_offset` specified in the TOC entry. The data i
 
 ## Compression Types
 
-| Value | Name         | Description                                                      |
-|-------|--------------|------------------------------------------------------------------|
-| 0     | None         | Uncompressed - data stored as-is                                 |
-| 1     | GZip         | Deflate compression (zlib/gzip)                                  |
-| 2     | Satellite    | Data stored in a separate satellite file                         |
-| 3     | Zstd         | Zstandard single-frame compression                               |
-| 4     | ZstdChunked  | Zstandard with independently-compressed sub-chunks               |
+| Value | Name        | Description                                        |
+| ----- | ----------- | -------------------------------------------------- |
+| 0     | None        | Uncompressed - data stored as-is                   |
+| 1     | GZip        | Deflate compression (zlib/gzip)                    |
+| 2     | Satellite   | Data stored in a separate satellite file           |
+| 3     | Zstd        | Zstandard single-frame compression                 |
+| 4     | ZstdChunked | Zstandard with independently-compressed sub-chunks |
 
 ### ZstdChunked Sub-chunks
 
@@ -114,11 +194,11 @@ Sub-chunk metadata (start frame and count) is stored in the TOC entry. Each sub-
 
 ### Default Compression by File Type
 
-| File Type        | Default Compression |
-|------------------|---------------------|
-| Wwise Bank (.bnk)| None                |
-| Wwise Package (.wpk)| None             |
-| All other types  | Zstd                |
+| File Type            | Default Compression |
+| -------------------- | ------------------- |
+| Wwise Bank (.bnk)    | None                |
+| Wwise Package (.wpk) | None                |
+| All other types      | Zstd                |
 
 ## Path Hash Resolution
 
@@ -142,12 +222,12 @@ Common WAD files include character-specific archives (e.g., `Annie.wad.client`),
 
 ## Version Differences
 
-| Version | Signature | TOC Format | Key Changes                          |
-|---------|-----------|------------|--------------------------------------|
-| 1       | None      | Offset-based | Basic format, no signing           |
-| 2       | 83-byte ECDSA | Offset-based | Added ECDSA signature, data checksum |
+| Version | Signature      | TOC Format   | Key Changes                                                |
+| ------- | -------------- | ------------ | ---------------------------------------------------------- |
+| 1       | None           | Offset-based | Basic format, no signing                                   |
+| 2       | 83-byte ECDSA  | Offset-based | Added ECDSA signature, data checksum                       |
 | 3.0–3.3 | 256-byte ECDSA | Inline count | Larger signature, inline TOC count, chunk duplication flag |
-| 3.4+    | 256-byte ECDSA | Inline count | Packed type/subchunk field, removed duplication flag |
+| 3.4+    | 256-byte ECDSA | Inline count | Packed type/subchunk field, removed duplication flag       |
 
 ## Related Formats
 

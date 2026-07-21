@@ -8,17 +8,14 @@
     side = 'top',
     class: className,
     ...restProps
-  }: WithoutChildrenOrChild<Tooltip.ContentProps> & { children?: Snippet; class?: string } =
-    $props();
+  }: WithoutChildrenOrChild<Tooltip.ContentProps> & {
+    children?: Snippet;
+    class?: string;
+  } = $props();
 </script>
 
 <Tooltip.Portal>
-  <Tooltip.Content
-    {sideOffset}
-    {side}
-    class="tooltip-content {className ?? ''}"
-    {...restProps}
-  >
+  <Tooltip.Content {sideOffset} {side} class="tooltip-content {className ?? ''}" {...restProps}>
     {#if children}
       {@render children()}
     {/if}

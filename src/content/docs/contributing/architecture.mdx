@@ -4,7 +4,7 @@ description: Overview of the ltk-manager codebase structure, technology stack, a
 ---
 
 import { FileTree } from '@astrojs/starlight/components';
-import Mermaid from '../../../../components/Mermaid.svelte';
+import Mermaid from '../../../components/Mermaid.svelte';
 
 LTK Manager is built with [Tauri v2](https://v2.tauri.app/) - a Rust backend with a React (TypeScript) frontend rendered in a native webview.
 
@@ -20,23 +20,24 @@ graph TD
     A --> B
     B --> C
     C --> D
+
 `} />
 
 ## Backend (Rust)
 
 ### Module Layout
 
-| Module | Purpose |
-|--------|---------|
-| `main.rs` | Tauri setup, command registration, logging initialization |
-| `error.rs` | Error types, IPC result wrapper, error codes |
-| `state.rs` | Tauri-managed state (settings, patcher) |
-| `commands/` | IPC command handlers - thin wrappers over business logic |
-| `mods/` | Mod management - install, uninstall, toggle, profiles, library index |
-| `overlay/` | Overlay building - combines mods into patchable output |
-| `patcher/` | Patcher lifecycle - background thread, start/stop, status |
-| `workshop/` | Project management - CRUD, packing, importing, validation |
-| `legacy_patcher/` | FFI integration with cslol patcher DLL |
+| Module            | Purpose                                                              |
+| ----------------- | -------------------------------------------------------------------- |
+| `main.rs`         | Tauri setup, command registration, logging initialization            |
+| `error.rs`        | Error types, IPC result wrapper, error codes                         |
+| `state.rs`        | Tauri-managed state (settings, patcher)                              |
+| `commands/`       | IPC command handlers - thin wrappers over business logic             |
+| `mods/`           | Mod management - install, uninstall, toggle, profiles, library index |
+| `overlay/`        | Overlay building - combines mods into patchable output               |
+| `patcher/`        | Patcher lifecycle - background thread, start/stop, status            |
+| `workshop/`       | Project management - CRUD, packing, importing, validation            |
+| `legacy_patcher/` | FFI integration with cslol patcher DLL                               |
 
 ### State Management
 
@@ -53,19 +54,20 @@ All commands return `IpcResult<T>`, which serializes to `{ ok: true, value: T }`
 
 ### Key Patterns
 
-| Pattern | Implementation |
-|---------|---------------|
-| Routing | TanStack Router, file-based routes in `src/routes/` |
-| Server state | TanStack Query with custom `queryFn()` / `mutationFn()` wrappers |
-| Client state | Zustand stores in `src/stores/` |
-| Forms | TanStack Form + Zod validation |
-| UI components | Base UI primitives wrapped in `src/components/` |
-| Styling | Tailwind CSS v4 with CSS custom properties |
+| Pattern       | Implementation                                                   |
+| ------------- | ---------------------------------------------------------------- |
+| Routing       | TanStack Router, file-based routes in `src/routes/`              |
+| Server state  | TanStack Query with custom `queryFn()` / `mutationFn()` wrappers |
+| Client state  | Zustand stores in `src/stores/`                                  |
+| Forms         | TanStack Form + Zod validation                                   |
+| UI components | Base UI primitives wrapped in `src/components/`                  |
+| Styling       | Tailwind CSS v4 with CSS custom properties                       |
 
 ### Module Structure
 
 Each feature lives in `src/modules/{name}/`:
 
+{/* prettier-ignore */}
 <FileTree>
 - src/modules/library/
   - api/ TanStack Query hooks

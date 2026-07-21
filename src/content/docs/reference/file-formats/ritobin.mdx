@@ -27,10 +27,10 @@ Ritobin files typically use the `.bin` extension with the text header distinguis
 
 A Ritobin file begins with one of two header markers:
 
-| Header        | Description                                      |
-|---------------|--------------------------------------------------|
-| `#PROP_text`  | Standard property file                           |
-| `#PTCH_text`  | Patch/override file (corresponds to PTCH binary) |
+| Header       | Description                                      |
+| ------------ | ------------------------------------------------ |
+| `#PROP_text` | Standard property file                           |
+| `#PTCH_text` | Patch/override file (corresponds to PTCH binary) |
 
 ## Syntax
 
@@ -84,48 +84,48 @@ Every property type in the [BIN format](/reference/file-formats/bin/) has a corr
 
 ### Primitive Types
 
-| Type    | Syntax Example                     | Description              |
-|---------|------------------------------------|--------------------------|
-| `bool`  | `flag: bool = true`               | Boolean                  |
-| `i8`    | `val: i8 = -1`                    | Signed 8-bit integer     |
-| `u8`    | `val: u8 = 255`                   | Unsigned 8-bit integer   |
-| `i16`   | `val: i16 = -100`                 | Signed 16-bit integer    |
-| `u16`   | `val: u16 = 1000`                 | Unsigned 16-bit integer  |
-| `i32`   | `val: i32 = -50000`              | Signed 32-bit integer    |
-| `u32`   | `val: u32 = 100000`              | Unsigned 32-bit integer  |
-| `i64`   | `val: i64 = -999999`             | Signed 64-bit integer    |
-| `u64`   | `val: u64 = 999999`              | Unsigned 64-bit integer  |
-| `f32`   | `val: f32 = 3.14`                | 32-bit float             |
-| `flag`  | `val: flag = true`               | Bit boolean              |
+| Type   | Syntax Example       | Description             |
+| ------ | -------------------- | ----------------------- |
+| `bool` | `flag: bool = true`  | Boolean                 |
+| `i8`   | `val: i8 = -1`       | Signed 8-bit integer    |
+| `u8`   | `val: u8 = 255`      | Unsigned 8-bit integer  |
+| `i16`  | `val: i16 = -100`    | Signed 16-bit integer   |
+| `u16`  | `val: u16 = 1000`    | Unsigned 16-bit integer |
+| `i32`  | `val: i32 = -50000`  | Signed 32-bit integer   |
+| `u32`  | `val: u32 = 100000`  | Unsigned 32-bit integer |
+| `i64`  | `val: i64 = -999999` | Signed 64-bit integer   |
+| `u64`  | `val: u64 = 999999`  | Unsigned 64-bit integer |
+| `f32`  | `val: f32 = 3.14`    | 32-bit float            |
+| `flag` | `val: flag = true`   | Bit boolean             |
 
 ### Vector and Matrix Types
 
-| Type    | Syntax Example                                          |
-|---------|---------------------------------------------------------|
-| `vec2`  | `pos: vec2 { 1.0, 2.0 }`                               |
-| `vec3`  | `pos: vec3 { 1.0, 2.0, 3.0 }`                          |
-| `vec4`  | `col: vec4 { 1.0, 0.5, 0.0, 1.0 }`                    |
+| Type    | Syntax Example                                             |
+| ------- | ---------------------------------------------------------- |
+| `vec2`  | `pos: vec2 { 1.0, 2.0 }`                                   |
+| `vec3`  | `pos: vec3 { 1.0, 2.0, 3.0 }`                              |
+| `vec4`  | `col: vec4 { 1.0, 0.5, 0.0, 1.0 }`                         |
 | `mtx44` | `transform: mtx44 { { row0 } { row1 } { row2 } { row3 } }` |
-| `rgba`  | `color: rgba { 255, 128, 0, 255 }`                     |
+| `rgba`  | `color: rgba { 255, 128, 0, 255 }`                         |
 
 ### Reference Types
 
-| Type      | Syntax Example                                          | Description                         |
-|-----------|---------------------------------------------------------|-------------------------------------|
-| `string`  | `name: string = "Annie"`                                | UTF-8 string                        |
-| `hash`    | `ref: hash = 0xDEADBEEF`                               | FNV-1a hash value                   |
-| `file`    | `path: file = "DATA/path/to/file.dds"`                  | WAD chunk link (file path)          |
-| `link`    | `target: link = 0x12345678`                             | Object link (path hash of another entry) |
-| `pointer` | `obj: pointer = 0xABCDEF01`                             | Object pointer                      |
+| Type      | Syntax Example                         | Description                              |
+| --------- | -------------------------------------- | ---------------------------------------- |
+| `string`  | `name: string = "Annie"`               | UTF-8 string                             |
+| `hash`    | `ref: hash = 0xDEADBEEF`               | FNV-1a hash value                        |
+| `file`    | `path: file = "DATA/path/to/file.dds"` | WAD chunk link (file path)               |
+| `link`    | `target: link = 0x12345678`            | Object link (path hash of another entry) |
+| `pointer` | `obj: pointer = 0xABCDEF01`            | Object pointer                           |
 
 ### Container Types
 
-| Type       | Syntax Example                                         |
-|------------|--------------------------------------------------------|
-| `list`     | `items: list[u32] { 1, 2, 3 }`                        |
-| `list2`    | `items: list2[u32] { 1, 2, 3 }`                       |
-| `option`   | `opt: option[f32] { 3.14 }`                            |
-| `map`      | `data: map[hash,string] { 0x1234 = "value" }`         |
+| Type     | Syntax Example                                |
+| -------- | --------------------------------------------- |
+| `list`   | `items: list[u32] { 1, 2, 3 }`                |
+| `list2`  | `items: list2[u32] { 1, 2, 3 }`               |
+| `option` | `opt: option[f32] { 3.14 }`                   |
+| `map`    | `data: map[hash,string] { 0x1234 = "value" }` |
 
 ### Struct and Embed Types
 

@@ -19,11 +19,11 @@ Compute FNV-1a, ELF, and SDBM hashes for any string. Input is automatically lowe
 
 ### Parameters
 
-| Parameter     | Value          | Type |
-|---------------|----------------|------|
-| Offset basis  | `0x811c9dc5`   | u32  |
-| Prime         | `0x01000193`   | u32  |
-| Output size   | 32 bits        | u32  |
+| Parameter    | Value        | Type |
+| ------------ | ------------ | ---- |
+| Offset basis | `0x811c9dc5` | u32  |
+| Prime        | `0x01000193` | u32  |
+| Output size  | 32 bits      | u32  |
 
 ### Algorithm
 
@@ -41,12 +41,12 @@ Before hashing, strings are converted to **lowercase**. Path separators are norm
 
 ### Usage
 
-| Context | Format | Notes |
-|---------|--------|-------|
-| Property name hashes | [BIN](/reference/file-formats/bin/) | Identifies property fields within objects |
-| Object path hashes | [BIN](/reference/file-formats/bin/) | Identifies top-level objects |
-| Class hashes | [BIN](/reference/file-formats/bin/) | Identifies metaclass types |
-| General string identification | Various | Fallback hash for miscellaneous contexts |
+| Context                       | Format                              | Notes                                     |
+| ----------------------------- | ----------------------------------- | ----------------------------------------- |
+| Property name hashes          | [BIN](/reference/file-formats/bin/) | Identifies property fields within objects |
+| Object path hashes            | [BIN](/reference/file-formats/bin/) | Identifies top-level objects              |
+| Class hashes                  | [BIN](/reference/file-formats/bin/) | Identifies metaclass types                |
+| General string identification | Various                             | Fallback hash for miscellaneous contexts  |
 
 ---
 
@@ -56,15 +56,15 @@ Before hashing, strings are converted to **lowercase**. Path separators are norm
 
 ### Parameters
 
-| Parameter     | Value | Type |
-|---------------|-------|------|
-| Seed          | `0`   | u64  |
-| Output size   | 64 bits | u64 |
+| Parameter   | Value   | Type |
+| ----------- | ------- | ---- |
+| Seed        | `0`     | u64  |
+| Output size | 64 bits | u64  |
 
 ### Usage
 
-| Context | Format | Notes |
-|---------|--------|-------|
+| Context           | Format                                 | Notes                                |
+| ----------------- | -------------------------------------- | ------------------------------------ |
 | Chunk path hashes | [WAD](/reference/file-formats/wad/) v3 | Identifies files within WAD archives |
 
 WAD path hashes are computed from the lowercase, forward-slash-normalized file path relative to the WAD root. For example, the path `DATA/Characters/Annie/Annie.bin` would be lowercased to `data/characters/annie/annie.bin` before hashing.
@@ -77,10 +77,10 @@ The **ELF hash** (Executable and Linkable Format hash) is used for skeleton join
 
 ### Usage
 
-| Context | Format | Notes |
-|---------|--------|-------|
-| Joint name hashes | [SKL](/reference/file-formats/skl/) | Identifies skeleton joints (lowercased input) |
-| Animation joint hashes | [ANM](/reference/file-formats/anm/) | References joints in animation data |
+| Context                | Format                              | Notes                                         |
+| ---------------------- | ----------------------------------- | --------------------------------------------- |
+| Joint name hashes      | [SKL](/reference/file-formats/skl/) | Identifies skeleton joints (lowercased input) |
+| Animation joint hashes | [ANM](/reference/file-formats/anm/) | References joints in animation data           |
 
 ### Algorithm
 
@@ -97,9 +97,9 @@ return hash
 
 ### Parameters
 
-| Parameter     | Value | Type |
-|---------------|-------|------|
-| Output size   | 32 bits | u32 |
+| Parameter   | Value   | Type |
+| ----------- | ------- | ---- |
+| Output size | 32 bits | u32  |
 
 ---
 
@@ -118,9 +118,9 @@ return hash
 
 ### Parameters
 
-| Parameter     | Value | Type |
-|---------------|-------|------|
-| Output size   | 32 bits | u32 |
+| Parameter   | Value   | Type |
+| ----------- | ------- | ---- |
+| Output size | 32 bits | u32  |
 
 ---
 

@@ -22,9 +22,7 @@
   );
 
   let unsupportedFeatures = $derived(
-    selectedVersion !== null
-      ? features.filter((f) => !f.versions.includes(selectedVersion!))
-      : [],
+    selectedVersion !== null ? features.filter((f) => !f.versions.includes(selectedVersion!)) : [],
   );
 </script>
 
@@ -55,8 +53,7 @@
 
   <div class="feature-list">
     {#each features as feature, i}
-      {@const supported =
-        selectedVersion === null || feature.versions.includes(selectedVersion)}
+      {@const supported = selectedVersion === null || feature.versions.includes(selectedVersion)}
       {@const firstVersion = Math.min(...feature.versions)}
       <div
         class="feature-row"

@@ -57,6 +57,7 @@ The `WAD/` folder is the standard approach. It can contain either:
 Shipping pre-packaged `.wad` files is fragile. The WAD file format version can change between game patches, and the game or manager may have issues processing outdated WAD versions in the future. Prefer `.wad.client` folders with raw files instead: the manager builds the WAD at overlay time using the correct format version.
 :::
 
+{/* prettier-ignore */}
 <FileTree>
 - my-mod.fantome (ZIP)
   - WAD/
@@ -78,6 +79,7 @@ The `RAW/` folder is a completely legacy approach and should not be used in new 
 
 The `RAW/` folder lets users ship raw files without specifying which WAD they belong to. To resolve this, the manager must index the game installation and assign each file to the correct WAD based on that index. This is slow, fragile, and depends on having a complete game index available.
 
+{/* prettier-ignore */}
 <FileTree>
 - my-mod.fantome (ZIP)
   - RAW/
@@ -97,6 +99,7 @@ The recommended migration path is to create a new mod project and move your file
 1. In the Workshop, click **New Project** and fill in your mod's metadata
 2. Copy your `.wad.client` folders (or reorganize your `RAW/` files into `.wad.client` folders) into the project's `content/base/` directory
 
+{/* prettier-ignore */}
 <FileTree>
 - my-mod/
   - mod.config.json
@@ -110,7 +113,7 @@ The recommended migration path is to create a new mod project and move your file
                 - …
 </FileTree>
 
-This gives you access to all modern features: multi-layer support, full metadata, thumbnails, and efficient `.modpkg` packaging. If your mod has variants or optional parts, you can split them into separate [layers](/guides/mod-creation/layers/) under `content/` instead of bundling everything into a single folder.
+This gives you access to all modern features: multi-layer support, full metadata, thumbnails, and efficient `.modpkg` packaging. If your mod has variants or optional parts, you can split them into separate [layers](/making-mods/layers/) under `content/` instead of bundling everything into a single folder.
 
 ## After Importing
 

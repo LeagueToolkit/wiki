@@ -93,15 +93,31 @@
               <span class="icon" aria-hidden="true">
                 {#if feature.supported === true}
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M3 8.5L6.5 12L13 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path
+                      d="M3 8.5L6.5 12L13 4"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                 {:else if feature.supported === 'partial'}
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M3 8H13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                    <path
+                      d="M3 8H13"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                    />
                   </svg>
                 {:else}
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                    <path
+                      d="M4 4L12 12M12 4L4 12"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                    />
                   </svg>
                 {/if}
               </span>

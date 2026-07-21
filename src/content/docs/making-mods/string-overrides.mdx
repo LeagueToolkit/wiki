@@ -3,10 +3,19 @@ title: String Overrides
 description: Edit the game's stringtables - rename champions, items, and abilities or rewrite descriptions with per-layer, per-locale string overrides in the Creator Workshop.
 ---
 
-import { Card, CardGrid, FileTree, LinkCard, Steps, TabItem, Tabs } from '@astrojs/starlight/components';
+import {
+  Card,
+  CardGrid,
+  FileTree,
+  LinkCard,
+  Steps,
+  TabItem,
+  Tabs,
+} from '@astrojs/starlight/components';
 
 All of League's text - champion and item names, ability descriptions, tooltips, UI labels - lives in **stringtables**: `.stringtable` files (the [RST format](/reference/file-formats/legacy/#rst---riot-string-table)) stored per language inside the game's localized WAD archives:
 
+{/* prettier-ignore */}
 <FileTree>
 - League_of_Legends/
   - Game/
@@ -91,10 +100,10 @@ A key is only treated as a raw hash when it is exactly 16 hex digits (case-insen
 
 Each layer has one override bucket per locale, plus **Default (All Locales)**:
 
-| Bucket                          | Applies to                                                       |
-| ------------------------------- | ---------------------------------------------------------------- |
-| **Default (All Locales)**       | Every patched language                                           |
-| Locale-specific (e.g. `ko_kr`)  | Only that language - beats the Default entry for the same field  |
+| Bucket                         | Applies to                                                      |
+| ------------------------------ | --------------------------------------------------------------- |
+| **Default (All Locales)**      | Every patched language                                          |
+| Locale-specific (e.g. `ko_kr`) | Only that language - beats the Default entry for the same field |
 
 :::tip[Patching every installed language]
 By default, overrides are only patched into the language your League client is set to. If you switch game languages often, enable **Apply string overrides to all locales** under **Settings → Patching** to patch every installed language instead.
@@ -104,11 +113,11 @@ By default, overrides are only patched into the language your League client is s
 
 When several enabled mods or layers override the same field, string conflicts resolve exactly like file conflicts:
 
-| Scope              | Winner                                                                              |
-| ------------------ | ----------------------------------------------------------------------------------- |
-| **Between mods**   | The higher-priority mod, following the same ordering used for file overrides        |
-| **Within a mod**   | The layer with the higher [priority](/guides/mod-creation/layers/#priority)          |
-| **Within a layer** | The locale-specific entry, beating a **Default (All Locales)** entry                |
+| Scope              | Winner                                                                       |
+| ------------------ | ---------------------------------------------------------------------------- |
+| **Between mods**   | The higher-priority mod, following the same ordering used for file overrides |
+| **Within a mod**   | The layer with the higher [priority](/making-mods/layers/#priority)          |
+| **Within a layer** | The locale-specific entry, beating a **Default (All Locales)** entry         |
 
 Mod priority dominates locale specificity: a higher-priority mod's Default entry still beats a lower-priority mod's locale-specific entry.
 
@@ -149,14 +158,15 @@ Overrides are stored in your project config under each layer, keyed by locale (`
     [layers.string_overrides.ko_kr]
     game_character_displayname_Ahri = "구미호"
     ```
+
   </TabItem>
 </Tabs>
 
 Both distribution formats carry overrides, so they survive packing and re-importing:
 
-| Format     | Where overrides are stored          |
-| ---------- | ----------------------------------- |
-| `.modpkg`  | Per-layer package metadata          |
+| Format     | Where overrides are stored            |
+| ---------- | ------------------------------------- |
+| `.modpkg`  | Per-layer package metadata            |
 | `.fantome` | `StringOverrides` in `META/info.json` |
 
 :::caution[Don't ship raw stringtable files]
@@ -166,19 +176,11 @@ Including a whole `lol.stringtable` file in your mod's content is not supported 
 ## Related Pages
 
 <CardGrid>
-  <LinkCard
-    title="Layers"
-    href="/guides/mod-creation/layers/"
-    description="Layer system and priorities"
-  />
+  <LinkCard title="Layers" href="/making-mods/layers/" description="Layer system and priorities" />
   <LinkCard
     title="Workshop Overview"
-    href="/guides/mod-creation/workshop-overview/"
+    href="/making-mods/workshop/"
     description="Project-based mod development"
   />
-  <LinkCard
-    title="Packaging"
-    href="/guides/mod-creation/packaging/"
-    description="Distribution formats"
-  />
+  <LinkCard title="Packaging" href="/making-mods/packaging/" description="Distribution formats" />
 </CardGrid>

@@ -3,15 +3,11 @@
   "name": "wiki",
   "compatibility_date": "2026-04-10",
   "observability": {
-    "enabled": true
+    "enabled": true,
   },
-  "main": "dist/_worker.js/index.js",
-  "compatibility_flags": [
-    "global_fetch_strictly_public",
-    "nodejs_compat"
-  ],
+  // Assets-only Worker: the site is fully static (`output: 'static'`, no
+  // adapter), so there is no worker script - wrangler serves `dist` directly.
   "assets": {
-    "binding": "ASSETS",
-    "directory": "dist"
-  }
+    "directory": "dist",
+  },
 }

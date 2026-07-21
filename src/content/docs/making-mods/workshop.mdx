@@ -4,7 +4,7 @@ description: An introduction to the ltk-manager Creator Workshop, the integrated
 ---
 
 import { FileTree, Tabs, TabItem } from '@astrojs/starlight/components';
-import ProjectScaffold from '../../../../components/ProjectScaffold.svelte';
+import ProjectScaffold from '../../../components/ProjectScaffold.svelte';
 
 The Creator Workshop is where you build, edit, and package mods. It provides a project-based workflow for mod development.
 
@@ -18,6 +18,7 @@ The Creator Workshop is where you build, edit, and package mods. It provides a p
 
 ### Workshop Path Structure
 
+{/* prettier-ignore */}
 <FileTree>
 - workshop-path/
   - my-skin-mod/
@@ -96,6 +97,7 @@ The project config file stores all project metadata. LTK Manager supports both `
     priority = 0
     description = "Base skin files"
     ```
+
   </TabItem>
 </Tabs>
 
@@ -113,7 +115,7 @@ Open a project to access the editor, where you can:
 - Manage authors (add, remove, set roles)
 - Set tags, champions, and maps
 - Configure layers
-- Edit [string overrides](/guides/mod-creation/string-overrides/) to change in-game text
+- Edit [string overrides](/making-mods/string-overrides/) to change in-game text
 - Set a thumbnail image
 
 ## Layers
@@ -125,16 +127,16 @@ Layers organize your mod's content into separate groups. Common uses:
 - **alternate** - Alternative versions or color variants
 - **particles** - Optional particle effect modifications
 
-Each layer's directory contains `.wad.client` folders that assign raw files to their target WAD. The manager builds the WAD archives at overlay time. Each layer has a priority that determines load order when multiple layers are active. See [Layers](/guides/mod-creation/layers/) for details.
+Each layer's directory contains `.wad.client` folders that assign raw files to their target WAD. The manager builds the WAD archives at overlay time. Each layer has a priority that determines load order when multiple layers are active. See [Layers](/making-mods/layers/) for details.
 
 ## Importing Projects
 
 You can create projects from existing sources:
 
-- **[From .modpkg](/guides/mod-creation/creating-a-project/#from-modpkg)** - Extract an existing mod package into a project
-- **[From .fantome](/guides/mod-creation/creating-a-project/#from-fantome)** - Convert a legacy fantome archive
-- **[From fantome WAD/RAW folders](/guides/mod-creation/creating-a-project/#from-fantome-wadraw-folders)** - Migrate raw files from fantome folder structures
-- **[From Git](/guides/mod-creation/creating-a-project/#from-git)** - Clone a Git repository as a project
+- **[From .modpkg](/making-mods/project/#from-modpkg)** - Extract an existing mod package into a project
+- **[From .fantome](/making-mods/project/#from-fantome)** - Import a fantome archive as an editable project
+- **[From fantome WAD/RAW folders](/making-mods/project/#from-fantome-wadraw-folders)** - Migrate raw files from fantome folder structures
+- **[From Git](/making-mods/project/#from-git)** - Clone a Git repository as a project
 
 ## Packing and Exporting
 
@@ -142,10 +144,13 @@ When your mod is ready for distribution:
 
 1. Click **Pack** on your project
 2. Choose the output format:
-   - **modpkg** (recommended) - Full metadata, multi-layer, thumbnail support
-   - **fantome** - Legacy format for compatibility
+   - **fantome** - what to pick when publishing to a mod site, none of which support modpkg yet
+   - **modpkg** - full metadata, multi-layer, thumbnail support; use it when distributing outside a platform
 3. Choose the output location
 4. The packed file is ready to share
+
+See [Choosing a format](/making-mods/packaging/#choosing-a-format) for which to
+pick, and why the more capable format is not always the right upload.
 
 ## Validation
 
@@ -160,7 +165,7 @@ Warnings suggest improvements; errors must be fixed before packing.
 
 ## Related Pages
 
-- [Layers](/guides/mod-creation/layers/) - Layer system details
-- [String Overrides](/guides/mod-creation/string-overrides/) - Editing in-game text
-- [Importing Projects](/guides/mod-creation/creating-a-project/) - Import from various sources
-- [Mod Package Format](/guides/mod-creation/packaging/) - Technical format specification
+- [Layers](/making-mods/layers/) - Layer system details
+- [String Overrides](/making-mods/string-overrides/) - Editing in-game text
+- [Importing Projects](/making-mods/project/) - Import from various sources
+- [Mod Package Format](/making-mods/packaging/) - Technical format specification

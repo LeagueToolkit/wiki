@@ -1,0 +1,197 @@
+---
+title: league-mod
+description: The command-line toolkit for creating, packing, and inspecting League of Legends mod projects - the engine behind the Creator Workshop.
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+
+`league-mod` is the CLI for working with `.modpkg` mod projects. It is the same
+engine the [Creator Workshop](/making-mods/workshop/) in LTK Manager is built
+on, exposed as a terminal tool.
+
+That means the two are interchangeable. A project created in the Workshop packs
+with `league-mod pack`; a project scaffolded with `league-mod init` opens in the
+Workshop. Use whichever fits what you are doing.
+
+**Repository:** [LeagueToolkit/league-mod](https://github.com/LeagueToolkit/league-mod)
+
+## When to use the CLI over the Workshop
+
+The Workshop is the better default - it is visual, it validates as you go, and
+it does not require a terminal. Reach for `league-mod` when you want to:
+
+- **Script or automate** packing, e.g. build a `.modpkg` in CI on every commit
+- **Batch process** many projects at once
+- **Work in a repo** where your mod source is version-controlled
+- **Inspect a `.modpkg`** quickly without importing it anywhere
+
+## Installation
+
+<Tabs>
+  <TabItem label="Windows (quick install)">
+    ```powershell
+    irm https://raw.githubusercontent.com/LeagueToolkit/league-mod/main/scripts/install-league-mod.ps1 | iex
+    ```
+
+    Installs to `%LOCALAPPDATA%\LeagueToolkit\league-mod` and adds it to your
+    user `PATH`. No administrator rights needed. Open a new terminal afterwards
+    so the updated `PATH` takes effect.
+
+  </TabItem>
+  <TabItem label="From releases">
+    1. Download the latest build from
+       [GitHub Releases](https://github.com/LeagueToolkit/league-mod/releases)
+    2. Extract the ZIP wherever you like
+    3. Add that directory to your `PATH`
+  </TabItem>
+</Tabs>
+
+Verify it worked:
+
+```bash
+league-mod --help
+```
+
+## Quick start
+
+<Steps>
+
+1. **Create a project.** The interactive prompts ask for name, display name,
+   description, and authors.
+
+   ```bash
+   league-mod init
+   ```
+
+   Non-interactively:
+
+   ```bash
+   league-mod init --name my-awesome-mod --display-name "My Awesome Mod"
+   ```
+
+2. **Add your content.** Files go under `content/<layer>/<target>.wad.client/`,
+   mirroring the path they occupy inside the game's WAD archive:
+
+   ```
+   my-awesome-mod/
+   ├── mod.config.json
+   └── content/
+       └── base/
+           └── Aatrox.wad.client/
+               ├── data/
+               └── assets/
+   ```
+
+   This is the same layout the Workshop uses - see
+   [Workshop Overview](/making-mods/workshop/) for the full explanation.
+
+3. **Configure.** Edit `mod.config.json` to set metadata and declare
+   [layers](/making-mods/layers/).
+
+4. **Pack it.**
+
+   ```bash
+   league-mod pack
+   ```
+
+   Produces `my-awesome-mod_1.0.0.modpkg` in `build/`, ready to share.
+
+</Steps>
+
+## Commands
+
+### `init`
+
+Scaffolds a new mod project in the current directory.
+
+```bash
+league-mod init
+league-mod init --name my-awesome-mod --display-name "My Awesome Mod"
+```
+
+Run with no flags for interactive prompts.
+
+### `pack`
+
+Builds a distributable `.modpkg` from a project.
+
+```bash
+league-mod pack
+league-mod pack --config-path ./mod.config.json --output-dir ./build
+```
+
+Content is compressed with Zstandard and organized by layer.
+
+### `extract`
+
+Unpacks an existing `.modpkg` back into its files - useful for inspecting how
+someone else built a mod, or recovering a project whose source you have lost.
+
+```bash
+league-mod extract --file-path ./my-mod.modpkg --output-dir ./extracted
+```
+
+### `info`
+
+Prints a package's metadata without extracting it. The fast way to check what a
+downloaded mod actually contains.
+
+```bash
+league-mod info --file-path ./my-mod.modpkg
+```
+
+### `config`
+
+Manages the tool's own settings, principally where League is installed.
+
+```bash
+league-mod config auto-detect
+league-mod config set-league-path "C:/Riot Games/League of Legends/Game/League of Legends.exe"
+league-mod config show
+```
+
+`auto-detect` checks the registry, running processes, and common install paths.
+
+## Project configuration
+
+Projects are configured by a `mod.config.json` (or `mod.config.toml`) at the
+project root, declaring metadata, authors, license, and layers.
+
+The configuration format is documented in full on
+[Workshop Overview](/making-mods/workshop/#project-configuration) - it is the
+same file for both tools.
+
+`league-mod` additionally supports **transformers**: rules that process matching
+files during packing, for example converting source images to `.tex` on the way
+into the package.
+
+```json
+{
+  "transformers": [
+    {
+      "name": "tex-converter",
+      "patterns": ["**/*.dds", "**/*.png"]
+    }
+  ]
+}
+```
+
+## The libraries underneath
+
+The repository is a Rust workspace. If you are building your own tooling, these
+crates are the reusable parts:
+
+| Crate             | Purpose                                                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------------- |
+| `ltk_modpkg`      | Read and write the `.modpkg` binary format - Zstd compression, layer organization, chunked storage |
+| `ltk_mod_project` | Project configuration files, metadata, layer and transformer definitions                           |
+| `ltk_mod_core`    | Shared utilities, including League installation detection and path handling                        |
+
+For the format itself, see [Packaging](/making-mods/packaging/).
+
+## Related
+
+- [Mod Creation](/making-mods/) - the full authoring workflow
+- [Workshop Overview](/making-mods/workshop/) - the GUI equivalent
+- [Layers](/making-mods/layers/) - how layer priority resolves conflicts
+- [Packaging](/making-mods/packaging/) - the `.modpkg` format specification

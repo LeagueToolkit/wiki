@@ -32,43 +32,61 @@ All multi-byte values are **little-endian**.
 
 BIN files come in two variants identified by their magic bytes:
 
-| Magic  | Name | Description                                        |
-|--------|------|----------------------------------------------------|
-| `PROP` | Standard | Contains objects with typed properties           |
+| Magic  | Name     | Description                                                 |
+| ------ | -------- | ----------------------------------------------------------- |
+| `PROP` | Standard | Contains objects with typed properties                      |
 | `PTCH` | Patch    | Override file that wraps a PROP section with data overrides |
 
 ### PROP Header
 
-<BinaryStructure client:visible title="PROP Header" fields={[
-  { name: "magic", type: "char[]", size: 4, description: "PROP (ASCII, 4 bytes)" },
-  { name: "version", type: "u32", size: 4, description: "Format version (1, 2, or 3)" }
-]} />
+<BinaryStructure
+  client:visible
+  title="PROP Header"
+  fields={[
+    { name: 'magic', type: 'char[]', size: 4, description: 'PROP (ASCII, 4 bytes)' },
+    { name: 'version', type: 'u32', size: 4, description: 'Format version (1, 2, or 3)' },
+  ]}
+/>
 
 #### Version 2+ Dependencies
 
 If version >= 2, the header is followed by a dependency list:
 
-| Offset | Size     | Type     | Field            | Description                            |
-|--------|----------|----------|------------------|----------------------------------------|
-| 0x08   | 4        | u32      | dependency_count | Number of linked dependency files      |
+| Offset | Size     | Type     | Field            | Description                             |
+| ------ | -------- | -------- | ---------------- | --------------------------------------- |
+| 0x08   | 4        | u32      | dependency_count | Number of linked dependency files       |
 | 0x0C   | variable | string[] | dependencies     | Size-prefixed UTF-8 strings (see below) |
 
 Each dependency string is encoded as:
 
-| Size | Type | Field  | Description                  |
-|------|------|--------|------------------------------|
-| 2    | u16  | length | String length in bytes       |
+| Size | Type | Field  | Description                            |
+| ---- | ---- | ------ | -------------------------------------- |
+| 2    | u16  | length | String length in bytes                 |
 | N    | u8[] | data   | UTF-8 string data (no null terminator) |
 
 ### PTCH Header
 
 Patch files wrap a PROP section:
 
-<BinaryStructure client:visible title="PTCH Header" fields={[
-  { name: "magic", type: "char[]", size: 4, description: "PTCH (ASCII, 4 bytes)" },
-  { name: "patch_version", type: "u32", size: 4, description: "Patch format version (must be 1)" },
-  { name: "override_object_count", type: "u32", size: 4, description: "Number of override targets" }
-]} />
+<BinaryStructure
+  client:visible
+  title="PTCH Header"
+  fields={[
+    { name: 'magic', type: 'char[]', size: 4, description: 'PTCH (ASCII, 4 bytes)' },
+    {
+      name: 'patch_version',
+      type: 'u32',
+      size: 4,
+      description: 'Patch format version (must be 1)',
+    },
+    {
+      name: 'override_object_count',
+      type: 'u32',
+      size: 4,
+      description: 'Number of override targets',
+    },
+  ]}
+/>
 
 When the inner PROP section is version 3, data override entries follow the object data.
 
@@ -76,29 +94,29 @@ When the inner PROP section is version 3, data override entries follow the objec
 
 After the header (and dependencies), the object table begins:
 
-| Size | Type   | Field            | Description                                 |
-|------|--------|------------------|---------------------------------------------|
-| 4    | u32    | object_count     | Number of objects in the file               |
-| N×4  | u32[]  | class_hashes     | Array of class hashes, one per object (index-correlated) |
+| Size | Type  | Field        | Description                                              |
+| ---- | ----- | ------------ | -------------------------------------------------------- |
+| 4    | u32   | object_count | Number of objects in the file                            |
+| N×4  | u32[] | class_hashes | Array of class hashes, one per object (index-correlated) |
 
 Followed by the object data array. Each object is serialized sequentially - its class hash is already known from the class_hashes array at the corresponding index:
 
-| Size     | Type   | Field            | Description                                   |
-|----------|--------|------------------|-----------------------------------------------|
-| 4        | u32    | data_size        | Size in bytes of the remaining object data (path_hash + property_count + all properties) |
-| 4        | u32    | path_hash        | [FNV-1a hash](/reference/hashing/algorithms/#fnv-1a) identifying this object |
-| 2        | u16    | property_count   | Number of properties in this object           |
-| variable | prop[] | properties       | Array of typed properties (each with 5-byte header) |
+| Size     | Type   | Field          | Description                                                                              |
+| -------- | ------ | -------------- | ---------------------------------------------------------------------------------------- |
+| 4        | u32    | data_size      | Size in bytes of the remaining object data (path_hash + property_count + all properties) |
+| 4        | u32    | path_hash      | [FNV-1a hash](/reference/hashing/algorithms/#fnv-1a) identifying this object             |
+| 2        | u16    | property_count | Number of properties in this object                                                      |
+| variable | prop[] | properties     | Array of typed properties (each with 5-byte header)                                      |
 
 ### Property Encoding
 
 Each property is encoded as:
 
-| Size     | Type   | Field       | Description                                      |
-|----------|--------|-------------|--------------------------------------------------|
-| 4        | u32    | name_hash   | [FNV-1a hash](/reference/hashing/algorithms/#fnv-1a) of the property name |
-| 1        | u8     | type_id     | Property type identifier (see Property Types)    |
-| variable | varies | value       | Type-specific encoded value                      |
+| Size     | Type   | Field     | Description                                                               |
+| -------- | ------ | --------- | ------------------------------------------------------------------------- |
+| 4        | u32    | name_hash | [FNV-1a hash](/reference/hashing/algorithms/#fnv-1a) of the property name |
+| 1        | u8     | type_id   | Property type identifier (see Property Types)                             |
+| variable | varies | value     | Type-specific encoded value                                               |
 
 ## Property Types
 
@@ -108,40 +126,40 @@ Properties inside structs and embedded objects **do** include the full 5-byte he
 
 ### Primitive Types (IDs 0–18)
 
-| ID | Name         | Size    | Encoding                                    |
-|----|--------------|---------|---------------------------------------------|
-| 0  | None         | 0       | No data                                     |
-| 1  | Bool         | 1       | u8 (0 = false, 1 = true)                   |
-| 2  | I8           | 1       | Signed 8-bit integer                        |
-| 3  | U8           | 1       | Unsigned 8-bit integer                      |
-| 4  | I16          | 2       | Signed 16-bit integer                       |
-| 5  | U16          | 2       | Unsigned 16-bit integer                     |
-| 6  | I32          | 4       | Signed 32-bit integer                       |
-| 7  | U32          | 4       | Unsigned 32-bit integer                     |
-| 8  | I64          | 8       | Signed 64-bit integer                       |
-| 9  | U64          | 8       | Unsigned 64-bit integer                     |
-| 10 | F32          | 4       | IEEE 754 single-precision float             |
-| 11 | Vec2         | 8       | 2× f32 (x, y)                              |
-| 12 | Vec3         | 12      | 3× f32 (x, y, z)                           |
-| 13 | Vec4         | 16      | 4× f32 (x, y, z, w)                        |
-| 14 | Mat44        | 64      | 16× f32 (4×4 matrix, row-major)            |
-| 15 | Color        | 4       | 4× u8 (R, G, B, A)                         |
-| 16 | String       | variable| u16 length prefix + UTF-8 bytes             |
-| 17 | Hash         | 4       | u32 FNV-1a hash value                       |
-| 18 | WadChunkLink | 8       | u64 xxHash64 of WAD chunk path              |
+| ID  | Name         | Size     | Encoding                        |
+| --- | ------------ | -------- | ------------------------------- |
+| 0   | None         | 0        | No data                         |
+| 1   | Bool         | 1        | u8 (0 = false, 1 = true)        |
+| 2   | I8           | 1        | Signed 8-bit integer            |
+| 3   | U8           | 1        | Unsigned 8-bit integer          |
+| 4   | I16          | 2        | Signed 16-bit integer           |
+| 5   | U16          | 2        | Unsigned 16-bit integer         |
+| 6   | I32          | 4        | Signed 32-bit integer           |
+| 7   | U32          | 4        | Unsigned 32-bit integer         |
+| 8   | I64          | 8        | Signed 64-bit integer           |
+| 9   | U64          | 8        | Unsigned 64-bit integer         |
+| 10  | F32          | 4        | IEEE 754 single-precision float |
+| 11  | Vec2         | 8        | 2× f32 (x, y)                   |
+| 12  | Vec3         | 12       | 3× f32 (x, y, z)                |
+| 13  | Vec4         | 16       | 4× f32 (x, y, z, w)             |
+| 14  | Mat44        | 64       | 16× f32 (4×4 matrix, row-major) |
+| 15  | Color        | 4        | 4× u8 (R, G, B, A)              |
+| 16  | String       | variable | u16 length prefix + UTF-8 bytes |
+| 17  | Hash         | 4        | u32 FNV-1a hash value           |
+| 18  | WadChunkLink | 8        | u64 xxHash64 of WAD chunk path  |
 
 ### Complex Types (IDs 128+)
 
-| ID  | Hex  | Name               | Encoding                                                |
-|-----|------|--------------------|---------------------------------------------------------|
-| 128 | 0x80 | Container          | u8 element_type + u32 size + u32 count + N× element    |
-| 129 | 0x81 | UnorderedContainer | u8 element_type + u32 size + u32 count + N× element    |
-| 130 | 0x82 | Struct             | u32 class_hash + u32 data_size + u16 prop_count + props |
-| 131 | 0x83 | Embedded           | u32 class_hash + u32 data_size + u16 prop_count + props |
-| 132 | 0x84 | ObjectLink         | u32 path hash of linked object                          |
-| 133 | 0x85 | Optional           | u8 inner_type + u8 present (0/1) + value if present     |
+| ID  | Hex  | Name               | Encoding                                                             |
+| --- | ---- | ------------------ | -------------------------------------------------------------------- |
+| 128 | 0x80 | Container          | u8 element_type + u32 size + u32 count + N× element                  |
+| 129 | 0x81 | UnorderedContainer | u8 element_type + u32 size + u32 count + N× element                  |
+| 130 | 0x82 | Struct             | u32 class_hash + u32 data_size + u16 prop_count + props              |
+| 131 | 0x83 | Embedded           | u32 class_hash + u32 data_size + u16 prop_count + props              |
+| 132 | 0x84 | ObjectLink         | u32 path hash of linked object                                       |
+| 133 | 0x85 | Optional           | u8 inner_type + u8 present (0/1) + value if present                  |
 | 134 | 0x86 | Map                | u8 key_type + u8 value_type + u32 size + u32 count + N× (key, value) |
-| 135 | 0x87 | BitBool            | u8 (0 = false, 1 = true)                               |
+| 135 | 0x87 | BitBool            | u8 (0 = false, 1 = true)                                             |
 
 ### Legacy Type Unpacking
 
@@ -151,11 +169,14 @@ Properties inside structs and embedded objects **do** include the full 5-byte he
 
 <Collapsible client:visible title="Container / UnorderedContainer" badge="ID 128-129">
 
-<BinaryStructure client:visible fields={[
-  { name: "element_type", type: "u8", size: 1, description: "Type ID of contained elements" },
-  { name: "data_size", type: "u32", size: 4, description: "Total size of element data in bytes" },
-  { name: "count", type: "u32", size: 4, description: "Number of elements" }
-]} />
+<BinaryStructure
+  client:visible
+  fields={[
+    { name: 'element_type', type: 'u8', size: 1, description: 'Type ID of contained elements' },
+    { name: 'data_size', type: 'u32', size: 4, description: 'Total size of element data in bytes' },
+    { name: 'count', type: 'u32', size: 4, description: 'Number of elements' },
+  ]}
+/>
 
 Elements are encoded back-to-back without per-element headers.
 
@@ -163,12 +184,15 @@ Elements are encoded back-to-back without per-element headers.
 
 <Collapsible client:visible title="Map" badge="ID 134">
 
-<BinaryStructure client:visible fields={[
-  { name: "key_type", type: "u8", size: 1, description: "Type ID of map keys" },
-  { name: "value_type", type: "u8", size: 1, description: "Type ID of map values" },
-  { name: "data_size", type: "u32", size: 4, description: "Total size of key-value data" },
-  { name: "count", type: "u32", size: 4, description: "Number of key-value pairs" }
-]} />
+<BinaryStructure
+  client:visible
+  fields={[
+    { name: 'key_type', type: 'u8', size: 1, description: 'Type ID of map keys' },
+    { name: 'value_type', type: 'u8', size: 1, description: 'Type ID of map values' },
+    { name: 'data_size', type: 'u32', size: 4, description: 'Total size of key-value data' },
+    { name: 'count', type: 'u32', size: 4, description: 'Number of key-value pairs' },
+  ]}
+/>
 
 Entries are encoded as alternating (key, value) pairs.
 
@@ -176,10 +200,13 @@ Entries are encoded as alternating (key, value) pairs.
 
 <Collapsible client:visible title="Optional" badge="ID 133">
 
-<BinaryStructure client:visible fields={[
-  { name: "inner_type", type: "u8", size: 1, description: "Type ID of the optional value" },
-  { name: "present", type: "u8", size: 1, description: "0 = None, 1 = Some" }
-]} />
+<BinaryStructure
+  client:visible
+  fields={[
+    { name: 'inner_type', type: 'u8', size: 1, description: 'Type ID of the optional value' },
+    { name: 'present', type: 'u8', size: 1, description: '0 = None, 1 = Some' },
+  ]}
+/>
 
 Value data follows only if `present = 1`.
 
@@ -187,11 +214,14 @@ Value data follows only if `present = 1`.
 
 <Collapsible client:visible title="Struct / Embedded" badge="ID 130-131">
 
-<BinaryStructure client:visible fields={[
-  { name: "class_hash", type: "u32", size: 4, description: "FNV-1a hash of the metaclass name" },
-  { name: "data_size", type: "u32", size: 4, description: "Total size of object data in bytes" },
-  { name: "property_count", type: "u16", size: 2, description: "Number of properties" }
-]} />
+<BinaryStructure
+  client:visible
+  fields={[
+    { name: 'class_hash', type: 'u32', size: 4, description: 'FNV-1a hash of the metaclass name' },
+    { name: 'data_size', type: 'u32', size: 4, description: 'Total size of object data in bytes' },
+    { name: 'property_count', type: 'u16', size: 2, description: 'Number of properties' },
+  ]}
+/>
 
 Struct and Embedded are encoded identically: the distinction is semantic. If `class_hash` is 0, the struct/embedded is null and no further data follows.
 
@@ -199,30 +229,30 @@ Struct and Embedded are encoded identically: the distinction is semantic. If `cl
 
 ## Version Differences
 
-| Version | Key Changes                                                    |
-|---------|----------------------------------------------------------------|
-| 1       | Baseline format - PROP magic, objects with typed properties    |
-| 2       | Adds dependency string table after header                      |
-| 3       | Adds support for data overrides when inside a PTCH wrapper     |
+| Version | Key Changes                                                 |
+| ------- | ----------------------------------------------------------- |
+| 1       | Baseline format - PROP magic, objects with typed properties |
+| 2       | Adds dependency string table after header                   |
+| 3       | Adds support for data overrides when inside a PTCH wrapper  |
 
 ### Data Overrides (Version 3 + PTCH)
 
 When a PTCH file contains a version 3 PROP section, data override entries follow the object data. These overrides allow patch files to selectively modify specific properties without replacing entire objects.
 
-| Size     | Type   | Field                | Description                                  |
-|----------|--------|----------------------|----------------------------------------------|
-| 4        | u32    | data_override_count  | Number of override entries                   |
+| Size | Type | Field               | Description                |
+| ---- | ---- | ------------------- | -------------------------- |
+| 4    | u32  | data_override_count | Number of override entries |
 
 Each data override entry:
 
-| Size     | Type   | Field          | Description                                          |
-|----------|--------|----------------|------------------------------------------------------|
-| 4        | u32    | object_hash    | Path hash of the target object to override           |
-| 4        | u32    | entry_size     | Size of the remaining override data                  |
-| 1        | u8     | property_type  | Type ID of the property value                        |
-| 2        | u16    | path_length    | Length of the property path string                   |
-| N        | u8[]   | property_path  | ASCII property path string                           |
-| variable | varies | value          | Property value encoded per type (without header)     |
+| Size     | Type   | Field         | Description                                      |
+| -------- | ------ | ------------- | ------------------------------------------------ |
+| 4        | u32    | object_hash   | Path hash of the target object to override       |
+| 4        | u32    | entry_size    | Size of the remaining override data              |
+| 1        | u8     | property_type | Type ID of the property value                    |
+| 2        | u16    | path_length   | Length of the property path string               |
+| N        | u8[]   | property_path | ASCII property path string                       |
+| variable | varies | value         | Property value encoded per type (without header) |
 
 ## Related Formats
 

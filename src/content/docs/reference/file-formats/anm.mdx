@@ -23,10 +23,10 @@ ANM files are found inside [WAD archives](/reference/file-formats/wad/) at paths
 
 The two ANM variants are distinguished by their 8-byte magic:
 
-| Magic        | Variant      | Description                      |
-|--------------|--------------|----------------------------------|
-| `r3d2anmd`   | Uncompressed | Direct keyframe data per joint   |
-| `r3d2canm`   | Compressed   | Quantized data with spline interpolation |
+| Magic      | Variant      | Description                              |
+| ---------- | ------------ | ---------------------------------------- |
+| `r3d2anmd` | Uncompressed | Direct keyframe data per joint           |
+| `r3d2canm` | Compressed   | Quantized data with spline interpolation |
 
 All multi-byte values are **little-endian**.
 
@@ -36,17 +36,21 @@ All multi-byte values are **little-endian**.
 
 ### Header
 
-<BinaryStructure client:visible title="Uncompressed Header" fields={[
-  { name: "magic", type: "char[]", size: 8, description: "r3d2anmd (ASCII, 8 bytes)" },
-  { name: "version", type: "u32", size: 4, description: "Format version (3, 4, or 5)" }
-]} />
+<BinaryStructure
+  client:visible
+  title="Uncompressed Header"
+  fields={[
+    { name: 'magic', type: 'char[]', size: 8, description: 'r3d2anmd (ASCII, 8 bytes)' },
+    { name: 'version', type: 'u32', size: 4, description: 'Format version (3, 4, or 5)' },
+  ]}
+/>
 
 The fields following the version depend on the version number.
 
 ### Common Fields (All Versions)
 
 | Field         | Type | Description                             |
-|---------------|------|-----------------------------------------|
+| ------------- | ---- | --------------------------------------- |
 | resource_size | u32  | Size of the animation resource data     |
 | format_token  | u32  | Format identifier token                 |
 | flags         | u32  | Animation flags                         |
@@ -65,11 +69,11 @@ Uncompressed animations use a **palette-based** system:
 
 Each joint's data per frame is a set of **palette indices** - indices into the translation, scale, and rotation palettes:
 
-| Size | Type | Field          | Description                      |
-|------|------|----------------|----------------------------------|
-| 2    | u16  | translation_id | Index into translation palette   |
-| 2    | u16  | scale_id       | Index into scale palette         |
-| 2    | u16  | rotation_id    | Index into rotation palette      |
+| Size | Type | Field          | Description                    |
+| ---- | ---- | -------------- | ------------------------------ |
+| 2    | u16  | translation_id | Index into translation palette |
+| 2    | u16  | scale_id       | Index into scale palette       |
+| 2    | u16  | rotation_id    | Index into rotation palette    |
 
 ### Version 3 (Legacy)
 
@@ -99,12 +103,12 @@ bits = u16[0] | (u16[1] << 16) | (u16[2] << 32)
 
 Bit layout:
 
-| Bits  | Width | Description                                   |
-|-------|-------|-----------------------------------------------|
+| Bits  | Width | Description                                                 |
+| ----- | ----- | ----------------------------------------------------------- |
 | 45–46 | 2     | Max index: which component was omitted (0=X, 1=Y, 2=Z, 3=W) |
-| 30–44 | 15    | Component A (first non-omitted)               |
-| 15–29 | 15    | Component B (second non-omitted)              |
-| 0–14  | 15    | Component C (third non-omitted)               |
+| 30–44 | 15    | Component A (first non-omitted)                             |
+| 15–29 | 15    | Component B (second non-omitted)                            |
+| 0–14  | 15    | Component C (third non-omitted)                             |
 
 **Decompression** of each 15-bit component to float:
 
@@ -117,6 +121,7 @@ Range per component: `[-1/√2, +1/√2]` (≈ `[-0.7071, +0.7071]`).
 The omitted component D is reconstructed: `D = sqrt(max(0, 1 - A² - B² - C²))`.
 
 The quaternion is assembled based on `max_index`:
+
 - 0: `(D, A, B, C)` - X was largest
 - 1: `(A, D, B, C)` - Y was largest
 - 2: `(A, B, D, C)` - Z was largest
@@ -127,6 +132,7 @@ This reduces each quaternion from 16 bytes to 6 bytes with minimal precision los
 ### Interpolation
 
 Uncompressed animations use **linear interpolation** between frames:
+
 - Translations and scales: linear lerp
 - Rotations: spherical linear interpolation (slerp)
 
@@ -136,35 +142,68 @@ Uncompressed animations use **linear interpolation** between frames:
 
 ### Header
 
-<BinaryStructure client:visible title="Compressed Magic" fields={[
-  { name: "magic", type: "char[]", size: 8, description: "r3d2canm (ASCII, 8 bytes)" },
-  { name: "version", type: "u32", size: 4, description: "Format version (1, 2, or 3)" }
-]} />
+<BinaryStructure
+  client:visible
+  title="Compressed Magic"
+  fields={[
+    { name: 'magic', type: 'char[]', size: 8, description: 'r3d2canm (ASCII, 8 bytes)' },
+    { name: 'version', type: 'u32', size: 4, description: 'Format version (1, 2, or 3)' },
+  ]}
+/>
 
 ### Header (128 bytes)
 
-<BinaryStructure client:visible title="Compressed Header (128 bytes)" fields={[
-  { name: "magic", type: "char[]", size: 8, description: "r3d2canm" },
-  { name: "version", type: "u32", size: 4, description: "Format version (1, 2, or 3)" },
-  { name: "resource_size", type: "u32", size: 4, description: "Size of the animation resource" },
-  { name: "format_token", type: "u32", size: 4, description: "Format identifier" },
-  { name: "flags", type: "u32", size: 4, description: "Animation flags (bit 2: parametrized tangents)" },
-  { name: "joint_count", type: "i32", size: 4, description: "Number of animated joints" },
-  { name: "frame_count", type: "i32", size: 4, description: "Number of keyframes" },
-  { name: "jump_cache_count", type: "i32", size: 4, description: "Number of jump cache entries" },
-  { name: "duration", type: "f32", size: 4, description: "Total duration in seconds" },
-  { name: "fps", type: "f32", size: 4, description: "Playback frame rate" },
-  { name: "rotation_error", type: "2xf32", size: 8, description: "Margin + discontinuity threshold" },
-  { name: "translation_error", type: "2xf32", size: 8, description: "Margin + discontinuity threshold" },
-  { name: "scale_error", type: "2xf32", size: 8, description: "Margin + discontinuity threshold" },
-  { name: "translation_min", type: "Vec3", size: 12, description: "Minimum translation bounds" },
-  { name: "translation_max", type: "Vec3", size: 12, description: "Maximum translation bounds" },
-  { name: "scale_min", type: "Vec3", size: 12, description: "Minimum scale bounds" },
-  { name: "scale_max", type: "Vec3", size: 12, description: "Maximum scale bounds" },
-  { name: "frames_offset", type: "i32", size: 4, description: "Offset to frame data" },
-  { name: "jump_caches_offset", type: "i32", size: 4, description: "Offset to jump cache data" },
-  { name: "joint_hashes_offset", type: "i32", size: 4, description: "Offset to joint name hash array" }
-]} />
+<BinaryStructure
+  client:visible
+  title="Compressed Header (128 bytes)"
+  fields={[
+    { name: 'magic', type: 'char[]', size: 8, description: 'r3d2canm' },
+    { name: 'version', type: 'u32', size: 4, description: 'Format version (1, 2, or 3)' },
+    { name: 'resource_size', type: 'u32', size: 4, description: 'Size of the animation resource' },
+    { name: 'format_token', type: 'u32', size: 4, description: 'Format identifier' },
+    {
+      name: 'flags',
+      type: 'u32',
+      size: 4,
+      description: 'Animation flags (bit 2: parametrized tangents)',
+    },
+    { name: 'joint_count', type: 'i32', size: 4, description: 'Number of animated joints' },
+    { name: 'frame_count', type: 'i32', size: 4, description: 'Number of keyframes' },
+    { name: 'jump_cache_count', type: 'i32', size: 4, description: 'Number of jump cache entries' },
+    { name: 'duration', type: 'f32', size: 4, description: 'Total duration in seconds' },
+    { name: 'fps', type: 'f32', size: 4, description: 'Playback frame rate' },
+    {
+      name: 'rotation_error',
+      type: '2xf32',
+      size: 8,
+      description: 'Margin + discontinuity threshold',
+    },
+    {
+      name: 'translation_error',
+      type: '2xf32',
+      size: 8,
+      description: 'Margin + discontinuity threshold',
+    },
+    {
+      name: 'scale_error',
+      type: '2xf32',
+      size: 8,
+      description: 'Margin + discontinuity threshold',
+    },
+    { name: 'translation_min', type: 'Vec3', size: 12, description: 'Minimum translation bounds' },
+    { name: 'translation_max', type: 'Vec3', size: 12, description: 'Maximum translation bounds' },
+    { name: 'scale_min', type: 'Vec3', size: 12, description: 'Minimum scale bounds' },
+    { name: 'scale_max', type: 'Vec3', size: 12, description: 'Maximum scale bounds' },
+    { name: 'frames_offset', type: 'i32', size: 4, description: 'Offset to frame data' },
+    { name: 'jump_caches_offset', type: 'i32', size: 4, description: 'Offset to jump cache data' },
+    {
+      name: 'joint_hashes_offset',
+      type: 'i32',
+      size: 4,
+      description: 'Offset to joint name hash array',
+    },
+  ]}
+/>
 
 **Note:** All section reads add +12 to the stored offset before reading data.
 
@@ -188,19 +227,30 @@ Rotations use a **quantized quaternion** encoding (16-bit components).
 
 Each frame entry is a tightly packed 10-byte structure:
 
-<BinaryStructure client:visible title="Compressed Frame (10 bytes)" fields={[
-  { name: "time", type: "u16", size: 2, description: "Compressed time (0-65535 maps to 0-duration)" },
-  { name: "joint_type", type: "u16", size: 2, description: "Packed joint ID + transform type" },
-  { name: "value", type: "u16[3]", size: 6, description: "Compressed transform value" }
-]} />
+<BinaryStructure
+  client:visible
+  title="Compressed Frame (10 bytes)"
+  fields={[
+    {
+      name: 'time',
+      type: 'u16',
+      size: 2,
+      description: 'Compressed time (0-65535 maps to 0-duration)',
+    },
+    { name: 'joint_type', type: 'u16', size: 2, description: 'Packed joint ID + transform type' },
+    { name: 'value', type: 'u16[3]', size: 6, description: 'Compressed transform value' },
+  ]}
+/>
 
 **joint_type decoding:**
+
 - Joint ID: `raw & 0x3FFF` (lower 14 bits)
 - Transform type: `raw >> 14` (upper 2 bits): 0=Rotation, 1=Translation, 2=Scale
 
 **Time decompression:** `time = (compressed_time / 65535.0) * duration`
 
 **Value decompression** depends on transform type:
+
 - **Rotation**: 3× u16 decoded as a 48-bit quantized quaternion (same encoding as uncompressed v5)
 - **Translation**: Bounds-based decompression - `value.xyz = (u16.xyz / 65535.0) * (max - min) + min`
 - **Scale**: Same bounds-based decompression as translation, using scale min/max bounds
@@ -215,11 +265,11 @@ Jump caches enable O(1) random access to any frame without sequential decompress
 
 **Jump frame (u16 variant, 24 bytes per joint):**
 
-| Offset | Size | Type    | Description                              |
-|--------|------|---------|------------------------------------------|
-| 0x00   | 8    | u16[4]  | Rotation frame indices (P0, P1, P2, P3)  |
-| 0x08   | 8    | u16[4]  | Translation frame indices                 |
-| 0x10   | 8    | u16[4]  | Scale frame indices                       |
+| Offset | Size | Type   | Description                             |
+| ------ | ---- | ------ | --------------------------------------- |
+| 0x00   | 8    | u16[4] | Rotation frame indices (P0, P1, P2, P3) |
+| 0x08   | 8    | u16[4] | Translation frame indices               |
+| 0x10   | 8    | u16[4] | Scale frame indices                     |
 
 The 4 indices per transform (P0–P3) provide the initial control points for Catmull-Rom spline interpolation. Total cache size = `jump_cache_count × joint_count × jump_frame_size`.
 
@@ -239,19 +289,19 @@ For sequential playback (playing the animation forward), a `CompressedEvaluator`
 
 ### Uncompressed (`r3d2anmd`)
 
-| Version | Joint IDs    | Rotation Encoding      | Notes                   |
-|---------|--------------|------------------------|-------------------------|
-| 3       | 32-byte names| Full quaternion (16B)  | Legacy format           |
-| 4       | Inline hashes| Full quaternion (16B)  | Hash-based joint IDs    |
-| 5       | Separate section| Quantized (6B)      | Most compact            |
+| Version | Joint IDs        | Rotation Encoding     | Notes                |
+| ------- | ---------------- | --------------------- | -------------------- |
+| 3       | 32-byte names    | Full quaternion (16B) | Legacy format        |
+| 4       | Inline hashes    | Full quaternion (16B) | Hash-based joint IDs |
+| 5       | Separate section | Quantized (6B)        | Most compact         |
 
 ### Compressed (`r3d2canm`)
 
-| Version | Key Changes                                            |
-|---------|--------------------------------------------------------|
-| 1       | Baseline compressed format                             |
-| 2       | Updated frame encoding                                 |
-| 3       | Current format with refined quantization               |
+| Version | Key Changes                              |
+| ------- | ---------------------------------------- |
+| 1       | Baseline compressed format               |
+| 2       | Updated frame encoding                   |
+| 3       | Current format with refined quantization |
 
 ## Related Formats
 

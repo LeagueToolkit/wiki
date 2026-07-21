@@ -1,5 +1,5 @@
 ---
-title: Installation
+title: Install LTK Manager
 description: Install and set up ltk-manager for League of Legends modding.
 ---
 
@@ -9,11 +9,14 @@ This guide walks you through installing LTK Manager and applying your first mod.
 
 ## Platform Support
 
-<PlatformBadges client:visible platforms={[
-  { name: "Windows 10+", platform: "windows", status: "supported", note: "64-bit" },
-  { name: "macOS", platform: "macos", status: "coming-soon", note: "Q2/Summer 2026" },
-  { name: "Linux", platform: "linux", status: "coming-soon", note: "Planned" }
-]} />
+<PlatformBadges
+  client:visible
+  platforms={[
+    { name: 'Windows 10+', platform: 'windows', status: 'supported', note: '64-bit' },
+    { name: 'macOS', platform: 'macos', status: 'coming-soon', note: 'Q2/Summer 2026' },
+    { name: 'Linux', platform: 'linux', status: 'coming-soon', note: 'Planned' },
+  ]}
+/>
 
 :::caution[macOS and Linux users]
 LTK Manager is currently Windows-only. The cslol patcher stopped working on macOS, and a new macOS patcher is in development alongside a native macOS LTK Manager release, targeted for Q2/Summer 2026. Linux support is planned but has no release date yet.
@@ -40,6 +43,7 @@ On first launch, LTK Manager will ask you to configure a few things:
 LTK Manager attempts to auto-detect your League of Legends installation. If detection fails, click **Browse** and navigate to your League folder (the one containing `Game/League of Legends.exe`).
 
 Common install locations:
+
 - `C:\Riot Games\League of Legends`
 - `D:\Riot Games\League of Legends`
 
@@ -76,7 +80,7 @@ To remove mods from the game, click **Stop** on the patcher.
 
 ## Next Steps
 
-- [Managing Mods](/guides/mod-management/installing-mods/) - Enable, disable, reorder, and uninstall mods
-- [Profiles](/guides/mod-management/profiles/) - Create mod profiles to quickly switch configurations
+- [Managing Mods](/using-mods/library/) - Enable, disable, reorder, and uninstall mods
+- [Profiles](/using-mods/profiles/) - Create mod profiles to quickly switch configurations
 - [Settings](/tools/ltk-manager/configuration/) - Customize LTK Manager
-- [Workshop Overview](/guides/mod-creation/workshop-overview/) - Start creating your own mods
+- [Workshop Overview](/making-mods/workshop/) - Start creating your own mods

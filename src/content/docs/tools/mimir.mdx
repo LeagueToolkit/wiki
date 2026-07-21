@@ -1,0 +1,80 @@
+---
+title: Mimir
+description: Compact, memory-mapped hash-to-path tables for League of Legends tooling - the .hashdb format.
+---
+
+Mimir generates, stores, and serves League's hash → path tables as a compact,
+memory-mapped, seekable binary format (`.hashdb`).
+
+This is infrastructure for tool authors. If you are installing or creating mods,
+you will never invoke it directly - but it is why your tools can show you
+readable file paths at all.
+
+**Repository:** [LeagueToolkit/Mimir](https://github.com/LeagueToolkit/Mimir)
+
+## The problem it solves
+
+League identifies files and fields by **hash**, not by name. To display a
+readable path, a tool needs a table mapping each hash back to its original
+string.
+
+The community standard has been CommunityDragon's `hashes.*.txt` set: roughly
+**348 MB of plain text** that every tool downloads and keeps. That carries two
+costs which compound as soon as a machine runs more than one such tool:
+
+- **Memory.** Resolving hashes efficiently means loading the whole table into an
+  in-memory map. Three tools running means three private copies of the same
+  hundreds of megabytes, all resident at once.
+- **Startup and distribution.** Every tool ships or re-downloads the same files
+  and spends time parsing them before answering a single query.
+
+## How `.hashdb` works
+
+A `.hashdb` file is one table laid out for direct, zero-parse use over an
+`mmap`:
+
+- **Sorted key array** - hashes stored strictly ascending, so a lookup is a
+  binary search straight over the mapped bytes. A miss is decided here and never
+  touches string data.
+- **Parallel offset and length arrays** - for a found key, where its path lives
+  and how long it is.
+- **String arena** - all paths concatenated, compressed as a Zstandard Seekable
+  Format stream. A hit decompresses only the one small frame holding its path
+  (16 KiB by default), not the whole table.
+
+Paths are packed in lexicographic order, so a directory's files land in the same
+frames. That compresses roughly 4× better than key order on the real game table
+and makes directory-local batch lookups touch fewer frames.
+
+The design goals, in priority order:
+
+1. **Usable as shipped** - no unpack step; `mmap` the file and start looking up.
+2. **Small** - the game table drops from ~348 MB of text to roughly **50 MB**.
+3. **Memory-efficient across processes** - memory-mapped, so the OS page cache
+   holds **one** copy shared by every tool on the machine. Pages fault in lazily
+   and drop under pressure.
+
+Measured against the CommunityDragon snapshot of 2026-07-07 (~2.97 M entries
+across 8 tables), the corpus drops from **~253 MiB of text to ~52 MiB**.
+
+## Format and naming
+
+The `.hashdb` format is general-purpose - an mmap-backed, read-only map from
+integer keys to string values, with nothing League-specific in its layout.
+LeagueToolkit distributes its own tables under the `.lhdb` extension; the bytes
+are identical.
+
+Files are immutable once published. Updates ship as new versioned files, and a
+downloaded file is treated as untrusted - the header is validated on open and
+every read bounds-checks its own extent.
+
+The byte-level specification lives in
+[`docs/FORMAT.md`](https://github.com/LeagueToolkit/Mimir/blob/main/docs/FORMAT.md);
+benchmarks and methodology in
+[`docs/BENCHMARKS.md`](https://github.com/LeagueToolkit/Mimir/blob/main/docs/BENCHMARKS.md).
+
+## Related
+
+- [Hashing Algorithms](/reference/hashing/algorithms/) - how League's hashes are computed
+- [WAD Archives](/reference/file-formats/wad/) - where hashed paths are used
+- [CommunityDragon](https://communitydragon.org/) - the upstream hash tables

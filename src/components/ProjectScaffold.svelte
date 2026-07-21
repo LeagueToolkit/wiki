@@ -69,15 +69,31 @@
     <div class="form-grid">
       <div class="field">
         <label for="scaffold-name">Name (slug)</label>
-        <input id="scaffold-name" type="text" bind:value={name} placeholder="my-skin-mod" spellcheck="false" />
+        <input
+          id="scaffold-name"
+          type="text"
+          bind:value={name}
+          placeholder="my-skin-mod"
+          spellcheck="false"
+        />
       </div>
       <div class="field">
         <label for="scaffold-display">Display name</label>
-        <input id="scaffold-display" type="text" bind:value={displayName} placeholder="My Skin Mod" />
+        <input
+          id="scaffold-display"
+          type="text"
+          bind:value={displayName}
+          placeholder="My Skin Mod"
+        />
       </div>
       <div class="field full">
         <label for="scaffold-desc">Description</label>
-        <input id="scaffold-desc" type="text" bind:value={description} placeholder="What does the mod do?" />
+        <input
+          id="scaffold-desc"
+          type="text"
+          bind:value={description}
+          placeholder="What does the mod do?"
+        />
       </div>
       <div class="field">
         <label for="scaffold-author">Author</label>
@@ -119,7 +135,8 @@
           />
           <span class="layer-priority">P{layer.priority}</span>
           {#if layers.length > 1}
-            <button class="remove-btn" onclick={() => removeLayer(i)} title="Remove layer">x</button>
+            <button class="remove-btn" onclick={() => removeLayer(i)} title="Remove layer">x</button
+            >
           {/if}
         </div>
       {/each}
@@ -135,11 +152,7 @@
       >
         mod.config.json
       </button>
-      <button
-        class="tab"
-        class:active={activeTab === 'tree'}
-        onclick={() => (activeTab = 'tree')}
-      >
+      <button class="tab" class:active={activeTab === 'tree'} onclick={() => (activeTab = 'tree')}>
         File tree
       </button>
     </div>
@@ -155,7 +168,10 @@
           <div class="tree-item" style="--depth: 1">content/</div>
           {#each layers.filter((l) => l.name) as layer}
             <div class="tree-item" style="--depth: 2">{layer.name}/</div>
-            {#each champions.split(',').map((c) => c.trim()).filter(Boolean) as champ}
+            {#each champions
+              .split(',')
+              .map((c) => c.trim())
+              .filter(Boolean) as champ}
               <div class="tree-item" style="--depth: 3">{champ}.wad.client/</div>
               <div class="tree-item dim" style="--depth: 4">DATA/</div>
               <div class="tree-item dim" style="--depth: 5">Characters/</div>
@@ -317,7 +333,9 @@
     justify-content: center;
     flex-shrink: 0;
     font-family: var(--sl-font);
-    transition: color 0.15s ease, border-color 0.15s ease;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
   }
 
   .remove-btn:hover {
@@ -348,7 +366,9 @@
     font-family: var(--sl-font-mono);
     font-size: 0.75rem;
     cursor: pointer;
-    transition: color 0.15s ease, background 0.15s ease;
+    transition:
+      color 0.15s ease,
+      background 0.15s ease;
   }
 
   .tab:hover {

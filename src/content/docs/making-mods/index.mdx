@@ -1,0 +1,69 @@
+---
+title: Mod Creation
+description: Build, layer, and package your own League of Legends mods with the Creator Workshop or the league-mod CLI.
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+A mod project is a directory with a `mod.config.json` and one or more content
+layers. You author it, validate it, then pack it into a `.modpkg` that anyone
+can install.
+
+There are two ways to do this and they operate on the same project format:
+
+- **[The Creator Workshop](/making-mods/workshop/)** - the project editor built
+  into LTK Manager. Recommended if you are starting out.
+- **[The `league-mod` CLI](/tools/league-mod/overview/)** - the same workflow
+  from a terminal, and the engine the Workshop is built on. Useful for
+  scripting, CI, and batch work.
+
+Projects are interchangeable between them. Nothing you build in one is locked
+away from the other.
+
+## The workflow
+
+<CardGrid>
+  <LinkCard
+    title="Workshop Overview"
+    href="/making-mods/workshop/"
+    description="Set the workshop path, create a project, and understand the directory layout."
+  />
+  <LinkCard
+    title="Creating a Project"
+    href="/making-mods/project/"
+    description="Start fresh, or import from .modpkg, .fantome, raw WAD folders, or Git."
+  />
+  <LinkCard
+    title="Layers"
+    href="/making-mods/layers/"
+    description="Split a mod into optional pieces - base, high-res, alternate variants - with priority ordering."
+  />
+  <LinkCard
+    title="String Overrides"
+    href="/making-mods/string-overrides/"
+    description="Change in-game text without touching the game's own string files."
+  />
+  <LinkCard
+    title="Packaging"
+    href="/making-mods/packaging/"
+    description="Validate and pack a .modpkg for distribution, plus the format specification."
+  />
+  <LinkCard
+    title="From the Command Line"
+    href="/tools/league-mod/overview/"
+    description="league-mod init, pack, extract, and info - the CLI path through the same workflow."
+  />
+</CardGrid>
+
+## Before you start
+
+You will get much further if you know what the game files you are editing
+actually are. Two pages worth reading first:
+
+- **[How Modding Works](/start-here/how-modding-works/)** - how your files end up
+  in the running game.
+- **[WAD Archives](/reference/file-formats/wad/)** - the container almost
+  everything lives in.
+
+The rest of the [format reference](/reference/file-formats/wad/) covers meshes,
+skeletons, animations, textures, and property bins as you need them.

@@ -36,48 +36,100 @@ The SKL format has two distinct branches: the **modern format** (used by current
 
 The modern format is identified by a format token at offset 4:
 
-<BinaryStructure client:visible title="Format Detection" fields={[
-  { name: "file_size", type: "u32", size: 4, description: "Total file size in bytes" },
-  { name: "format_token", type: "u32", size: 4, description: "0x22FD4FC3 (identifies modern format)" }
-]} />
+<BinaryStructure
+  client:visible
+  title="Format Detection"
+  fields={[
+    { name: 'file_size', type: 'u32', size: 4, description: 'Total file size in bytes' },
+    {
+      name: 'format_token',
+      type: 'u32',
+      size: 4,
+      description: '0x22FD4FC3 (identifies modern format)',
+    },
+  ]}
+/>
 
 ### Header (64 bytes)
 
-<BinaryStructure client:visible title="Modern Header (64 bytes)" fields={[
-  { name: "file_size", type: "u32", size: 4, description: "Total file size in bytes" },
-  { name: "format_token", type: "u32", size: 4, description: "0x22FD4FC3" },
-  { name: "version", type: "u32", size: 4, description: "Format version (must be 0)" },
-  { name: "flags", type: "u16", size: 2, description: "Format flags" },
-  { name: "joint_count", type: "u16", size: 2, description: "Number of joints" },
-  { name: "influence_count", type: "u32", size: 4, description: "Number of influence mappings" },
-  { name: "joints_offset", type: "i32", size: 4, description: "Offset to joint data array" },
-  { name: "joint_indices_offset", type: "i32", size: 4, description: "Offset to joint index-hash pairs" },
-  { name: "influences_offset", type: "i32", size: 4, description: "Offset to influence array" },
-  { name: "name_offset", type: "i32", size: 4, description: "Offset to skeleton name string" },
-  { name: "asset_name_offset", type: "i32", size: 4, description: "Offset to asset name string" },
-  { name: "bone_names_offset", type: "i32", size: 4, description: "Offset to bone name string table" },
-  { name: "ext_offsets", type: "i32[5]", size: 20, description: "Reserved extension offsets" }
-]} />
+<BinaryStructure
+  client:visible
+  title="Modern Header (64 bytes)"
+  fields={[
+    { name: 'file_size', type: 'u32', size: 4, description: 'Total file size in bytes' },
+    { name: 'format_token', type: 'u32', size: 4, description: '0x22FD4FC3' },
+    { name: 'version', type: 'u32', size: 4, description: 'Format version (must be 0)' },
+    { name: 'flags', type: 'u16', size: 2, description: 'Format flags' },
+    { name: 'joint_count', type: 'u16', size: 2, description: 'Number of joints' },
+    { name: 'influence_count', type: 'u32', size: 4, description: 'Number of influence mappings' },
+    { name: 'joints_offset', type: 'i32', size: 4, description: 'Offset to joint data array' },
+    {
+      name: 'joint_indices_offset',
+      type: 'i32',
+      size: 4,
+      description: 'Offset to joint index-hash pairs',
+    },
+    { name: 'influences_offset', type: 'i32', size: 4, description: 'Offset to influence array' },
+    { name: 'name_offset', type: 'i32', size: 4, description: 'Offset to skeleton name string' },
+    { name: 'asset_name_offset', type: 'i32', size: 4, description: 'Offset to asset name string' },
+    {
+      name: 'bone_names_offset',
+      type: 'i32',
+      size: 4,
+      description: 'Offset to bone name string table',
+    },
+    { name: 'ext_offsets', type: 'i32[5]', size: 20, description: 'Reserved extension offsets' },
+  ]}
+/>
 
 ### Joint Data (100 bytes each)
 
 Each joint entry in the joints array:
 
-<BinaryStructure client:visible title="Joint Data (100 bytes)" fields={[
-  { name: "flags", type: "u16", size: 2, description: "Joint flags" },
-  { name: "id", type: "u16", size: 2, description: "Joint ID" },
-  { name: "parent_id", type: "i16", size: 2, description: "Parent joint ID (-1 for root)" },
-  { name: "padding", type: "u16", size: 2, description: "Padding" },
-  { name: "name_hash", type: "u32", size: 4, description: "ELF hash of the joint name (lowercased)" },
-  { name: "radius", type: "f32", size: 4, description: "Joint radius (for collision/selection)" },
-  { name: "local_position", type: "Vec3", size: 12, description: "Local translation (x, y, z)" },
-  { name: "local_scale", type: "Vec3", size: 12, description: "Local scale (x, y, z)" },
-  { name: "local_rotation", type: "Quat", size: 16, description: "Local rotation quaternion (x, y, z, w)" },
-  { name: "inv_bind_translation", type: "Vec3", size: 12, description: "Inverse bind translation (x, y, z)" },
-  { name: "inv_bind_scale", type: "Vec3", size: 12, description: "Inverse bind scale (x, y, z)" },
-  { name: "inv_bind_rotation", type: "Quat", size: 16, description: "Inverse bind rotation (x, y, z, w)" },
-  { name: "name_offset", type: "i32", size: 4, description: "Relative offset to null-terminated name string" }
-]} />
+<BinaryStructure
+  client:visible
+  title="Joint Data (100 bytes)"
+  fields={[
+    { name: 'flags', type: 'u16', size: 2, description: 'Joint flags' },
+    { name: 'id', type: 'u16', size: 2, description: 'Joint ID' },
+    { name: 'parent_id', type: 'i16', size: 2, description: 'Parent joint ID (-1 for root)' },
+    { name: 'padding', type: 'u16', size: 2, description: 'Padding' },
+    {
+      name: 'name_hash',
+      type: 'u32',
+      size: 4,
+      description: 'ELF hash of the joint name (lowercased)',
+    },
+    { name: 'radius', type: 'f32', size: 4, description: 'Joint radius (for collision/selection)' },
+    { name: 'local_position', type: 'Vec3', size: 12, description: 'Local translation (x, y, z)' },
+    { name: 'local_scale', type: 'Vec3', size: 12, description: 'Local scale (x, y, z)' },
+    {
+      name: 'local_rotation',
+      type: 'Quat',
+      size: 16,
+      description: 'Local rotation quaternion (x, y, z, w)',
+    },
+    {
+      name: 'inv_bind_translation',
+      type: 'Vec3',
+      size: 12,
+      description: 'Inverse bind translation (x, y, z)',
+    },
+    { name: 'inv_bind_scale', type: 'Vec3', size: 12, description: 'Inverse bind scale (x, y, z)' },
+    {
+      name: 'inv_bind_rotation',
+      type: 'Quat',
+      size: 16,
+      description: 'Inverse bind rotation (x, y, z, w)',
+    },
+    {
+      name: 'name_offset',
+      type: 'i32',
+      size: 4,
+      description: 'Relative offset to null-terminated name string',
+    },
+  ]}
+/>
 
 The inverse bind transform is decomposed into translation (Vec3), scale (Vec3), and rotation (Quat) components rather than stored as a full 4x4 matrix.
 
@@ -85,19 +137,19 @@ The inverse bind transform is decomposed into translation (Vec3), scale (Vec3), 
 
 At `joint_indices_offset`, an array of entries mapping IDs to hashes:
 
-| Size | Type | Field    | Description              |
-|------|------|----------|--------------------------|
-| 2    | i16  | joint_id | Joint ID                 |
-| 2    | u16  | padding  | Padding                  |
+| Size | Type | Field    | Description                         |
+| ---- | ---- | -------- | ----------------------------------- |
+| 2    | i16  | joint_id | Joint ID                            |
+| 2    | u16  | padding  | Padding                             |
 | 4    | u32  | hash     | ELF hash of joint name (lowercased) |
 
 ### Influence List
 
 At `influences_offset`, an array of `influence_count` entries:
 
-| Size | Type | Field      | Description                                        |
-|------|------|------------|----------------------------------------------------|
-| 2    | i16  | joint_index| Index into the joints array for this influence     |
+| Size | Type | Field       | Description                                    |
+| ---- | ---- | ----------- | ---------------------------------------------- |
+| 2    | i16  | joint_index | Index into the joints array for this influence |
 
 The influence list maps [SKN](/reference/file-formats/skn/) vertex bone indices to skeleton joints. When a vertex references bone index `N`, it maps to `influences[N]` which gives the actual joint index in the skeleton.
 
@@ -107,43 +159,56 @@ The influence list maps [SKN](/reference/file-formats/skn/) vertex bone indices 
 
 The legacy format is identified by an 8-byte ASCII magic:
 
-| Offset | Size | Type   | Field | Description              |
-|--------|------|--------|-------|--------------------------|
-| 0x00   | 8    | char[] | magic | `r3d2sklt` (ASCII)       |
+| Offset | Size | Type   | Field | Description        |
+| ------ | ---- | ------ | ----- | ------------------ |
+| 0x00   | 8    | char[] | magic | `r3d2sklt` (ASCII) |
 
 ### Legacy Header
 
-<BinaryStructure client:visible title="Legacy Header" fields={[
-  { name: "magic", type: "char[]", size: 8, description: "r3d2sklt (ASCII)" },
-  { name: "version", type: "u32", size: 4, description: "Legacy version (1 or 2)" },
-  { name: "joint_count", type: "u32", size: 4, description: "Number of joints" }
-]} />
+<BinaryStructure
+  client:visible
+  title="Legacy Header"
+  fields={[
+    { name: 'magic', type: 'char[]', size: 8, description: 'r3d2sklt (ASCII)' },
+    { name: 'version', type: 'u32', size: 4, description: 'Legacy version (1 or 2)' },
+    { name: 'joint_count', type: 'u32', size: 4, description: 'Number of joints' },
+  ]}
+/>
 
 ### Legacy Joint Data
 
 Each joint in the legacy format:
 
-<BinaryStructure client:visible title="Legacy Joint Data" fields={[
-  { name: "name", type: "char[]", size: 32, description: "Null-padded ASCII joint name" },
-  { name: "parent_id", type: "i32", size: 4, description: "Parent joint index (-1 for root)" },
-  { name: "radius", type: "f32", size: 4, description: "Joint radius" },
-  { name: "global_matrix", type: "f32[12]", size: 48, description: "3x4 global transform matrix" }
-]} />
+<BinaryStructure
+  client:visible
+  title="Legacy Joint Data"
+  fields={[
+    { name: 'name', type: 'char[]', size: 32, description: 'Null-padded ASCII joint name' },
+    { name: 'parent_id', type: 'i32', size: 4, description: 'Parent joint index (-1 for root)' },
+    { name: 'radius', type: 'f32', size: 4, description: 'Joint radius' },
+    {
+      name: 'global_matrix',
+      type: 'f32[12]',
+      size: 48,
+      description: '3x4 global transform matrix',
+    },
+  ]}
+/>
 
 ### Version Differences (Legacy)
 
-| Version | Influences                                           |
-|---------|------------------------------------------------------|
+| Version | Influences                                            |
+| ------- | ----------------------------------------------------- |
 | 1       | Influences generated automatically from joint indices |
 | 2       | Explicit influence array follows joint data           |
 
 ## Version Summary
 
-| Format | Identifier        | Version | Joint Size | Features                        |
-|--------|--------------------|---------|------------|---------------------------------|
-| Modern | `0x22FD4FC3`       | 0       | 100 bytes  | Full transforms, name hashes, extensions |
-| Legacy | `r3d2sklt`         | 1       | ~88 bytes  | Auto-generated influences       |
-| Legacy | `r3d2sklt`         | 2       | ~88 bytes  | Explicit influences             |
+| Format | Identifier   | Version | Joint Size | Features                                 |
+| ------ | ------------ | ------- | ---------- | ---------------------------------------- |
+| Modern | `0x22FD4FC3` | 0       | 100 bytes  | Full transforms, name hashes, extensions |
+| Legacy | `r3d2sklt`   | 1       | ~88 bytes  | Auto-generated influences                |
+| Legacy | `r3d2sklt`   | 2       | ~88 bytes  | Explicit influences                      |
 
 ## Related Formats
 

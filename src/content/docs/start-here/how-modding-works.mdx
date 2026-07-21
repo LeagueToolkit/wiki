@@ -1,0 +1,131 @@
+---
+title: How Modding Works
+description: What actually happens when you install and apply a League of Legends mod - WAD archives, overlays, and the patcher.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import Mermaid from '../../../components/Mermaid.svelte';
+
+You do not need this page to install a mod. You do need it the first time
+something goes wrong, because almost every confusing symptom makes immediate
+sense once you know what the pieces are.
+
+## Your game files are never edited
+
+This is the single most important thing to understand.
+
+LTK Manager does **not** modify your League of Legends installation. Instead it
+builds a separate directory - an **overlay** - that mirrors the game's data
+structure but contains only the files your mods change. A component called the
+**patcher** then runs alongside the game and redirects the game's file reads to
+the overlay.
+
+The game asks for a file; the patcher answers with your version instead of
+Riot's. Riot's copy on disk is untouched the entire time.
+
+<Mermaid
+  client:visible
+  chart={`
+graph LR
+    A["Your mods<br/>(.modpkg files)"] --> B["Overlay<br/>only changed files"]
+    B --> C["Patcher<br/>redirects file reads"]
+    D["League of Legends"] -->|"asks for a file"| C
+    C -->|"serves modded file"| D
+    E["Original game files<br/>never modified"] -.->|"untouched"| D
+`}
+/>
+
+Two useful consequences fall out of this:
+
+- **Uninstalling is clean.** Stop the patcher and the game reads its own files
+  again. There is nothing to repair or verify.
+- **The overlay is disposable.** If it gets into a bad state, rebuilding it is
+  cheap - that is why "stop, re-patch" fixes so many problems.
+
+## Where mod files come from
+
+League stores its assets in **WAD archives** (`.wad.client` files) - large
+containers holding thousands of individual files: models, textures, animations,
+and property data. A skin mod is, at bottom, a set of replacement files destined
+for specific paths inside specific WADs.
+
+That is why a mod project's content directory is organized by WAD:
+
+```
+content/
+  base/
+    Ahri.wad.client/
+      ... replacement files
+```
+
+The folder named `Ahri.wad.client` does not contain a WAD file. It declares
+_which_ archive these files belong to. LTK Manager builds the actual archives
+when it assembles the overlay.
+
+For the format details, see [WAD Archives](/reference/file-formats/wad/).
+
+## Hashes, not filenames
+
+Inside a WAD, files are identified by a **hash** of their path rather than the
+path itself. The game never needs the readable name, so Riot does not ship one.
+
+This is why tools display paths like `0x4f8b2c1a9e3d7f60` for some files:
+nobody has recovered the original string yet. Community hash tables map known
+hashes back to readable paths, and [Mimir](/tools/mimir/) is the LeagueToolkit
+tool for distributing them compactly.
+
+If you see raw hex paths while inspecting a mod, that is expected - it is a gap
+in the hash table, not a corrupt file.
+
+## Start to finish
+
+<Steps>
+
+1. You install a `.modpkg`.
+2. LTK Manager stores it in your library.
+3. You enable the mods you want.
+4. You press **Patch**.
+5. The manager merges every enabled mod into one overlay.
+6. The patcher starts and waits for the game.
+7. You launch League, and the mods are live.
+
+</Steps>
+
+Step 5 is where **load order** matters. When two enabled mods replace the same
+file, the overlay can only contain one of them, so the higher-priority mod wins.
+Reordering your library changes that outcome. The same logic applies within a
+single mod across its [layers](/making-mods/layers/).
+
+Step 5 is also why enabling a mod after pressing **Patch** does nothing. The
+overlay was already built. Stop the patcher, then patch again.
+
+## Why patches break things
+
+A League patch rewrites the game's WAD archives. Two things follow:
+
+1. Your overlay was built against the old files and must be rebuilt - this is
+   just re-patching.
+2. If the patch changed the specific files your mod replaces, the mod itself may
+   need updating by its author. Nothing you can do locally fixes that.
+
+[Updating After a Patch](/using-mods/patch-updates/) covers the routine.
+
+## Vocabulary
+
+| Term        | Meaning                                                            |
+| ----------- | ------------------------------------------------------------------ |
+| **WAD**     | Archive holding the game's assets. Mods target paths inside these. |
+| **Overlay** | Directory of only your changed files, built from enabled mods.     |
+| **Patcher** | Redirects the game's file reads to the overlay at runtime.         |
+| **modpkg**  | Modern mod package format. Metadata, layers, thumbnail.            |
+| **fantome** | Legacy ZIP-based mod format. Still installable; superseded.        |
+| **Layer**   | Optional component within one mod that you can toggle.             |
+| **Profile** | A named set of enabled mods and their load order.                  |
+
+The [Glossary](/glossary/) has the full list.
+
+## Next
+
+- [Install LTK Manager](/start-here/install/)
+- [Your First Mod](/start-here/first-mod/)
+- [FAQ & Safety](/start-here/faq/)

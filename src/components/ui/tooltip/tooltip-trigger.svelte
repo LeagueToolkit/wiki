@@ -6,8 +6,10 @@
     children,
     class: className,
     ...restProps
-  }: WithoutChildrenOrChild<Tooltip.TriggerProps> & { children?: Snippet; class?: string } =
-    $props();
+  }: WithoutChildrenOrChild<Tooltip.TriggerProps> & {
+    children?: Snippet;
+    class?: string;
+  } = $props();
 </script>
 
 <Tooltip.Trigger class={className} {...restProps}>

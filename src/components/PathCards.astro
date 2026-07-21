@@ -1,0 +1,233 @@
+---
+/**
+ * The two primary entry points on the landing page.
+ *
+ * These replace a Starlight `CardGrid` of `Card`s: the split between using mods
+ * and Mod Creation is the single most important choice a visitor makes here, so
+ * the pair is a component in its own right rather than two generic panels. Each
+ * card is one link end to end - a card that looks clickable should be clickable
+ * everywhere, not only on a trailing anchor.
+ */
+interface Path {
+  href: string;
+  title: string;
+  description: string;
+  cta: string;
+  /** Which half of the brand gradient this card leans on. */
+  tone: 'blue' | 'violet';
+  /** Inline icon path data, drawn on a 24x24 stroke grid. */
+  icon: string[];
+}
+
+const paths: Path[] = [
+  {
+    href: '/start-here/',
+    title: 'I want to use mods',
+    description:
+      'Install LTK Manager, add your mods, and enjoy the quick patching process. No prior modding experience needed.',
+    cta: 'Start here',
+    tone: 'blue',
+    icon: ['M12 3v10', 'M8 9l4 4 4-4', 'M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3'],
+  },
+  {
+    href: '/making-mods/',
+    title: 'I want to make mods',
+    description:
+      'Learn how to craft and build mod projects from scratch using the Workshop. Beginner-friendly to get you started, but also supports advanced and novel modding techniques.',
+    cta: 'Start building',
+    tone: 'violet',
+    icon: ['M4 20.5l4.5-1L19 9a2.65 2.65 0 0 0-3.5-3.5L5 16l-1 4.5z', 'M14 7l3 3'],
+  },
+];
+---
+
+<div class="paths not-content">
+  {
+    paths.map((path) => (
+      <a class="path" href={path.href} data-tone={path.tone}>
+        <span class="head">
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20">
+              {path.icon.map((d) => (
+                <path
+                  {d}
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              ))}
+            </svg>
+          </span>
+          <span class="title">{path.title}</span>
+        </span>
+        <span class="desc">{path.description}</span>
+        <span class="cta">
+          {path.cta}
+          <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+            <path
+              d="M2 8h11M9 4l4 4-4 4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
+      </a>
+    ))
+  }
+</div>
+
+<style>
+  .paths {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 45rem) {
+    .paths {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .path {
+    --tone: #4b7dfa;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.625rem;
+    padding: 1.75rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.875rem;
+    background: color-mix(in srgb, var(--sl-color-gray-6) 70%, transparent);
+    text-decoration: none;
+    overflow: hidden;
+    transition:
+      transform 0.2s ease,
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .path[data-tone='violet'] {
+    --tone: #7d4bfa;
+  }
+
+  /* A hairline of the card's tone across the top edge - the only thing
+     distinguishing the two cards at a glance, and it brightens on hover. */
+  .path::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--tone), transparent);
+    opacity: 0.45;
+    transition: opacity 0.2s ease;
+  }
+
+  /* Tone wash bleeding down from the top edge, revealed on hover. */
+  .path::after {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 60%;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--tone) 12%, transparent),
+      transparent
+    );
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+
+  .path:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--tone) 45%, transparent);
+  }
+
+  .path:hover::before {
+    opacity: 1;
+  }
+
+  .path:hover::after {
+    opacity: 1;
+  }
+
+  .path:focus-visible {
+    outline: 2px solid var(--tone);
+    outline-offset: 3px;
+  }
+
+  .path > * {
+    position: relative;
+  }
+
+  /* Icon sits on the title's line rather than above it - stacked, a 36px chip
+     on its own row opens a band of dead space across the card. */
+  .head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .icon {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid color-mix(in srgb, var(--tone) 35%, transparent);
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--tone) 14%, transparent);
+    color: var(--tone);
+  }
+
+  :root[data-theme='light'] .icon {
+    color: color-mix(in srgb, var(--tone) 80%, #000);
+  }
+
+  .title {
+    font-family: var(--ltk-font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--sl-color-white);
+  }
+
+  .desc {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--sl-color-gray-2);
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--sl-color-white);
+  }
+
+  .cta svg {
+    transition: transform 0.15s ease;
+  }
+
+  .path:hover .cta svg {
+    transform: translateX(3px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .path,
+    .path:hover,
+    .cta svg,
+    .path:hover .cta svg {
+      transform: none;
+    }
+  }
+</style>

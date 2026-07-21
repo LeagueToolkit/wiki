@@ -36,12 +36,7 @@
         <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5" />
         <path d="M11 11L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
       </svg>
-      <input
-        type="text"
-        bind:value={query}
-        placeholder="Search terms..."
-        spellcheck="false"
-      />
+      <input type="text" bind:value={query} placeholder="Search terms..." spellcheck="false" />
     </div>
     <div class="category-chips">
       <button

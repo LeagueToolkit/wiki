@@ -1,0 +1,85 @@
+---
+title: Updating After a Patch
+description: What a League of Legends patch breaks in your mod setup, and the routine for getting back in game.
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+League patches every two weeks or so, and every patch disturbs a mod setup.
+Most of the time recovery takes under a minute. This page explains which part
+broke, so you know whether you are fixing it or waiting on someone else.
+
+## What a patch actually breaks
+
+A game patch rewrites League's WAD archives. Two separate things are affected,
+and they have different fixes:
+
+| What broke         | Symptom                                               | Fix                                |
+| ------------------ | ----------------------------------------------------- | ---------------------------------- |
+| **Your overlay**   | Mods simply aren't applied                            | Re-patch. Takes seconds.           |
+| **A specific mod** | That one mod is missing or glitched while others work | The mod's author has to update it. |
+| **The patcher**    | Patching fails for everything                         | Update LTK Manager.                |
+
+Your **library is never affected**. Installed mods, profiles, folders, and load
+order all survive a patch untouched.
+
+## The routine
+
+<Steps>
+
+1. **Let League finish updating.** Launch the client and let it patch fully
+   before touching anything else. A half-updated install produces confusing
+   failures.
+
+2. **Update LTK Manager if prompted.** When a patch changes something the
+   patcher depends on, a manager update is required. This is the uncommon case,
+   not the every-patch case.
+
+3. **Re-patch.** Open LTK Manager, press **Patch**, wait for the overlay to
+   rebuild. Your enabled mods are unchanged, so this is usually all that's
+   needed.
+
+4. **Launch and check.** If everything looks right, you are done.
+
+</Steps>
+
+## When one mod is still broken
+
+If most mods work and one doesn't, the patch changed the specific game files
+that mod replaces. Nothing on your machine fixes this - the mod needs rebuilding
+against the new files by whoever made it.
+
+What you can do:
+
+- **Disable it** so it stops interfering, and re-patch.
+- **Check where you got it** for an updated release.
+- **Wait.** Popular mods usually get updated within a few days of a patch.
+
+:::tip[Isolate it with a profile]
+Keep a [profile](/using-mods/profiles/) with only the mods you rely on. After a
+patch, apply that first - if it works, you know the problem is in the mods you
+left out, and you can re-enable them a few at a time.
+:::
+
+## When a patch breaks larger art changes
+
+Riot occasionally reworks a champion's assets, a map, or the UI wholesale.
+Mods touching that content don't get updated so much as remade, and some are
+simply abandoned. This is normal, and it is worth knowing before you build a
+setup around one mod you cannot live without.
+
+## Habits that make patch day boring
+
+- **Keep the mods you actually use enabled, and the rest disabled.** A smaller
+  overlay has fewer chances to conflict.
+- **Note which patch a mod was built for** when you install it.
+- **Don't install a stack of new mods on patch day.** If something breaks you
+  won't know whether it was the patch or the new mod.
+- **Watch the [Discord](https://discord.gg/leaguetoolkit)** when a patch lands
+  badly - if the patcher itself needs an update, that is where it is announced
+  first.
+
+## Still not working
+
+Work through [Troubleshooting](/using-mods/troubleshooting/), which covers log
+file locations and the common failure modes in detail.
