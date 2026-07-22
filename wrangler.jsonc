@@ -2,6 +2,11 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "wiki",
   "compatibility_date": "2026-04-10",
+  // Paired with the Astro dev server on 5850; keeps `pnpm preview` off
+  // wrangler's shared 8787 default.
+  "dev": {
+    "port": 5851,
+  },
   "observability": {
     "enabled": true,
   },

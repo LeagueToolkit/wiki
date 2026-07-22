@@ -7,6 +7,8 @@ export default defineConfig({
   site: 'https://wiki.leaguetoolkit.dev',
   output: 'static',
 
+  server: { port: 5850 },
+
   // Self-hosted via the Fonts API: downloaded at build time, served from
   // /_astro/, with generated fallback metrics to soften the swap. The
   // cssVariable values are consumed by the font tokens in custom.css; the
