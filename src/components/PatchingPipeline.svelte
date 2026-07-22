@@ -194,7 +194,7 @@
     gap: 1rem;
     padding: 1.25rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
+    border-radius: var(--ltk-radius-lg);
     background: var(--sl-color-gray-6);
     font-family: var(--sl-font);
   }
@@ -360,7 +360,7 @@
     padding: 0.75rem 1rem;
     background: var(--sl-color-black);
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     min-height: 3.5rem;
     display: flex;
     flex-direction: column;

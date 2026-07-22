@@ -99,7 +99,7 @@
     width: 100%;
     height: var(--height);
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
+    border-radius: var(--ltk-radius-lg);
     overflow: hidden;
     cursor: ew-resize;
     user-select: none;

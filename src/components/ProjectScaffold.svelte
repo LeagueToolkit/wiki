@@ -193,7 +193,7 @@
     gap: 1rem;
     padding: 1.25rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
+    border-radius: var(--ltk-radius-lg);
     background: var(--sl-color-gray-6);
     font-family: var(--sl-font);
   }
@@ -239,7 +239,7 @@
   .layer-desc {
     padding: 0.375rem 0.625rem;
     border: 1px solid var(--sl-color-gray-4);
-    border-radius: 0.375rem;
+    border-radius: var(--ltk-radius-sm);
     background: var(--sl-color-black);
     color: var(--sl-color-white);
     font-family: var(--sl-font);
@@ -283,7 +283,7 @@
   .add-btn {
     padding: 0.25rem 0.625rem;
     border: 1px solid var(--sl-color-gray-4);
-    border-radius: 0.375rem;
+    border-radius: var(--ltk-radius-sm);
     background: var(--sl-color-black);
     color: var(--sl-color-accent);
     font-size: 0.75rem;
@@ -323,7 +323,7 @@
     width: 1.5rem;
     height: 1.5rem;
     border: 1px solid var(--sl-color-gray-4);
-    border-radius: 0.25rem;
+    border-radius: var(--ltk-radius-sm);
     background: none;
     color: var(--sl-color-gray-3);
     cursor: pointer;
@@ -347,7 +347,7 @@
     display: flex;
     flex-direction: column;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     overflow: hidden;
     background: var(--sl-color-black);
   }

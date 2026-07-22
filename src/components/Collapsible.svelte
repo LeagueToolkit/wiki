@@ -38,7 +38,7 @@
 <style>
   .collapsible {
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     overflow: hidden;
     font-family: var(--sl-font);
   }
@@ -120,7 +120,7 @@
     font-family: var(--sl-font-mono);
     font-size: 0.75rem;
     padding: 0.125rem 0.375rem;
-    border-radius: 0.25rem;
+    border-radius: var(--ltk-radius-sm);
     background: var(--sl-color-gray-5);
   }
 
@@ -130,7 +130,7 @@
     border-collapse: separate;
     border-spacing: 0;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.375rem;
+    border-radius: var(--ltk-radius-sm);
     overflow: hidden;
     margin: 0.5rem 0;
   }

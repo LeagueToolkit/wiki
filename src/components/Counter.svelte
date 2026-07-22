@@ -22,7 +22,7 @@
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     font-family: var(--sl-font);
   }
 
@@ -40,7 +40,7 @@
     cursor: pointer;
     padding: 0.25rem 0.75rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.25rem;
+    border-radius: var(--ltk-radius-sm);
     background: var(--sl-color-bg-nav);
     color: var(--sl-color-white);
     font-size: 1rem;

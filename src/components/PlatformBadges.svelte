@@ -52,7 +52,7 @@
     gap: 0.75rem;
     padding: 0.75rem 1rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     background: var(--sl-color-gray-6);
   }
 

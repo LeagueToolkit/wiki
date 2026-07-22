@@ -162,7 +162,7 @@
     gap: 0.5rem;
     padding: 1.25rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
+    border-radius: var(--ltk-radius-lg);
     background: var(--sl-color-gray-6);
     font-family: var(--sl-font);
   }
@@ -190,7 +190,7 @@
   .byte-bar {
     display: flex;
     height: 2.5rem;
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     overflow: hidden;
     border: 1px solid var(--sl-color-gray-5);
   }
@@ -268,7 +268,7 @@
     gap: 0.625rem;
     align-items: center;
     padding: 0.375rem 0.5rem;
-    border-radius: 0.375rem;
+    border-radius: var(--ltk-radius-sm);
     cursor: pointer;
     transition: background 0.1s ease;
     border: none;

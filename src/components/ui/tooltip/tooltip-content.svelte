@@ -26,7 +26,7 @@
   :global(.tooltip-content) {
     z-index: 50;
     overflow: hidden;
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     border: 1px solid var(--sl-color-gray-4);
     background: var(--sl-color-gray-5);
     padding: 0.5rem 0.75rem;

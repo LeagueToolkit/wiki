@@ -104,7 +104,7 @@
     gap: 0.75rem;
     padding: 1.25rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
+    border-radius: var(--ltk-radius-lg);
     background: var(--sl-color-gray-6);
     font-family: var(--sl-font);
   }
@@ -161,7 +161,7 @@
     align-items: center;
     padding: 0.5rem 0.75rem;
     background: var(--sl-color-black);
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     border: 1px solid var(--sl-color-gray-5);
   }
 
@@ -188,7 +188,7 @@
     gap: 0.5rem;
     align-items: center;
     padding: 0.4375rem 0.5rem;
-    border-radius: 0.375rem;
+    border-radius: var(--ltk-radius-sm);
     cursor: default;
     transition:
       background 0.1s ease,

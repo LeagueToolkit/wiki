@@ -87,7 +87,7 @@
     gap: 0.75rem;
     padding: 1.25rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
+    border-radius: var(--ltk-radius-lg);
     background: var(--sl-color-gray-6);
     font-family: var(--sl-font);
     overflow: hidden;
@@ -105,7 +105,7 @@
     gap: 0.5rem;
     padding: 0.5rem 0.75rem;
     border: 1px solid var(--sl-color-gray-4);
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     background: var(--sl-color-black);
     transition: border-color 0.15s ease;
   }
@@ -178,7 +178,7 @@
 
   .term {
     padding: 0.625rem 0.75rem;
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     transition: background 0.1s ease;
   }
 

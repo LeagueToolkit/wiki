@@ -119,7 +119,7 @@
     gap: 1rem;
     padding: 1.25rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
+    border-radius: var(--ltk-radius-lg);
     background: var(--sl-color-gray-6);
     font-family: var(--sl-font);
   }
@@ -141,7 +141,7 @@
   .input-row input {
     padding: 0.625rem 0.875rem;
     border: 1px solid var(--sl-color-gray-4);
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     background: var(--sl-color-black);
     color: var(--sl-color-white);
     font-family: var(--sl-font-mono);
@@ -174,7 +174,7 @@
     gap: 0.375rem;
     padding: 0.75rem 1rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     background: var(--sl-color-black);
     cursor: pointer;
     transition: border-color 0.15s ease;
