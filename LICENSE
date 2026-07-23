@@ -1,0 +1,18 @@
+LTK Wiki is licensed under two licenses, depending on what part of the
+repository you are using:
+
+Code - Apache License 2.0
+  Everything that builds and renders the site: the Astro/Svelte components,
+  configuration, styles, and scripts (e.g. src/components/**, src/styles/**,
+  astro.config.ts, and other source files outside src/content/).
+  See LICENSE-CODE for the full text.
+
+Content - Creative Commons Attribution-ShareAlike 4.0 International
+  The documentation itself: all prose, guides, and reference material under
+  src/content/**, together with the site's images and other media assets.
+  See LICENSE-CONTENT for the full text.
+
+Contributions are accepted under the same split: code contributions under
+Apache-2.0, content contributions under CC BY-SA 4.0.
+
+Copyright (c) LeagueToolkit contributors.
