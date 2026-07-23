@@ -204,7 +204,7 @@
 
   .format-name {
     font-size: 1.25rem;
-    font-weight: 700;
+    font-weight: var(--ltk-weight-bold);
     letter-spacing: -0.01em;
     color: var(--sl-color-white);
   }
@@ -221,7 +221,7 @@
 
   .badge {
     font-size: 0.6875rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.06em;
     padding: 0.1875rem 0.5rem;
@@ -239,7 +239,7 @@
     color: var(--sl-color-white);
     line-height: 1.45;
     margin: 0;
-    font-weight: 500;
+    font-weight: var(--ltk-weight-medium);
   }
 
   .best-for {
@@ -254,7 +254,7 @@
 
   .best-for-label {
     font-size: 0.6875rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--sl-color-gray-3);
@@ -284,11 +284,11 @@
   }
 
   .feature.supported .icon {
-    color: #22c55e;
+    color: var(--ltk-success);
   }
 
   .feature.partial .icon {
-    color: #f59e0b;
+    color: var(--ltk-warning);
   }
 
   .feature.unsupported .icon {
@@ -320,7 +320,7 @@
 
   .feature-label {
     color: var(--sl-color-white);
-    font-weight: 500;
+    font-weight: var(--ltk-weight-medium);
   }
 
   .feature-note {

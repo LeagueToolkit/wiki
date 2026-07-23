@@ -27,7 +27,7 @@
   }
 
   .counter-label {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
   }
 
   .counter-value {

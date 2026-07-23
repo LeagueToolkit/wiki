@@ -1,0 +1,224 @@
+---
+title: Mod Projects
+description: The source format behind LeagueToolkit mods - one folder layout and manifest standard that the Workshop, the CLI, and the rest of the ecosystem build from.
+---
+
+import { Badge, CardGrid, FileTree, LinkCard, Tabs, TabItem } from '@astrojs/starlight/components';
+import HeadingIcon from '../../../components/HeadingIcon.astro';
+import Hint from '../../../components/Hint.svelte';
+
+A **mod project** is the source form of a mod: a folder holding the mod's files plus the metadata needed to build them into a package. You author and version the project; a build step packs it into a distributable `.modpkg` or `.fantome`. If you have used a package manager for code, the shape is familiar - the project is the source tree, `mod.config.json` is the manifest, and packing is the build.
+
+The project standard is the pillar the modern mod ecosystem rests on. It defines:
+
+- **A folder layout** that fully declares where every file goes, so the same project builds the same package on any machine.
+- **A manifest format** (`mod.config.json` / `mod.config.toml`) for metadata, layers, and build settings.
+- **A shared feature set** - [layers](/making-mods/layers/), [string overrides](/making-mods/string-overrides/), readme and thumbnail support, file transformers - defined once, at the project level, instead of per-tool.
+- **The build outputs**: the native `.modpkg` format and an extended `.fantome` format for legacy compatibility, both packed from the same project.
+
+The [Creator Workshop](/making-mods/workshop/) and the [`league-mod` CLI](/tools/league-mod/overview/) both operate on this standard, so projects move freely between them - and any third-party tool that follows it is compatible with both.
+
+## <HeadingIcon icon="tree-structure" />Project Structure
+
+{/* prettier-ignore */}
+<FileTree>
+- my-mod/
+  - mod.config.json the manifest (or mod.config.toml)
+  - README.md optional, ships inside the package
+  - thumbnail.webp optional preview image
+  - content/
+    - base/ one folder per layer
+      - Ahri.wad.client/
+        - DATA/
+          - …
+    - high-res/
+      - Ahri.wad.client/
+        - …
+  - build/ default pack output
+</FileTree>
+
+Only two things are required: a manifest at the root and a `content/` directory with one folder per layer. The manifest is also how a folder gets recognized as a project in the first place - the Workshop scans its workshop path for it, and a [Git import](/making-mods/project/#from-git) is only accepted when the repository has one at its root.
+
+## <HeadingIcon icon="scroll" />The Manifest
+
+The manifest lives at the project root as `mod.config.json` or `mod.config.toml`. Both express the same schema; if both files exist, the JSON one is used.
+
+| Field          | Description                                                                                                                                                         |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`         | <span class="field-required">Required.</span> Slug used for directories and package file names. No spaces or special characters other than hyphens and underscores. |
+| `display_name` | <span class="field-required">Required.</span> Human-readable name shown in libraries and mod sites.                                                                 |
+| `version`      | <span class="field-required">Required.</span> Semantic version (`1.0.0`). Parsed at pack time, so it must be valid semver.                                          |
+| `description`  | <span class="field-required">Required.</span> What the mod does.                                                                                                    |
+| `authors`      | <span class="field-required">Required.</span> Plain strings, or objects with `name` and `role`.                                                                     |
+| `license`      | An SPDX identifier (`"MIT"`), or an object with `name` and `url` for a custom license.                                                                              |
+| `tags`         | Categories such as `champion-skin`, `map-skin`, `sfx`. Custom strings are allowed.                                                                                  |
+| `champions`    | Champions the mod targets.                                                                                                                                          |
+| `maps`         | Well-known ids (`summoners-rift`, `aram`, `teamfight-tactics`, `arena`, `swarm`) or custom strings.                                                                 |
+| `layers`       | Content layers. Defaults to a single `base` layer with priority 0.                                                                                                  |
+| `transformers` | Reserved for [file transformers](#file-transformers), a planned build step (WIP).                                                                                   |
+| `thumbnail`    | Path to the preview image, relative to the project root. Defaults to `thumbnail.webp`.                                                                              |
+
+<Tabs>
+  <TabItem label="JSON">
+    ```json
+    {
+      "name": "old-summoners-rift",
+      "display_name": "Old Summoners Rift",
+      "version": "1.0.0",
+      "description": "Brings back the classic Summoners Rift map",
+      "authors": ["TheKillerey", { "name": "Crauzer", "role": "Contributor" }],
+      "license": "MIT",
+      "tags": ["map-skin"],
+      "maps": ["summoners-rift"],
+      "layers": [
+        { "name": "base", "priority": 0, "description": "Base layer of the mod" },
+        { "name": "high-res", "priority": 10, "description": "High resolution textures" }
+      ]
+    }
+    ```
+  </TabItem>
+  <TabItem label="TOML">
+    ```toml
+    name = "old-summoners-rift"
+    display_name = "Old Summoners Rift"
+    version = "1.0.0"
+    description = "Brings back the classic Summoners Rift map"
+    authors = ["TheKillerey", { name = "Crauzer", role = "Contributor" }]
+    license = "MIT"
+    tags = ["map-skin"]
+    maps = ["summoners-rift"]
+
+    [[layers]]
+    name = "base"
+    priority = 0
+    description = "Base layer of the mod"
+
+    [[layers]]
+    name = "high-res"
+    priority = 10
+    description = "High resolution textures"
+    ```
+
+  </TabItem>
+</Tabs>
+
+Layer names are slugs - lowercase letters, digits, and hyphens - and the `base` layer must keep priority 0. Both rules are enforced when you pack.
+
+## <HeadingIcon icon="folders" />Deterministic Content Layout
+
+Everything under `content/` is declared, never inferred:
+
+- **Layers are folders.** Each entry in `layers` maps to `content/<layer-name>/`.
+- **WAD assignment is explicit.** Inside a layer, a folder named after its target archive (`Ahri.wad.client/`) holds raw files at the paths they occupy inside that WAD.
+
+Because the mapping from source file to game file is spelled out in the folder structure, a build never has to index your game installation or guess where a file belongs - the failure mode of the legacy [RAW/ folder](/making-mods/project/#raw-folder-legacy-avoid) approach. The same project produces the same package anywhere, which is what makes projects safe to version in Git and build in CI.
+
+Layers themselves - variants, optional add-ons, priority resolution - are covered on the [Layers](/making-mods/layers/) page. [String overrides](/making-mods/string-overrides/) also live in the manifest, per layer and per locale, so translated or renamed text builds into the package alongside the files.
+
+## <HeadingIcon icon="article" />README and Thumbnail
+
+A `README.md` at the project root travels with the mod. Packing embeds it in the `.modpkg`, and a `.fantome` build copies it to `META/README.md`, so whoever installs the mod sees your documentation without needing the project.
+
+The thumbnail follows the `thumbnail` manifest field, or `thumbnail.webp` at the project root when the field is absent. A `.modpkg` embeds the image directly; a `.fantome` build converts it to `META/image.png`.
+
+## <HeadingIcon icon="magic-wand" />File Transformers<Hint client:visible style="vertical-align: middle; margin-inline-start: 0.5em;" tip="Planned feature: the manifest reserves the field, but transformers do not run during packing yet."><Badge text="Under Construction" variant="caution" /></Hint>
+
+Transformers are a planned build step: they will process matching files while the package is built, so you can keep editable source formats in the project and ship game-ready ones. The manifest already reserves the field - each entry names a transformer and selects its inputs by glob `patterns`, explicit `files`, or both, with an optional `options` map for transformer-specific settings.
+
+```json
+{
+  "transformers": [
+    {
+      "name": "tex-converter",
+      "patterns": ["**/*.dds", "**/*.png"]
+    }
+  ]
+}
+```
+
+The feature is a concept for now - no transformers run during packing yet. This section will list the available transformers once the pipeline lands.
+
+## <HeadingIcon icon="package" />Build Outputs
+
+One project packs into either distribution format - choose per release, not upfront:
+
+- **`.modpkg`** - the native format. Carries the full project model: metadata, multiple layers with priorities, per-layer string overrides, readme, and thumbnail.
+- **`.fantome`** - the legacy-compatible format, for mod sites and users on older managers.
+
+Packing runs from the Workshop's **Pack** button or [`league-mod pack`](/tools/league-mod/overview/#pack), which writes `build/<name>_<version>.modpkg` by default. Validation runs first: required fields present, layer names valid, `base` at priority 0, and a content folder existing for every declared layer. See [Packaging](/making-mods/packaging/) for the format comparison and publishing guidance.
+
+### The Extended Fantome Format
+
+LeagueToolkit defines an official extension of the `.fantome` format so projects lose as little as possible when targeting legacy tooling. On top of the original cslol-era spec, a packed fantome's `META/info.json` carries `Tags`, `Champions`, `Maps`, and a `Layers` map with each layer's name, display name, priority, and string overrides:
+
+```json
+{
+  "Name": "Old Summoners Rift",
+  "Author": "TheKillerey, Crauzer",
+  "Version": "1.0.0",
+  "Description": "Brings back the classic Summoners Rift map",
+  "Tags": ["map-skin"],
+  "Layers": {
+    "base": {
+      "Name": "base",
+      "Priority": 0,
+      "StringOverrides": {
+        "default": { "game_character_displayname_Ahri": "Fox Spirit" }
+      }
+    }
+  }
+}
+```
+
+The fantome format itself remains single-layer: only the `base` layer's WAD content is packed, and the Workshop warns you when other layers would be left out. The extension preserves the layer _metadata_ - so string overrides work and survive a round-trip through import - while tools that predate it simply read the file as a plain fantome.
+
+:::note[Layer support is work in progress]
+The `Layers` part of the extension is still in development. Expect it to change before it stabilizes; this section will be updated when it does.
+:::
+
+## <HeadingIcon icon="flask" />In Development
+
+Two additions to the standard are being built and are not available yet. This page will document them when they land:
+
+- **Ignore files** - a `.modignore` (or `.ltkignore`) at the project root, with `.gitignore`-style patterns, to keep working files such as source `.psd` textures out of builds.
+- **Bin delta pipeline** - shipping only the changes a mod makes to property bin files instead of whole edited copies.
+
+## <HeadingIcon icon="link" />Related Pages
+
+<CardGrid>
+  <LinkCard
+    title="Workshop Overview"
+    href="/making-mods/workshop/"
+    description="The project editor built into LTK Manager"
+  />
+  <LinkCard
+    title="From the Command Line"
+    href="/tools/league-mod/overview/"
+    description="The same standard, driven from a terminal"
+  />
+  <LinkCard
+    title="Layers"
+    href="/making-mods/layers/"
+    description="Variants, add-ons, and priority"
+  />
+  <LinkCard
+    title="String Overrides"
+    href="/making-mods/string-overrides/"
+    description="Per-layer, per-locale text replacement"
+  />
+  <LinkCard
+    title="Packaging"
+    href="/making-mods/packaging/"
+    description="The .modpkg and .fantome formats in depth"
+  />
+  <LinkCard
+    title="Creating a Project"
+    href="/making-mods/project/"
+    description="Start fresh or import from existing mods"
+  />
+  <LinkCard
+    title="Migrating to Projects"
+    href="/making-mods/migrating/"
+    description="Bring a cslol-era or hand-built mod into the standard"
+  />
+</CardGrid>

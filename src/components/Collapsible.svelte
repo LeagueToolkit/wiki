@@ -85,13 +85,13 @@
   }
 
   .collapsible-title {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
   }
 
   .collapsible-badge {
     margin-left: auto;
     font-size: 0.6875rem;
-    font-weight: 500;
+    font-weight: var(--ltk-weight-medium);
     padding: 0.125rem 0.5rem;
     border-radius: 1rem;
     background: var(--sl-color-gray-5);
@@ -143,7 +143,7 @@
 
   .collapsible-content :global(th) {
     background: var(--sl-color-gray-6);
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     border-bottom: 1px solid var(--sl-color-gray-5);
   }
 

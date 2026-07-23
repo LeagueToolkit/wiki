@@ -6,20 +6,16 @@
  *
  * Aesthetic: Dark & Premium
  * Fonts: Bricolage Grotesque (display) + Geist (body)
- *        + Geist Mono (code)
+ *        + JetBrains Mono (code)
  */
 
 /* ── Font Stack ─────────────────────────────────────────────── */
 
-/* Bricolage Grotesque is the display voice: used only where a page speaks
-   rather than explains - the splash hero and its section headings. Docs body
-   copy is Geist, a tight neutral grotesque that stays out of the way over long
-   reference pages and lets the display face carry the identity.
-   The --font-* variables come from the Fonts API config in astro.config.ts;
-   each already carries its own generated fallback stack. */
+/* Bricolage = display (hero only), Geist = body, JetBrains Mono = code.
+   The --font-* variables come from the Fonts API config in astro.config.ts. */
 :root {
   --sl-font: var(--font-geist);
-  --sl-font-mono: var(--font-geist-mono);
+  --sl-font-mono: var(--font-jetbrains-mono);
   --ltk-font-display: var(--font-bricolage), var(--font-geist);
 }
 
@@ -59,23 +55,46 @@
 
 /* ── Brand Palette ──────────────────────────────────────────── */
 
-/* The two logo colours, as tokens rather than hex repeated per rule. These do
-   not flip with the theme: they are the identity, and every place they appear
-   mixes them down against a surface rather than swapping them out. */
+/* The logo colours. Theme-invariant: always mixed against a surface,
+   never swapped per theme. */
 :root {
   --ltk-blue: #4b7dfa;
   --ltk-violet: #7d4bfa;
+  --ltk-on-brand: #ffffff; /* text on a brand gradient */
+}
+
+/* ── Status Palette ─────────────────────────────────────────── */
+
+/* Semantic state colours. Theme-invariant except --ltk-required, which
+   flips for contrast. */
+:root {
+  --ltk-success: #22c55e;
+  --ltk-warning: #f59e0b;
+  --ltk-danger: #ef4444;
+  --ltk-required: #f193a9;
+}
+
+:root[data-theme='light'] {
+  --ltk-required: #ad3a58;
 }
 
 /* ── Corner Radius ──────────────────────────────────────────── */
 
-/* One scale for every rounded corner on the site, kept deliberately tight so
-   surfaces read crisp rather than soft. Pill shapes (chips, badges, dots) are
-   exempt: they use 1rem/999px/50% for geometry, not softness. */
+/* One scale for every rounded corner. Pill shapes (chips, badges, dots)
+   are exempt: they use 1rem/999px/50% for geometry. */
 :root {
   --ltk-radius-lg: 0.5rem; /* cards, tables, asides, code blocks */
   --ltk-radius-md: 0.375rem; /* buttons, inputs, inner panels */
   --ltk-radius-sm: 0.25rem; /* nav rows, tags, keys */
+}
+
+/* ── Font Weights ───────────────────────────────────────────── */
+
+/* Pick from these, never a raw number. Body copy rides the face default (400). */
+:root {
+  --ltk-weight-medium: 500; /* labels, secondary emphasis */
+  --ltk-weight-semibold: 600; /* headings, UI emphasis */
+  --ltk-weight-bold: 700; /* page title, hero, strongest voice */
 }
 
 /* ── Typography Refinements ─────────────────────────────────── */
@@ -93,16 +112,15 @@
 .sl-markdown-content h2,
 .sl-markdown-content h3 {
   letter-spacing: -0.02em;
-  font-weight: 600;
+  font-weight: var(--ltk-weight-semibold);
 }
 
 .sl-markdown-content h1 {
-  font-weight: 700;
+  font-weight: var(--ltk-weight-bold);
 }
 
-/* Comfortable body reading. Plain prose only: classed elements are
-   component parts (Card/aside titles, tabs) that set their own
-   line-height, and this unlayered rule would beat their layered one. */
+/* Plain prose only: classed elements are component parts with their own
+   line-height, and this unlayered rule would beat theirs. */
 .sl-markdown-content p:not([class]),
 .sl-markdown-content li:not([class]) {
   line-height: 1.7;
@@ -110,18 +128,10 @@
 
 /* ── Lists ──────────────────────────────────────────────────── */
 
-/* Tailwind's preflight resets `ol, ul, menu { list-style: none }` and zeroes
-   their padding. Starlight ships no list rules of its own - it inherits the UA
-   defaults that preflight removes - so without these, every list in the docs
-   renders as unmarked, unindented lines. Unlayered here on purpose: preflight
-   lives in `@layer base`, and an unlayered rule beats any layered one.
-
-   Every rule below must carry BOTH guards. `:not([class])` skips component
-   lists that style themselves (Steps, tabs, sidebar). The `.not-content` guard
-   skips components built from bare `ul`/`li` - FileTree is the one that bites:
-   its markup is unclassed `ul`s inside `<starlight-file-tree class="not-content">`,
-   so an unguarded rule paints marker dots into the tree and shifts its guide
-   lines. */
+/* Tailwind's preflight (@layer base) strips list styles; these unlayered
+   rules win them back. Every rule needs BOTH guards: `:not([class])` skips
+   component lists that style themselves, `.not-content` skips components
+   built from bare ul/li - FileTree's unclassed `ul`s are the one that bites. */
 .sl-markdown-content :is(ul, ol):not([class]):not(:where(.not-content *)) {
   padding-inline-start: 1.5rem;
 }
@@ -134,7 +144,7 @@
   list-style-type: decimal;
 }
 
-/* Each nesting level gets a distinct marker so structure survives indentation. */
+/* Distinct marker per nesting level. */
 .sl-markdown-content ul ul:not([class]):not(:where(.not-content *)) {
   list-style-type: circle;
 }
@@ -151,7 +161,7 @@
   list-style-type: lower-roman;
 }
 
-/* Space between siblings, and between an item and the list nested under it. */
+/* Space between siblings, and between an item and its nested list. */
 .sl-markdown-content :is(ul, ol):not([class]):not(:where(.not-content *)) > li + li,
 .sl-markdown-content li > :is(ul, ol):not([class]):not(:where(.not-content *)) {
   margin-top: 0.5rem;
@@ -172,29 +182,51 @@
   --header-border-radius: var(--ec-brdRad);
 }
 
+/* Preflight's @layer base mono stack beats Starlight's layered
+   --sl-font-mono rule; unlayered wins over both. */
+.sl-markdown-content code {
+  font-family: var(--sl-font-mono);
+}
+
+/* Disable JetBrains Mono's code ligatures - readers copy what they see. */
+.sl-markdown-content code,
+.expressive-code,
+starlight-file-tree {
+  font-feature-settings:
+    'calt' 0,
+    'liga' 0;
+}
+
+/* Inline code pills. em insets scale with the pill's font size (tables
+   shrink code to 0.75rem); the margin keeps prose off the border. */
+.sl-markdown-content :not(pre) > code:not(:where(.not-content *)) {
+  border: 1px solid var(--sl-color-gray-4);
+  border-radius: var(--ltk-radius-sm);
+  padding-block: 0.1em;
+  padding-inline: 0.3em;
+  margin-inline: 0.1em;
+}
+
+/* Tint the border like Starlight tints aside code fills. */
+.sl-markdown-content .starlight-aside :not(pre) > code:not(:where(.not-content *)) {
+  border-color: color-mix(in srgb, var(--sl-color-asides-text-accent) 25%, transparent);
+}
+
 /* ── Badges ─────────────────────────────────────────────────── */
 
-/* The chips label a thing by its kind - CLI, App, Library, Data - so they are
-   tokens rather than prose and take the mono face, the same signal code spans
-   carry. Starlight points these at --sl-font-system-mono rather than the theme
-   token, which left them in the OS mono while every code span used ours.
-
-   Padding is set here rather than left to Starlight because Starlight insets
-   sidebar badges and .small badges by different amounts, so the same chip is
-   shaped differently depending on where it appears. em units keep the inset
-   proportional to whatever size a surface renders the chip at, and an explicit
-   line-height stops a cap-only string like CLI from sitting differently in its
-   box than a descender string like Migrating. No letter-spacing: tracking is
-   applied after the final glyph too, which eats the right inset and leaves the
-   chip visibly lopsided. */
+/* Badges are kind-labels (CLI, App), so mono like code spans - Starlight
+   points them at the system mono instead of the theme token. Own padding
+   because Starlight shapes sidebar and .small badges differently; em keeps
+   it proportional. No letter-spacing: it trails the last glyph and eats the
+   right inset. */
 .sl-badge {
   font-family: var(--sl-font-mono);
   padding: 0.2em 0.45em;
   line-height: 1.15;
 }
 
-/* Extra gap goes on the chip, not Starlight's label-span margin - that shared
-   rule also spaces the caret in group rows. */
+/* Gap on the chip, not Starlight's label-span margin (that also spaces
+   group carets). */
 .sidebar-content .sl-badge {
   font-size: var(--sl-text-2xs);
   margin-inline-start: 0.45em;
@@ -202,14 +234,9 @@
 
 /* ── Tables ─────────────────────────────────────────────────── */
 
-/* The table is its own scroll container: `display: block` leaves the rows in
-   an anonymous table box that shrink-wraps, so the frame is sized to
-   fit-content - it hugs the rows exactly, and header fills and row rules
-   always reach it - and capped at the column width, past which a genuinely
-   wide table scrolls. A narrow table therefore hugs its content rather than
-   stretching to fill the column; that is the accepted trade for not needing
-   a wrapper element (the old rehype plugin that added one died with the
-   remark/rehype pipeline in Astro 7). */
+/* display: block makes the table its own scroll container; fit-content
+   keeps the frame hugging the rows. Narrow tables don't stretch to the
+   column - the accepted trade for not needing a wrapper element. */
 .sl-markdown-content table {
   display: block;
   overflow-x: auto;
@@ -228,7 +255,7 @@
 }
 
 .sl-markdown-content th {
-  font-weight: 600;
+  font-weight: var(--ltk-weight-semibold);
   text-transform: none;
   letter-spacing: 0;
   background: var(--sl-color-gray-6);
@@ -247,18 +274,26 @@
   font-size: 0.75rem;
 }
 
+/* Required-field markers in reference tables. Rose so "must provide"
+   reads apart from links and code pills. */
+.sl-markdown-content .field-required {
+  font-weight: var(--ltk-weight-semibold);
+  color: var(--ltk-required);
+}
+
+/* ── File Tree ──────────────────────────────────────────────── */
+
+/* Starlight leaves the frame's corners square (@layer starlight.components);
+   unlayered wins. */
+starlight-file-tree {
+  border-radius: var(--ltk-radius-lg);
+}
+
 /* ── Header ─────────────────────────────────────────────────── */
 
-/* Starlight points the nav bar and the sidebar at the same value
-   (--sl-color-bg-nav and --sl-color-bg-sidebar are both gray-6), so the two
-   merge into one flat field and the bar reads as dead space above the tree.
-   Here it is its own layer: darker than the sidebar, translucent so content
-   dims as it scrolls beneath, and closed by a hairline of the brand gradient
-   in place of a grey rule - the same device the landing page cards use along
-   their top edge.
-
-   Both themes work off --sl-color-black, which is near-black in dark mode and
-   near-white in light, so the translucency needs no per-theme override. */
+/* Starlight gives the nav bar and sidebar the same fill, merging them into
+   one slab. Separate the bar: translucent blur over --sl-color-black (which
+   flips per theme), closed by a brand-gradient hairline. */
 header.header {
   border-bottom: 0;
   background-color: color-mix(in srgb, var(--sl-color-black) 85%, transparent);
@@ -266,8 +301,7 @@ header.header {
   -webkit-backdrop-filter: blur(14px) saturate(140%);
 }
 
-/* Brand wash bleeding in from the leading edge, under the wordmark, so the bar
-   is lit where the identity sits rather than being an even slab. */
+/* Brand wash bleeding in from the leading edge, under the wordmark. */
 header.header::before {
   content: '';
   position: absolute;
@@ -296,14 +330,12 @@ header.header::after {
   pointer-events: none;
 }
 
-/* The bar's contents come after both washes in flow order, so they need their
-   own stacking position to paint on top. */
+/* Paint the bar's contents above the washes. */
 header.header > * {
   position: relative;
 }
 
-/* Light mode runs the hairline and the wash harder: the same mixes that read
-   as a glow against near-black wash out against near-white. */
+/* Light mode runs both harder: the dark-mode mixes wash out on near-white. */
 :root[data-theme='light'] header.header::before {
   background: radial-gradient(
     60rem 8rem at 0% 50%,
@@ -324,12 +356,8 @@ header.header > * {
 
 /* ── Sidebar ────────────────────────────────────────────────── */
 
-/* Starlight marks the current page by inverting it - a solid accent fill with
-   dark text - which on a dark sidebar reads as a bright slab and pulls the eye
-   away from the content. Both states use a left-to-right wash of the brand
-   gradient instead: the current page gets the stronger one, hover a lighter
-   version of the same, so the two feel like degrees of one thing rather than
-   unrelated effects. */
+/* Brand-gradient washes instead of Starlight's inverted current-page slab;
+   hover is a lighter degree of the current-page treatment. */
 :root {
   --ltk-nav-hover: linear-gradient(
     90deg,
@@ -358,13 +386,12 @@ header.header > * {
 }
 
 .sidebar-content a[aria-current='page'] {
-  font-weight: 600;
+  font-weight: var(--ltk-weight-semibold);
   background: var(--ltk-nav-current);
   color: var(--sl-color-white);
 }
 
-/* Collapsible group headers are `summary`, not links, but sit in the same
-   column and need the same hover affordance. */
+/* Group headers are `summary`, not links, but need the same hover affordance. */
 .sidebar-content summary {
   border-radius: var(--ltk-radius-sm);
   transition: background 0.15s ease;
@@ -374,11 +401,9 @@ header.header > * {
   background: var(--ltk-nav-hover);
 }
 
-/* Animate sidebar group expand/collapse.
-   Geometry is unconditional so the collapsed state paints correctly on the
-   very first frame. Only the transition waits for .sl-sidebar-loaded (added
-   after load): gating the geometry on that class too made every collapsed
-   group animate shut on each navigation, which read as a layout jump. */
+/* Animate group expand/collapse. Geometry is unconditional so collapsed
+   groups paint right on the first frame; only the transition waits for
+   .sl-sidebar-loaded, else every group animates shut on each navigation. */
 .sidebar-pane {
   interpolate-size: allow-keywords;
 }
@@ -401,12 +426,9 @@ header.header > * {
     content-visibility 0.2s allow-discrete;
 }
 
-/* Groups whose name navigates to their Overview page (see
-   components/starlight/Sidebar.astro) are two targets in one row: the label
-   navigates, the caret toggles. That script turns each half into a real
-   element, so the split is expressed here as ordinary :hover rules - and the
-   two halves own the padding the summary used to hold, leaving no strip of the
-   row that belongs to neither. */
+/* Linked group rows (see components/starlight/Sidebar.astro): the label
+   navigates, the caret toggles. The halves take over the summary's padding
+   so no strip of the row belongs to neither. */
 .sidebar-pane summary[data-linked] {
   padding: 0;
 }
@@ -432,30 +454,20 @@ header.header > * {
   transition: background 0.15s ease;
 }
 
-/* Flat fill rather than --ltk-nav-hover: that token is a left-to-right
-   gradient sized for a full-width row and all but disappears on a target this
-   narrow. --sl-color-white inverts per theme, so this works in both. */
+/* Flat fill: the nav-hover gradient disappears on a target this narrow. */
 .sidebar-pane summary[data-linked] > .caret-zone:hover {
   background: color-mix(in srgb, var(--sl-color-white) 14%, transparent);
 }
 
-/* Each half lights up on its own, so the row-wide summary highlight would
-   only blur which one is about to act. */
+/* Each half lights up on its own; suppress the row-wide highlight. */
 .sidebar-content summary[data-linked]:hover {
   background: none;
 }
 
-/* Icons for the top-level sidebar sections.
-
-   Starlight's sidebar config has no icon field and renders `label` as escaped
-   text, so the icon is attached here rather than in markup. Each section is
-   keyed on a link it is guaranteed to contain rather than on `:nth-child`, so
-   reordering the sidebar in astro.config.ts cannot silently reassign icons.
-
-   Glyphs come from Phosphor (`@phosphor-icons/core`), which ships plain SVG
-   files - Vite resolves each path at build time, so swapping an icon means
-   changing a filename. They are applied as masks rather than backgrounds, so
-   each icon takes the label's colour and its hover/current states for free. */
+/* Top-level section icons. Starlight's sidebar config has no icon field, so
+   they attach here - keyed on a contained link, not :nth-child, so reordering
+   the sidebar cannot reassign them. Phosphor SVGs applied as masks: each icon
+   takes the label's colour and states for free. */
 .sidebar-pane ul.top-level > li > details > summary > .group-label,
 .sidebar-pane ul.top-level > li > a.large {
   display: flex;
@@ -540,9 +552,8 @@ header.header > * {
 
 /* ── Not-content spacing ───────────────────────────────────── */
 
-/* Starlight strips margin between headings and .not-content
-   islands. Restore a comfortable gap so titles don't collide
-   with interactive components placed directly after them. */
+/* Starlight strips the margin between headings and .not-content islands;
+   restore a gap. */
 .sl-markdown-content .sl-heading-wrapper + .not-content,
 .sl-markdown-content .sl-heading-wrapper + astro-island > .not-content {
   margin-top: 1rem;
@@ -550,11 +561,8 @@ header.header > * {
 
 /* ── Wordmark Gradient ──────────────────────────────────────── */
 
-/* Shared by the header title and the splash headline so the two read as one
-   identity. Runs ice -> azure -> violet across the logo palette, with the three
-   stops held at roughly equal lightness: across a short wordmark the whole ramp
-   spans barely a hundred pixels, so a stop that is much darker than its
-   neighbour reads as an abrupt colour change rather than a fade. */
+/* Shared by the header title and splash headline. Stops sit at similar
+   lightness so the short ramp fades instead of banding. */
 :root {
   --ltk-wordmark: linear-gradient(105deg, #cfeafd 0%, #86a9ff 48%, #a482ff 100%);
 }
@@ -573,25 +581,23 @@ header.header > * {
 
 .site-title span {
   font-family: var(--ltk-font-display);
-  font-weight: 700;
+  font-weight: var(--ltk-weight-bold);
   letter-spacing: -0.02em;
 }
 
 /* ── Splash Page ────────────────────────────────────────────── */
 
-/* Scoped on the hero rather than the template so these rules can only ever
-   affect the landing page (see components/starlight/Hero.astro). */
+/* Scoped on the hero so these only ever affect the landing page. */
 
 body:has(.ltk-hero) .sl-markdown-content h2 {
   font-family: var(--ltk-font-display);
   font-size: clamp(1.5rem, 3vw, 1.875rem);
-  font-weight: 700;
+  font-weight: var(--ltk-weight-bold);
   letter-spacing: -0.03em;
   margin-top: 4rem;
 }
 
-/* A short accent rule above each section title marks the page's seams without
-   adding another line of chrome. */
+/* Short accent rule above each section title. */
 body:has(.ltk-hero) .sl-markdown-content h2::before {
   content: '';
   display: block;
@@ -599,7 +605,7 @@ body:has(.ltk-hero) .sl-markdown-content h2::before {
   height: 2px;
   margin-bottom: 0.875rem;
   border-radius: 1px;
-  background: linear-gradient(90deg, #7d4bfa, #4b7dfa);
+  background: linear-gradient(90deg, var(--ltk-violet), var(--ltk-blue));
 }
 
 body:has(.ltk-hero) .sl-link-card {
@@ -649,21 +655,30 @@ body:has(.ltk-hero) .sl-link-card:hover {
 
 /* ── Asides ─────────────────────────────────────────────────── */
 
-/* Align note (blue) and tip (purple) hues with the logo palette
-   (#4B7DFA → 223, #7D4BFA → 257). */
+/* Align note (blue) and tip (purple) hues with the logo palette. */
 :root {
   --sl-hue-blue: 223;
   --sl-hue-purple: 257;
 }
 
-/* Replace Starlight's flat saturated panels with the site's card
-   language: rounded corners, hairline outline, and a background
-   tinted from each variant's accent so it sits on the dark surface. */
+/* Card treatment instead of Starlight's flat panels. The stripe is a
+   ::before overlay, not a border-inline-start - a border curves and tapers
+   at the rounded corners; overflow: hidden clips the band's ends instead. */
 .starlight-aside {
+  position: relative;
+  overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--sl-color-asides-border) 30%, transparent);
-  border-inline-start: 3px solid var(--sl-color-asides-border);
   border-radius: var(--ltk-radius-lg);
   background-color: color-mix(in srgb, var(--sl-color-asides-border) 8%, var(--sl-color-gray-6));
+}
+
+.starlight-aside::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 3px;
+  background: var(--sl-color-asides-border);
 }
 
 .starlight-aside code {

@@ -129,10 +129,16 @@ components`. A component never reaches back into another page's frontmatter.
 16. **Share values with design tokens, never copied hex.** Starlight's
     theme-aware palette (`--sl-color-*`) covers most needs. Site-specific values
     are `--ltk-*` tokens defined in `custom.css`: `--ltk-font-display`,
-    `--ltk-wordmark`, `--ltk-nav-hover`, `--ltk-nav-current`. A brand colour used
-    in two components is a token, not two hex literals. Leave incidental one-off
-    values (`0.4rem`, `0.8125rem`) inline rather than minting a token per magic
-    number.
+    `--ltk-wordmark`, `--ltk-nav-hover`, `--ltk-nav-current`, the brand pair
+    (`--ltk-blue`, `--ltk-violet`, `--ltk-on-brand`), the status palette
+    (`--ltk-success`, `--ltk-warning`, `--ltk-danger`, `--ltk-required`), the
+    radius scale (`--ltk-radius-*`), and the weight scale (`--ltk-weight-*`).
+    **Colours and font weights in CSS are always a token reference, never a raw
+    literal** - pick from the scales, or mint a token in the matching
+    `custom.css` section when none fits. JS-side colour data (the Mermaid theme,
+    BinaryStructure's categorical palette) is exempt: those are script config,
+    not stylesheet rules. Leave incidental one-off sizes (`0.4rem`, `0.8125rem`)
+    inline rather than minting a token per magic number.
 
 17. **Cross-component rules go in `src/styles/custom.css`,** which Starlight
     loads via `customCss`. Keep its section banner comments and add to the right

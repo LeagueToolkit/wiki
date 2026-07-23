@@ -117,7 +117,7 @@
 
   .selector-label {
     font-size: 0.8125rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-gray-2);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -166,7 +166,7 @@
   }
 
   .summary-version {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.875rem;
     color: var(--sl-color-accent-high);
   }
@@ -201,7 +201,7 @@
   }
 
   .feature-row.supported .feature-icon {
-    color: #22c55e;
+    color: var(--ltk-success);
   }
 
   .feature-row.unsupported {
@@ -215,12 +215,12 @@
   .feature-icon {
     display: flex;
     align-items: center;
-    color: #22c55e;
+    color: var(--ltk-success);
   }
 
   .feature-name {
     font-size: 0.8125rem;
-    font-weight: 500;
+    font-weight: var(--ltk-weight-medium);
     color: var(--sl-color-white);
   }
 

@@ -132,7 +132,7 @@
 
   .input-row label {
     font-size: 0.8125rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-gray-2);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -189,7 +189,7 @@
   }
 
   .result-card.copied {
-    border-color: #22c55e;
+    border-color: var(--ltk-success);
   }
 
   .result-header {
@@ -199,7 +199,7 @@
   }
 
   .algo-name {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.875rem;
     color: var(--sl-color-accent-high);
   }
@@ -230,7 +230,7 @@
   }
 
   .result-card.copied .copy-hint {
-    color: #22c55e;
+    color: var(--ltk-success);
   }
 
   .empty {

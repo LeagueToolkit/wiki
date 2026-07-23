@@ -195,14 +195,14 @@
   }
 
   .term-name {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.9375rem;
     color: var(--sl-color-accent-high);
   }
 
   .term-category {
     font-size: 0.625rem;
-    font-weight: 500;
+    font-weight: var(--ltk-weight-medium);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding: 0.125rem 0.375rem;

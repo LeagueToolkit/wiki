@@ -158,12 +158,12 @@ Projects are configured by a `mod.config.json` (or `mod.config.toml`) at the
 project root, declaring metadata, authors, license, and layers.
 
 The configuration format is documented in full on
-[Workshop Overview](/making-mods/workshop/#project-configuration) - it is the
-same file for both tools.
+[Mod Projects](/making-mods/mod-projects/#the-manifest) - it is the same file
+for both tools.
 
-`league-mod` additionally supports **transformers**: rules that process matching
-files during packing, for example converting source images to `.tex` on the way
-into the package.
+The format also reserves **transformers**: a planned (WIP, not yet implemented)
+build step for processing matching files during packing, for example converting
+source images to `.tex` on the way into the package.
 
 ```json
 {

@@ -168,7 +168,7 @@
   }
 
   .structure-title {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.875rem;
     color: var(--sl-color-gray-2);
     text-transform: uppercase;
@@ -239,7 +239,7 @@
 
   .segment-label {
     font-size: 0.6875rem;
-    font-weight: 500;
+    font-weight: var(--ltk-weight-medium);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -300,7 +300,7 @@
   }
 
   .field-name {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.8125rem;
   }
 
@@ -342,7 +342,7 @@
   }
 
   .bar-tooltip-name {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.8125rem;
     color: var(--sl-color-white);
   }

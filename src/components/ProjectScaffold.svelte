@@ -30,7 +30,7 @@
     JSON.stringify(
       {
         name: name || 'my-mod',
-        displayName: displayName || 'My Mod',
+        display_name: displayName || 'My Mod',
         version: '1.0.0',
         description: description || '',
         authors: [
@@ -228,7 +228,7 @@
 
   .field label {
     font-size: 0.6875rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-gray-2);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -274,7 +274,7 @@
 
   .section-label {
     font-size: 0.6875rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-gray-2);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -339,8 +339,8 @@
   }
 
   .remove-btn:hover {
-    color: #ef4444;
-    border-color: #ef4444;
+    color: var(--ltk-danger);
+    border-color: var(--ltk-danger);
   }
 
   .output-section {
@@ -413,7 +413,7 @@
   }
 
   .tree-item.root {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-accent-high);
   }
 

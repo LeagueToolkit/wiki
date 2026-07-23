@@ -206,7 +206,7 @@
   }
 
   .pipeline-title {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.875rem;
     color: var(--sl-color-gray-2);
     text-transform: uppercase;
@@ -221,7 +221,7 @@
     color: var(--sl-color-accent);
     font-family: var(--sl-font);
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: var(--ltk-weight-medium);
     cursor: pointer;
     transition:
       border-color 0.15s ease,
@@ -251,7 +251,7 @@
 
   .phase-label {
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-gray-3);
   }
 
@@ -289,7 +289,7 @@
     align-items: center;
     justify-content: center;
     font-size: 0.8125rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-gray-3);
     background: var(--sl-color-black);
     transition:
@@ -305,9 +305,9 @@
   }
 
   .step.completed .step-circle {
-    border-color: #22c55e;
-    background: color-mix(in srgb, #22c55e 20%, transparent);
-    color: #22c55e;
+    border-color: var(--ltk-success);
+    background: color-mix(in srgb, var(--ltk-success) 20%, transparent);
+    color: var(--ltk-success);
   }
 
   .step-label {
@@ -326,7 +326,7 @@
   }
 
   .step.completed .step-label {
-    color: #22c55e;
+    color: var(--ltk-success);
   }
 
   .connector {
@@ -338,7 +338,7 @@
   }
 
   .connector.active {
-    background: #22c55e;
+    background: var(--ltk-success);
   }
 
   .phase-divider {
@@ -353,7 +353,7 @@
   }
 
   .divider-arrow.active {
-    color: #22c55e;
+    color: var(--ltk-success);
   }
 
   .detail-panel {
@@ -376,14 +376,14 @@
 
   .detail-phase {
     font-size: 0.6875rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-accent);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
   .detail-label {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.875rem;
     color: var(--sl-color-white);
   }

@@ -52,14 +52,14 @@ Click **New Project** and fill in:
 
 ## Project Configuration
 
-The project config file stores all project metadata. LTK Manager supports both `mod.config.json` and `mod.config.toml`:
+The project config file stores all project metadata. LTK Manager supports both `mod.config.json` and `mod.config.toml`; the full field reference is on [Mod Projects](/making-mods/mod-projects/#the-manifest):
 
 <Tabs>
   <TabItem label="JSON">
     ```json
     {
       "name": "my-skin-mod",
-      "displayName": "My Skin Mod",
+      "display_name": "My Skin Mod",
       "version": "1.0.0",
       "description": "A custom skin for Ahri",
       "authors": [
@@ -81,7 +81,7 @@ The project config file stores all project metadata. LTK Manager supports both `
   <TabItem label="TOML">
     ```toml
     name = "my-skin-mod"
-    displayName = "My Skin Mod"
+    display_name = "My Skin Mod"
     version = "1.0.0"
     description = "A custom skin for Ahri"
     tags = ["skin"]

@@ -158,7 +158,7 @@
     border-radius: 1rem;
     font-family: var(--sl-font);
     font-size: 0.6875rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     z-index: 1;

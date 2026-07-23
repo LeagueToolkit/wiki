@@ -25,9 +25,9 @@ export default defineConfig({
     },
     {
       provider: fontProviders.fontsource(),
-      name: 'Geist Mono',
-      cssVariable: '--font-geist-mono',
-      weights: ['100 900'],
+      name: 'JetBrains Mono',
+      cssVariable: '--font-jetbrains-mono',
+      weights: ['100 800'],
       styles: ['normal'],
       subsets: ['latin'],
       fallbacks: ['ui-monospace', 'monospace'],
@@ -85,6 +85,11 @@ export default defineConfig({
           label: 'GitHub',
           href: 'https://github.com/LeagueToolkit',
         },
+        {
+          icon: 'discord',
+          label: 'Discord',
+          href: 'https://discord.gg/B36wgabjmD',
+        },
       ],
       customCss: ['./src/styles/tailwind.css', './src/styles/custom.css'],
       components: {
@@ -135,8 +140,10 @@ export default defineConfig({
           label: 'Mod Creation',
           items: [
             { label: 'Overview', slug: 'making-mods' },
+            { label: 'Mod Projects', slug: 'making-mods/mod-projects' },
             { label: 'Workshop Overview', slug: 'making-mods/workshop' },
             { label: 'Creating a Project', slug: 'making-mods/project' },
+            { label: 'Migrating to Projects', slug: 'making-mods/migrating' },
             { label: 'Layers', slug: 'making-mods/layers' },
             { label: 'String Overrides', slug: 'making-mods/string-overrides' },
             { label: 'Packaging', slug: 'making-mods/packaging' },

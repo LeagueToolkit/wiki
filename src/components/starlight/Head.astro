@@ -7,9 +7,9 @@ import { Font } from 'astro:assets';
   /* The families are declared in the `fonts` config in astro.config.ts; each
     <Font> emits its @font-face rules and, when asked, a preload link. Geist
     (body) and Bricolage Grotesque (display, splash hero) are on every paint,
-    so they preload; Geist Mono only matters once a code block scrolls in. */
+    so they preload; JetBrains Mono only matters once a code block scrolls in. */
 }
 <Default><slot /></Default>
 <Font cssVariable="--font-geist" preload />
-<Font cssVariable="--font-geist-mono" />
+<Font cssVariable="--font-jetbrains-mono" />
 <Font cssVariable="--font-bricolage" preload />

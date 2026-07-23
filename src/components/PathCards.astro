@@ -94,7 +94,7 @@ const paths: Path[] = [
   }
 
   .path {
-    --tone: #4b7dfa;
+    --tone: var(--ltk-blue);
     position: relative;
     display: flex;
     flex-direction: column;
@@ -113,7 +113,7 @@ const paths: Path[] = [
   }
 
   .path[data-tone='violet'] {
-    --tone: #7d4bfa;
+    --tone: var(--ltk-violet);
   }
 
   /* A hairline of the card's tone across the top edge - the only thing
@@ -193,7 +193,7 @@ const paths: Path[] = [
   .title {
     font-family: var(--ltk-font-display);
     font-size: 1.25rem;
-    font-weight: 700;
+    font-weight: var(--ltk-weight-bold);
     letter-spacing: -0.02em;
     color: var(--sl-color-white);
   }
@@ -210,7 +210,7 @@ const paths: Path[] = [
     gap: 0.4rem;
     margin-top: 0.5rem;
     font-size: 0.875rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-white);
   }
 

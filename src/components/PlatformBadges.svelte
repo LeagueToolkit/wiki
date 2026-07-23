@@ -73,7 +73,7 @@
   }
 
   .badge-name {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.8125rem;
     line-height: 1.2;
     color: var(--sl-color-white);
@@ -88,7 +88,7 @@
   }
 
   .badge-status {
-    font-weight: 500;
+    font-weight: var(--ltk-weight-medium);
     color: var(--status-color);
   }
 

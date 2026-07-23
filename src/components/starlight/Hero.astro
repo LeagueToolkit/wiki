@@ -65,7 +65,7 @@ const { title = data.title, tagline, actions = [] } = data.hero || {};
     inset-inline: -10%;
     background: radial-gradient(
       ellipse 55% 60% at 50% 40%,
-      color-mix(in srgb, #7d4bfa 16%, transparent),
+      color-mix(in srgb, var(--ltk-violet) 16%, transparent),
       transparent 70%
     );
     pointer-events: none;
@@ -93,15 +93,15 @@ const { title = data.title, tagline, actions = [] } = data.hero || {};
     width: 0.4rem;
     height: 0.4rem;
     border-radius: 50%;
-    background: linear-gradient(135deg, #7d4bfa, #4b7dfa);
-    box-shadow: 0 0 0.5rem #4b7dfa;
+    background: linear-gradient(135deg, var(--ltk-violet), var(--ltk-blue));
+    box-shadow: 0 0 0.5rem var(--ltk-blue);
   }
 
   .ltk-hero h1 {
     margin: 0;
     font-family: var(--ltk-font-display);
     font-size: clamp(2.5rem, 7vw, 4.5rem);
-    font-weight: 700;
+    font-weight: var(--ltk-weight-bold);
     line-height: 1.03;
     letter-spacing: -0.035em;
     color: var(--sl-color-white);
@@ -148,7 +148,7 @@ const { title = data.title, tagline, actions = [] } = data.hero || {};
     border: 1px solid transparent;
     border-radius: var(--ltk-radius-md);
     font-size: 0.9375rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     text-decoration: none;
     transition:
       transform 0.15s ease,
@@ -174,8 +174,8 @@ const { title = data.title, tagline, actions = [] } = data.hero || {};
   }
 
   .primary {
-    background: linear-gradient(135deg, #7d4bfa, #4b7dfa);
-    color: #ffffff;
+    background: linear-gradient(135deg, var(--ltk-violet), var(--ltk-blue));
+    color: var(--ltk-on-brand);
     box-shadow: 0 0.5rem 1.5rem -0.5rem rgba(75, 125, 250, 0.7);
   }
 
