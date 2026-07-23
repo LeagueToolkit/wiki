@@ -1,0 +1,58 @@
+---
+import Default from '@astrojs/starlight/components/Header.astro';
+
+// Reading-progress bar along the header's bottom edge, where custom.css
+// already draws the brand-gradient hairline: the fill reads as that hairline
+// charging up. Splash pages have no reading flow to track, so they skip it.
+const isSplash = Astro.locals.starlightRoute.entry.data.template === 'splash';
+---
+
+<Default><slot /></Default>
+{
+  /* Styled from custom.css (Header section): the rule must outrank the
+  `header.header > *` positioning rule there, which an Astro-scoped class
+  cannot. */
+}
+{!isSplash && <div class="ltk-read-progress" aria-hidden="true" />}
+
+<script>
+  const root = document.documentElement;
+  const bar = document.querySelector<HTMLElement>('.ltk-read-progress');
+  // Clamped so iOS rubber-band overscroll can't produce negative deltas.
+  let lastY = Math.max(window.scrollY, 0);
+  let ticking = false;
+
+  const update = () => {
+    ticking = false;
+    const y = Math.max(window.scrollY, 0);
+
+    if (bar) {
+      const max = root.scrollHeight - window.innerHeight;
+      const progress = max > 0 ? Math.min(y / max, 1) : 0;
+      bar.style.setProperty('--ltk-read-progress', `${progress * 100}%`);
+    }
+
+    // Hide-on-scroll for the mobile chrome; custom.css scopes the visual
+    // effect to narrow viewports, so the attribute is harmless on desktop.
+    // The 6px dead zone filters the jitter Chrome Android emits while its
+    // URL bar collapses; the open ToC dropdown pins the chrome in place.
+    const dy = y - lastY;
+    lastY = y;
+    const tocOpen = document.querySelector<HTMLDetailsElement>('#starlight__mobile-toc')?.open;
+    if (y < 96 || dy < -6 || tocOpen) {
+      root.removeAttribute('data-ltk-chrome-hidden');
+    } else if (dy > 6) {
+      root.setAttribute('data-ltk-chrome-hidden', '');
+    }
+  };
+
+  const schedule = () => {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(update);
+    }
+  };
+  addEventListener('scroll', schedule, { passive: true });
+  addEventListener('resize', schedule, { passive: true });
+  update();
+</script>

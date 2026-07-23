@@ -97,6 +97,35 @@
   --ltk-weight-bold: 700; /* page title, hero, strongest voice */
 }
 
+/* ── Glass Surfaces ─────────────────────────────────────────── */
+
+/* One recipe for every frosted surface: a translucent fill paired with a
+   backdrop blur. Always take the fill and the blur from the same tier.
+
+   - chrome: the nav bar. Near-opaque so content stays illegible behind it
+     even where a browser skips the blur; saturated so colour bleeds richly.
+   - panel: floating UI such as tooltips. Thinner fill - pair it with an
+     @supports guard and a solid fallback, as tooltip-content.svelte does.
+   - scrim: chips sitting on imagery. Theme-invariant black, because an
+     image underneath has no theme.
+
+   chrome and panel mix from theme-aware bases, so both modes frost
+   correctly. */
+:root {
+  --ltk-glass-chrome-fill: color-mix(in srgb, var(--sl-color-black) 97%, transparent);
+  --ltk-glass-chrome-blur: blur(24px) saturate(140%);
+  --ltk-glass-panel-fill: color-mix(in srgb, var(--sl-color-gray-5) 70%, transparent);
+  --ltk-glass-panel-blur: blur(10px);
+  --ltk-glass-scrim-fill: rgba(0, 0, 0, 0.6);
+  --ltk-glass-scrim-blur: blur(4px);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  :root {
+    --ltk-glass-chrome-fill: color-mix(in srgb, var(--sl-color-black) 65%, transparent);
+  }
+}
+
 /* ── Typography Refinements ─────────────────────────────────── */
 
 :root {
@@ -294,11 +323,18 @@ starlight-file-tree {
 /* Starlight gives the nav bar and sidebar the same fill, merging them into
    one slab. Separate the bar: translucent blur over --sl-color-black (which
    flips per theme), closed by a brand-gradient hairline. */
+/* Keep -webkit-backdrop-filter BEFORE the standard property, here and for
+   every backdrop-filter in the repo:
+
+   1. the minifier collapses the pair into whichever declaration comes last;
+   2. Chromium and Firefox never aliased -webkit-backdrop-filter (it is
+      Safari-only), so a bundle keeping only the prefixed form ships no
+      blur at all outside Safari. */
 header.header {
   border-bottom: 0;
-  background-color: color-mix(in srgb, var(--sl-color-black) 85%, transparent);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  background-color: var(--ltk-glass-chrome-fill);
+  -webkit-backdrop-filter: var(--ltk-glass-chrome-blur);
+  backdrop-filter: var(--ltk-glass-chrome-blur);
 }
 
 /* Brand wash bleeding in from the leading edge, under the wordmark. */
@@ -333,6 +369,50 @@ header.header::after {
 /* Paint the bar's contents above the washes. */
 header.header > * {
   position: relative;
+}
+
+/* Mobile hide-on-scroll. The html attribute is set by the scroll script in
+   components/starlight/Header.astro.
+
+   - Scrolling down slides the header and the "On this page" bar fully
+     off-screen for reading space; any scroll up brings them back.
+   - Why it exists: Chrome on Android nudges fixed elements while its URL
+     bar collapses, leaving the header jammed half-off-screen. A deliberate
+     full slide replaces that half-state.
+   - The ToC nav travels its own height plus the header's, since it starts
+     below the header. */
+@media (width < 50rem) {
+  header.header,
+  mobile-starlight-toc nav {
+    transition: transform 0.25s ease;
+  }
+
+  html[data-ltk-chrome-hidden] header.header {
+    transform: translateY(calc(-1 * var(--sl-nav-height)));
+  }
+
+  html[data-ltk-chrome-hidden] mobile-starlight-toc nav {
+    transform: translateY(calc(-1 * (var(--sl-nav-height) + var(--sl-mobile-toc-height))));
+  }
+
+  /* Keyboard focus (search, theme, menu) must never sit in hidden chrome. */
+  html[data-ltk-chrome-hidden] header.header:focus-within {
+    transform: none;
+  }
+}
+
+/* Reading-progress fill riding the hairline. --ltk-read-progress is set by
+   the scroll script in components/starlight/Header.astro; clip-path reveals
+   the gradient in place, so the fill never squishes and updates skip layout.
+   Child selector so this outranks the `header.header > *` rule above. */
+header.header > .ltk-read-progress {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--ltk-blue), var(--ltk-violet));
+  clip-path: inset(0 calc(100% - var(--ltk-read-progress, 0%)) 0 0);
+  pointer-events: none;
 }
 
 /* Light mode runs both harder: the dark-mode mixes wash out on near-white. */

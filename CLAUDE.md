@@ -132,7 +132,9 @@ components`. A component never reaches back into another page's frontmatter.
     `--ltk-wordmark`, `--ltk-nav-hover`, `--ltk-nav-current`, the brand pair
     (`--ltk-blue`, `--ltk-violet`, `--ltk-on-brand`), the status palette
     (`--ltk-success`, `--ltk-warning`, `--ltk-danger`, `--ltk-required`), the
-    radius scale (`--ltk-radius-*`), and the weight scale (`--ltk-weight-*`).
+    radius scale (`--ltk-radius-*`), the weight scale (`--ltk-weight-*`), and
+    the glass scale (`--ltk-glass-*`: chrome/panel/scrim fill+blur pairs for
+    frosted surfaces).
     **Colours and font weights in CSS are always a token reference, never a raw
     literal** - pick from the scales, or mint a token in the matching
     `custom.css` section when none fits. JS-side colour data (the Mermaid theme,
@@ -169,8 +171,9 @@ components`. A component never reaches back into another page's frontmatter.
 
 22. **Override through the `components` map in `astro.config.ts`,** never by
     editing anything under `node_modules`. Current overrides: `Sidebar.astro`
-    (makes a group with an Overview page navigate to it) and `Hero.astro` (the
-    splash hero).
+    (makes a group with an Overview page navigate to it), `Hero.astro` (the
+    splash hero), `Head.astro` (Fonts API `<Font>` tags), and `Header.astro`
+    (reading-progress bar and the mobile hide-on-scroll script).
 
 23. **Don't import Starlight internals.** Only the documented entry points are
     exported; a deep specifier like `@astrojs/starlight/constants` fails the
@@ -184,6 +187,22 @@ components`. A component never reaches back into another page's frontmatter.
 25. **Redirects in `astro.config.ts` are permanent.** The block mapping the
     pre-2026-07 URLs keeps links shared elsewhere working. Add to it when you
     move a page; never delete from it.
+
+---
+
+## Comments
+
+26. **A comment says only what the code cannot.** Before writing one, check the
+    code and the section doc above it: if the selector, condition, or an
+    existing block already carries the rationale, write nothing. Never narrate
+    current values ("at 65% the frost stays visible...") - they go stale on the
+    next tweak.
+
+27. **Structure multi-point comments as lists.** When a comment covers more
+    than a couple of distinct points (tiers of a scale, reasons for a rule,
+    steps of a behaviour), open with a one-line summary and put the points in a
+    `-` or numbered list, as the Glass Surfaces block in `custom.css` does.
+    Single-point comments stay plain sentences.
 
 ---
 

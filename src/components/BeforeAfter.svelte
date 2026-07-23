@@ -163,9 +163,10 @@
     letter-spacing: 0.05em;
     z-index: 1;
     pointer-events: none;
-    background: rgba(0, 0, 0, 0.6);
+    background: var(--ltk-glass-scrim-fill);
     color: white;
-    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: var(--ltk-glass-scrim-blur);
+    backdrop-filter: var(--ltk-glass-scrim-blur);
   }
 
   .label-before {

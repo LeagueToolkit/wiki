@@ -43,9 +43,8 @@ export default defineConfig({
     },
   ],
 
-  // Permanent redirects from the pre-2026-07 URL structure. The wiki was
-  // reorganised audience-first (Start Here / Using Mods / Mod Creation); these
-  // keep every previously-shared link working. Do not remove.
+  // Permanent redirects from the pre-2026-07 URL structure.
+  // DO NOT DELETE!
   redirects: {
     '/getting-started': '/start-here/',
     '/getting-started/introduction': '/start-here/what-is-leaguetoolkit/',
@@ -93,12 +92,9 @@ export default defineConfig({
       ],
       customCss: ['./src/styles/tailwind.css', './src/styles/custom.css'],
       components: {
-        // Makes a sidebar group with an Overview page navigate to it on click
-        // rather than only expanding. See the component for details.
         Sidebar: './src/components/starlight/Sidebar.astro',
-        // Bespoke splash hero - see the component for what it renders.
         Hero: './src/components/starlight/Hero.astro',
-        // Adds the Fonts API <Font> tags to the default head.
+        Header: './src/components/starlight/Header.astro',
         Head: './src/components/starlight/Head.astro',
       },
       head: [
