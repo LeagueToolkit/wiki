@@ -1,0 +1,81 @@
+---
+title: lol-meta-classes
+description: Toolchain that extracts and tracks League of Legends metaclass schemas across game versions.
+---
+
+`lol-meta-classes` extracts League's **metaclass** information - the typed
+schema behind every `.bin` property tree - and tracks how it changes across game
+versions.
+
+This is a data pipeline, not an end-user tool. Its output is what lets other
+tools tell you that a property is a `float` called `mAttackSpeed` rather than an
+anonymous four bytes under hash `0x8f3c2a1b`.
+
+**Repository:** [LeagueToolkit/lol-meta-classes](https://github.com/LeagueToolkit/lol-meta-classes)
+
+## What it produces
+
+| Path               | Contents                                                                        |
+| ------------------ | ------------------------------------------------------------------------------- |
+| `dumps/`           | Raw meta dumps, one per game version (e.g. `15.19.7151836.json`)                |
+| `db/database.py`   | The merged schema across all versions - generated, deterministic, diff-friendly |
+| `hashes/`          | Name mappings for types and fields, vendored from CommunityDragon               |
+| `docs/database.md` | Full documentation of the database format                                       |
+
+`db/database.py` being deterministic and diff-optimized is the point: a game
+patch produces a readable Git diff showing exactly which classes and properties
+Riot added, removed, or retyped.
+
+## How it stays current
+
+A **Sync LoL Meta Classes** CI workflow discovers new game versions, updates
+`dumps/`, regenerates `db/database.py`, and commits the result. In practice the
+schema tracks live patches without anyone doing manual work.
+
+Two Rust crates drive it:
+
+- **`meta-sync`** - automated version discovery and metaclass extraction
+- **`dumper`** - the binary analysis tool that extracts metaclasses from the game
+
+## Working with it locally
+
+Regenerate the database from a dump:
+
+```bash
+python3 scripts/db_import.py db/database.py dumps/<version>.json
+git diff -- db/database.py | cat
+```
+
+Inspect a dump as C++-like structs - often the fastest way to read a class's
+layout:
+
+```bash
+python3 scripts/dump_meta.py dumps/<version>.json > meta.hpp
+```
+
+Refresh the vendored hash mappings:
+
+```bash
+python3 scripts/update_hashes.py
+```
+
+Hashes with no known mapping remain as `0x...` in output until someone recovers
+the original string.
+
+## Related
+
+- [Metaclasses Overview](/reference/metaclasses/overview/) - what metaclasses are and how the system works
+- [BIN (Property Bins)](/reference/file-formats/bin/) - the format the schema describes
+- [Hashing Algorithms](/reference/hashing/algorithms/)
+
+## Credits
+
+The original meta dumper was created by
+[moonshadow](https://github.com/moonshadow565)
+([lolmetadumper3](https://github.com/moonshadow565/lolmetadumper3),
+[lolmetadumper2](https://github.com/moonshadow565/lolmetadumper2)). This project
+builds on that work, adding a full automation setup for dumping and syncing the
+database and hashes.
+
+[CommunityDragon](https://communitydragon.org/) maintains the hash tables this
+depends on.

@@ -34,12 +34,7 @@
     const normalized = normalize(str);
     let hash = 0;
     for (let i = 0; i < normalized.length; i++) {
-      hash =
-        (normalized.charCodeAt(i) +
-          ((hash << 6) >>> 0) +
-          ((hash << 16) >>> 0) -
-          hash) >>>
-        0;
+      hash = (normalized.charCodeAt(i) + ((hash << 6) >>> 0) + ((hash << 16) >>> 0) - hash) >>> 0;
     }
     return hash;
   }
@@ -124,7 +119,7 @@
     gap: 1rem;
     padding: 1.25rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
+    border-radius: var(--ltk-radius-lg);
     background: var(--sl-color-gray-6);
     font-family: var(--sl-font);
   }
@@ -137,7 +132,7 @@
 
   .input-row label {
     font-size: 0.8125rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-gray-2);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -146,7 +141,7 @@
   .input-row input {
     padding: 0.625rem 0.875rem;
     border: 1px solid var(--sl-color-gray-4);
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     background: var(--sl-color-black);
     color: var(--sl-color-white);
     font-family: var(--sl-font-mono);
@@ -179,7 +174,7 @@
     gap: 0.375rem;
     padding: 0.75rem 1rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     background: var(--sl-color-black);
     cursor: pointer;
     transition: border-color 0.15s ease;
@@ -194,7 +189,7 @@
   }
 
   .result-card.copied {
-    border-color: #22c55e;
+    border-color: var(--ltk-success);
   }
 
   .result-header {
@@ -204,7 +199,7 @@
   }
 
   .algo-name {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.875rem;
     color: var(--sl-color-accent-high);
   }
@@ -235,7 +230,7 @@
   }
 
   .result-card.copied .copy-hint {
-    color: #22c55e;
+    color: var(--ltk-success);
   }
 
   .empty {

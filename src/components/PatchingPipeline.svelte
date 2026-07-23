@@ -50,8 +50,7 @@
       id: 'hook',
       phase: 2,
       label: 'Hook File Reads',
-      description:
-        "Hooks into the game's file reading mechanism to intercept file access",
+      description: "Hooks into the game's file reading mechanism to intercept file access",
       icon: '6',
     },
     {
@@ -130,8 +129,7 @@
     <div class="phase-divider">
       <div
         class="divider-arrow"
-        class:active={activeStep !== null &&
-          steps.findIndex((s) => s.id === activeStep) >= 4}
+        class:active={activeStep !== null && steps.findIndex((s) => s.id === activeStep) >= 4}
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path
@@ -196,7 +194,7 @@
     gap: 1rem;
     padding: 1.25rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
+    border-radius: var(--ltk-radius-lg);
     background: var(--sl-color-gray-6);
     font-family: var(--sl-font);
   }
@@ -208,7 +206,7 @@
   }
 
   .pipeline-title {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.875rem;
     color: var(--sl-color-gray-2);
     text-transform: uppercase;
@@ -223,7 +221,7 @@
     color: var(--sl-color-accent);
     font-family: var(--sl-font);
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: var(--ltk-weight-medium);
     cursor: pointer;
     transition:
       border-color 0.15s ease,
@@ -253,7 +251,7 @@
 
   .phase-label {
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-gray-3);
   }
 
@@ -291,7 +289,7 @@
     align-items: center;
     justify-content: center;
     font-size: 0.8125rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-gray-3);
     background: var(--sl-color-black);
     transition:
@@ -307,9 +305,9 @@
   }
 
   .step.completed .step-circle {
-    border-color: #22c55e;
-    background: color-mix(in srgb, #22c55e 20%, transparent);
-    color: #22c55e;
+    border-color: var(--ltk-success);
+    background: color-mix(in srgb, var(--ltk-success) 20%, transparent);
+    color: var(--ltk-success);
   }
 
   .step-label {
@@ -328,7 +326,7 @@
   }
 
   .step.completed .step-label {
-    color: #22c55e;
+    color: var(--ltk-success);
   }
 
   .connector {
@@ -340,7 +338,7 @@
   }
 
   .connector.active {
-    background: #22c55e;
+    background: var(--ltk-success);
   }
 
   .phase-divider {
@@ -355,14 +353,14 @@
   }
 
   .divider-arrow.active {
-    color: #22c55e;
+    color: var(--ltk-success);
   }
 
   .detail-panel {
     padding: 0.75rem 1rem;
     background: var(--sl-color-black);
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     min-height: 3.5rem;
     display: flex;
     flex-direction: column;
@@ -378,14 +376,14 @@
 
   .detail-phase {
     font-size: 0.6875rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-accent);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
 
   .detail-label {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.875rem;
     color: var(--sl-color-white);
   }

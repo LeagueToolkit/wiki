@@ -1,0 +1,116 @@
+---
+title: Mod Folders
+description: Group mods into folders in LTK Manager so you can enable, disable, and organize whole sets at once.
+---
+
+Folders group related mods so you can enable or disable the whole set with one
+click. Once your library grows past a couple of dozen mods, this is the
+difference between a thirty-second setup change and a tedious one.
+
+A folder might be "ARAM Fun", "Ranked Skins", or "Testing" - whatever grouping
+matches how you actually play.
+
+## Creating a folder
+
+Either:
+
+- Click the **New Folder** button in the library toolbar, or
+- Right-click empty space in the library and create one from the context menu
+
+Give it a name and it appears in your library alongside your ungrouped mods.
+
+## Adding mods to a folder
+
+Two ways to move a mod:
+
+- **Drag and drop** it onto a folder to move it in, or back out to the top
+  level to remove it. This is the same drag interaction you already use for
+  reordering.
+- **Right-click the mod** and move it from the context menu.
+
+A mod lives in exactly one folder at a time. Mods you have not filed anywhere
+sit at the top level, and newly installed mods always land there.
+
+## Enabling and disabling a whole folder
+
+This is the reason folders exist.
+
+| View          | How to toggle                                                                            |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| **List view** | The toggle on the folder row                                                             |
+| **Grid view** | Right-click the folder card, or use the header control once you have navigated inside it |
+
+Toggling a folder on enables every mod inside it; toggling it off disables them
+all.
+
+Folders show a **tri-state indicator**:
+
+- **All enabled** - every mod inside is on
+- **All disabled** - every mod inside is off
+- **Mixed** - some on, some off
+
+Mixed happens when you toggle an individual mod inside a folder, which always
+takes precedence over the folder-level state. Toggling a mixed folder **on**
+enables everything in it.
+
+:::caution[Not while the patcher is running]
+Enabling or disabling mods - including via a folder toggle - is blocked while
+the patcher is running, the same as anywhere else in the library. Stop the
+patcher, make your changes, then re-patch.
+
+Organizing is fine at any time: creating, renaming, and deleting folders, and
+moving mods between them, all work with the patcher running.
+:::
+
+## Browsing folders
+
+- **In list view**, folder rows expand and collapse to show their contents
+  inline. Whether a folder is expanded is remembered between sessions.
+- **In grid view**, clicking a folder card navigates into it, showing only that
+  folder's mods, with a way back to the top level. This navigation is
+  transient: the app always opens at the top level on launch.
+
+## Folders and load order
+
+A folder takes up a **single position** in the priority list, sharing the same
+ordering space as your ungrouped mods. Drag a folder to move it and everything
+inside moves with it, keeping its relative order.
+
+Within a folder, mods have their own order, which you rearrange by dragging.
+This determines priority between them the same way it does at the top level.
+See [Managing Your Library](/using-mods/library/).
+
+## Folders and profiles
+
+The split matters and is easy to get wrong:
+
+- **Folder structure is library-level.** Your folders, and which mods are in
+  them, are shared across every profile. Create a folder in one profile and it
+  exists in all of them.
+- **Enabled state is per-profile**, exactly as it is for individual mods.
+
+So switching profiles keeps your organization identical while the on/off states
+change to match the profile you switched to. See
+[Profiles](/using-mods/profiles/).
+
+## Renaming and deleting
+
+Rename a folder from its right-click context menu.
+
+Deleting a folder **never** uninstalls anything. The mods inside move back to
+the top level and the folder disappears. If you want the mods gone, uninstall
+them separately.
+
+Uninstalling a mod that lives in a folder simply removes it from that folder.
+The folder stays even if it ends up empty, so you can refill it later.
+
+## Limitations
+
+**Folders cannot be nested.** One level only - a deliberate choice to keep the
+library predictable.
+
+## Related
+
+- [Managing Your Library](/using-mods/library/) - install, enable, reorder, uninstall
+- [Profiles](/using-mods/profiles/) - switching between whole mod configurations
+- [Updating After a Patch](/using-mods/patch-updates/) - folders make patch-day triage much faster

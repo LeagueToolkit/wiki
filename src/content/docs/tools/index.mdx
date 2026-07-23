@@ -1,0 +1,83 @@
+---
+title: All Tools
+description: The applications, CLIs, and libraries that make up the LeagueToolkit ecosystem.
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+LeagueToolkit is a set of tools that share file format code. This page is the
+map.
+
+## If you just want to use mods
+
+<CardGrid>
+  <LinkCard
+    title="LTK Manager"
+    href="/tools/ltk-manager/overview/"
+    description="The desktop mod manager. Install, organize, and apply mods, plus the Creator Workshop for making them. This is the one to start with."
+  />
+</CardGrid>
+
+## If you make mods
+
+<CardGrid>
+  <LinkCard
+    title="league-mod"
+    href="/tools/league-mod/overview/"
+    description="CLI for creating, packing, and inspecting .modpkg mod projects - the engine underneath the Creator Workshop."
+  />
+  <LinkCard
+    title="ltk-tex-utils"
+    href="/tools/ltk-tex-utils/"
+    description="Encode, decode, and inspect .tex textures - plus Windows Explorer thumbnails and previews for .tex files."
+  />
+  <LinkCard
+    title="ritobin-tools"
+    href="/tools/ritobin-tools/"
+    description="Convert .bin property trees to readable text and back, and diff two bins."
+  />
+  <LinkCard
+    title="wadtools"
+    href="/tools/wadtools/overview/"
+    description="Extract, list, and compare WAD archives."
+  />
+</CardGrid>
+
+## If you build tools
+
+<CardGrid>
+  <LinkCard
+    title="league-toolkit"
+    href="/tools/league-toolkit/overview/"
+    description="The Rust library for reading and writing League file formats. Most of the tools above are built on it."
+  />
+  <LinkCard
+    title="Mimir"
+    href="/tools/mimir/"
+    description="Compact, memory-mapped hash → path tables. Resolves the hashes League uses instead of filenames."
+  />
+  <LinkCard
+    title="lol-meta-classes"
+    href="/tools/lol-meta-classes/"
+    description="Extracts and tracks the game's metaclass schema across patches - what every .bin property means."
+  />
+</CardGrid>
+
+## Everything else
+
+The LeagueToolkit organization also maintains
+[awesome-league](https://github.com/LeagueToolkit/awesome-league), a curated
+list of League modding tools and resources. It covers:
+
+- Community projects outside the LeagueToolkit organization
+- Older tools from the C# era, including the original
+  [LeagueToolkit C# library](https://github.com/LeagueToolkit/LeagueToolkit),
+  Fantome, and LeagueFileTranslator
+
+If you landed here from an old tutorial referencing a tool not listed above,
+awesome-league is the place to check its status.
+
+:::note[Migrating from cslol-manager]
+cslol-manager is deprecated in favor of LTK Manager. See
+[Coming from cslol-manager](/start-here/from-cslol/).
+:::

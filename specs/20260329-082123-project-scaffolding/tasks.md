@@ -39,11 +39,11 @@
 - [x] T009 Define content collection schema using Starlight's docsSchema() with Zod validation in src/content.config.ts
 - [x] T010 Create base directory structure: src/content/docs/, src/components/, src/styles/, src/assets/, public/
 
-**Checkpoint**: Foundation ready — Astro builds, TypeScript checks pass, content collections are configured
+**Checkpoint**: Foundation ready - Astro builds, TypeScript checks pass, content collections are configured
 
 ---
 
-## Phase 3: User Story 1 — Developer Runs the Wiki Locally (Priority: P1) MVP
+## Phase 3: User Story 1 - Developer Runs the Wiki Locally (Priority: P1) MVP
 
 **Goal**: A developer can clone, install, and run the wiki locally with a working Starlight shell (sidebar, search, theme toggle, hot reload)
 
@@ -57,11 +57,11 @@
 - [x] T014 [P] [US1] Create placeholder page src/content/docs/getting-started/first-mod.md with valid frontmatter and placeholder content
 - [x] T015 [US1] Verify dev server starts successfully with `pnpm dev` and the Starlight shell renders with sidebar, search, and theme toggle
 
-**Checkpoint**: User Story 1 complete — developer can clone, install, run dev server, and see a working wiki with Getting Started section in sidebar. Hot reload works on content changes.
+**Checkpoint**: User Story 1 complete - developer can clone, install, run dev server, and see a working wiki with Getting Started section in sidebar. Hot reload works on content changes.
 
 ---
 
-## Phase 4: User Story 2 — Content Author Creates Documentation Pages (Priority: P2)
+## Phase 4: User Story 2 - Content Author Creates Documentation Pages (Priority: P2)
 
 **Goal**: All five content sections are populated with placeholder pages, sidebar navigation mirrors the full information architecture, and frontmatter validation catches schema errors at build time
 
@@ -79,11 +79,11 @@
 - [x] T023 [P] [US2] Create placeholder pages for src/content/docs/community/ (links.md, glossary.md)
 - [x] T024 [US2] Verify all sidebar groups render correctly and every placeholder page is navigable via the sidebar
 
-**Checkpoint**: User Story 2 complete — all ~30 placeholder pages exist across 5 sections, sidebar navigation mirrors full information architecture, frontmatter validation works.
+**Checkpoint**: User Story 2 complete - all ~30 placeholder pages exist across 5 sections, sidebar navigation mirrors full information architecture, frontmatter validation works.
 
 ---
 
-## Phase 5: User Story 3 — Production Build and Deployment (Priority: P3)
+## Phase 5: User Story 3 - Production Build and Deployment (Priority: P3)
 
 **Goal**: Production build succeeds with zero errors, type checking passes, and CI/CD pipeline deploys static output to GitHub Pages
 
@@ -96,11 +96,11 @@
 - [x] T027 [US3] Verify `pnpm build` completes successfully and produces static output in dist/
 - [x] T028 [US3] Verify `pnpm preview` serves the built site and all pages are navigable with working search
 
-**Checkpoint**: User Story 3 complete — production build works, type checking passes, CI/CD pipeline is configured for GitHub Pages deployment.
+**Checkpoint**: User Story 3 complete - production build works, type checking passes, CI/CD pipeline is configured for GitHub Pages deployment.
 
 ---
 
-## Phase 6: User Story 4 — Contributor Adds an Interactive Component (Priority: P4)
+## Phase 6: User Story 4 - Contributor Adds an Interactive Component (Priority: P4)
 
 **Goal**: The project supports Svelte 5 island components in MDX pages with explicit hydration directives, proven by a working example
 
@@ -112,7 +112,7 @@
 - [x] T030 [US4] Create an MDX example page at src/content/docs/guides/contributing/wiki-authoring.mdx that imports and renders the Counter component with `client:visible` hydration directive (replacing the .md placeholder)
 - [x] T031 [US4] Verify the Svelte component renders in dev server and production build, and hydrates interactively in the browser
 
-**Checkpoint**: User Story 4 complete — Svelte 5 islands work in MDX pages with explicit hydration. Contributors have a working example to follow.
+**Checkpoint**: User Story 4 complete - Svelte 5 islands work in MDX pages with explicit hydration. Contributors have a working example to follow.
 
 ---
 
@@ -131,20 +131,20 @@
 
 ### Phase Dependencies
 
-- **Setup (Phase 1)**: No dependencies — start immediately
-- **Foundational (Phase 2)**: Depends on Setup (Phase 1) completion — BLOCKS all user stories
-- **User Story 1 (Phase 3)**: Depends on Foundational (Phase 2) — no dependencies on other stories
-- **User Story 2 (Phase 4)**: Depends on Foundational (Phase 2) — can run in parallel with US1, but logically builds on US1's sidebar config
+- **Setup (Phase 1)**: No dependencies - start immediately
+- **Foundational (Phase 2)**: Depends on Setup (Phase 1) completion - BLOCKS all user stories
+- **User Story 1 (Phase 3)**: Depends on Foundational (Phase 2) - no dependencies on other stories
+- **User Story 2 (Phase 4)**: Depends on Foundational (Phase 2) - can run in parallel with US1, but logically builds on US1's sidebar config
 - **User Story 3 (Phase 5)**: Depends on User Stories 1 and 2 (needs content to build/deploy)
-- **User Story 4 (Phase 6)**: Depends on Foundational (Phase 2) — can run in parallel with US1/US2
+- **User Story 4 (Phase 6)**: Depends on Foundational (Phase 2) - can run in parallel with US1/US2
 - **Polish (Phase 7)**: Depends on all user stories being complete
 
 ### User Story Dependencies
 
-- **User Story 1 (P1)**: After Phase 2. Creates sidebar config and initial pages — establishes the foundation others build on.
+- **User Story 1 (P1)**: After Phase 2. Creates sidebar config and initial pages - establishes the foundation others build on.
 - **User Story 2 (P2)**: After Phase 2. Can start after US1 (uses its sidebar config). All placeholder page tasks are parallelizable.
 - **User Story 3 (P3)**: After US1 + US2 (needs full content for meaningful build/deploy validation).
-- **User Story 4 (P4)**: After Phase 2. Independent of content — only needs Svelte integration working.
+- **User Story 4 (P4)**: After Phase 2. Independent of content - only needs Svelte integration working.
 
 ### Within Each User Story
 
@@ -154,10 +154,10 @@
 
 ### Parallel Opportunities
 
-- T004, T005, T006 can run in parallel (Setup phase — different files)
-- T013, T014 can run in parallel (US1 — independent .md files)
-- T016–T023 can ALL run in parallel (US2 — independent .md files in different directories)
-- T032, T033 can run in parallel (Polish — different tools)
+- T004, T005, T006 can run in parallel (Setup phase - different files)
+- T013, T014 can run in parallel (US1 - independent .md files)
+- T016–T023 can ALL run in parallel (US2 - independent .md files in different directories)
+- T032, T033 can run in parallel (Polish - different tools)
 - US4 can run in parallel with US1/US2 (independent Svelte integration)
 
 ---
@@ -186,7 +186,7 @@ Task: "T023 Create placeholder pages for community/"
 2. Complete Phase 2: Foundational (T008–T010)
 3. Complete Phase 3: User Story 1 (T011–T015)
 4. **STOP and VALIDATE**: Dev server runs, Starlight shell works, Getting Started section navigable
-5. This is a deployable MVP — a working wiki skeleton
+5. This is a deployable MVP - a working wiki skeleton
 
 ### Incremental Delivery
 
@@ -206,7 +206,7 @@ With multiple developers:
    - Developer A: User Story 1 (sidebar config + getting-started pages)
    - Developer B: User Story 4 (Svelte component integration)
 3. After US1 sidebar config exists:
-   - Developer A: User Story 2 (all placeholder pages — highly parallelizable)
+   - Developer A: User Story 2 (all placeholder pages - highly parallelizable)
    - Developer B: User Story 3 (CI/CD pipeline)
 4. Polish phase together
 

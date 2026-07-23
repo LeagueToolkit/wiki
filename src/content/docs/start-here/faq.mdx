@@ -1,0 +1,143 @@
+---
+title: FAQ & Safety
+description: Common questions about League of Legends modding - rules and risk, account safety, what mods can do, and what happens when the game updates.
+---
+
+The questions people ask before installing anything.
+
+## Rules and risk
+
+### Is modding League of Legends allowed?
+
+Riot's Terms of Service prohibit modifying the game client. Cosmetic mods are
+widely used and Riot has historically not pursued action over client-side
+custom skins, but that is an observation about the past, not a permission and
+not a guarantee. There is no official exemption, and Riot can change its
+position or its detection at any time.
+
+Read [Riot's Terms of Service](https://www.riotgames.com/en/terms-of-service)
+and decide for yourself. If you are not willing to accept some risk to the
+account you are playing on, do not mod it.
+
+### Will I get banned?
+
+Nobody outside Riot can answer this honestly, and you should distrust any source
+that claims certainty in either direction. What we can tell you is what the
+tools actually do:
+
+- Mods documented here replace **assets only** - models, textures, animations,
+  sounds, text.
+- The [patcher](/start-here/how-modding-works/) redirects the game's file reads.
+  It does not alter game logic or change what your client sends to Riot's
+  servers.
+- Nothing here gives a competitive advantage. There is no vision change, no
+  automation, no scripting.
+
+That is a meaningfully different category from cheat software. It is not a
+promise about enforcement.
+
+### Do other players see my mods?
+
+No. Everything is local to your machine. A custom skin is rendered only on your
+client; every other player sees the default.
+
+### Is it safe to use on my main account?
+
+That is a risk decision only you can make, and it depends on how much the
+account matters to you. See the two answers above - we are not going to tell you
+it is safe.
+
+## Account and machine safety
+
+### Should a mod ever ask for my Riot login?
+
+**No. Never.** No mod, and no LeagueToolkit tool, needs your Riot account
+credentials for anything. Anything asking for them is trying to steal your
+account - close it and report the source.
+
+### Are mods themselves dangerous to my computer?
+
+A `.modpkg` or `.fantome` is a data archive, not a program. Installing one does
+not execute code from the mod author.
+
+The real risk is being handed something that **isn't** a mod - an `.exe`, an
+installer, or a "loader" dressed up as one. See
+[Checking a download](/start-here/finding-mods/#checking-a-download).
+
+### Does modding damage my game installation?
+
+No. LTK Manager never modifies your League files. It builds a separate
+[overlay](/start-here/how-modding-works/) and the patcher redirects reads to it
+at runtime. Stop the patcher and the game reads Riot's original files again -
+there is nothing to undo or repair.
+
+If you ever want to be certain, Riot's client has its own repair function, but
+in normal use you will not need it.
+
+## Using mods
+
+### Do I need to keep LTK Manager open while playing?
+
+The patcher has to be running for mods to be active. Start it before you launch
+the game and leave it running.
+
+### Why aren't my mods showing up in game?
+
+In order of likelihood:
+
+1. The mod isn't enabled.
+2. The patcher isn't running.
+3. You enabled the mod _after_ starting the patcher.
+
+That last one catches everybody - the overlay is built when you press
+**Patch**, so changes afterwards need a stop and re-patch.
+
+Full list in [Troubleshooting](/using-mods/troubleshooting/).
+
+### Can I use several mods at once?
+
+Yes. When two mods change the same file, load order decides which one wins -
+mods higher in your library take priority. Two skin mods for the _same_ champion
+skin will conflict; mods for different champions coexist fine.
+
+See [Managing Your Library](/using-mods/library/).
+
+### Can I switch between different sets of mods?
+
+Yes - that is what [profiles](/using-mods/profiles/) are for. Each profile has
+its own enabled mods and load order.
+
+## Updates
+
+### Do mods survive a League patch?
+
+Your library does; your overlay does not. After a game patch you re-apply, and
+some mods will need their author to update them. See
+[Updating After a Patch](/using-mods/patch-updates/).
+
+### Do I have to update LTK Manager every patch?
+
+Not usually. The manager only needs updating when League changes something the
+patcher depends on. When that happens it is announced in the
+[Discord](https://discord.gg/B36wgabjmD).
+
+## Platforms and migration
+
+### Does this work on macOS or Linux?
+
+Windows is the supported platform today. macOS support is targeted for
+Q2/Summer 2026. Linux support is planned without a timeline, and it covers
+only the Creator Workshop and the features it depends on - the patcher will
+never be supported on Linux, so you can make mods there but not play with
+them. See [Useful Links](/community/links/) for the current roadmap.
+
+### I already use cslol-manager. Do I have to switch?
+
+cslol-manager is deprecated in favor of LTK Manager, and your existing mods
+come across. See [Coming from cslol-manager](/start-here/from-cslol/).
+
+### Where do I get help?
+
+The [LeagueToolkit Discord](https://discord.gg/B36wgabjmD) is the fastest
+route. Check [Troubleshooting](/using-mods/troubleshooting/) first, and bring
+your log file - the page tells you where to find it.

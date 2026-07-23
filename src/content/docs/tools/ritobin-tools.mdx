@@ -1,0 +1,90 @@
+---
+title: ritobin-tools
+description: CLI for converting League of Legends .bin property trees to readable text and back, with diffing support.
+---
+
+`ritobin-tools` converts between League's binary `.bin` property trees and the
+human-readable `.py`/`.ritobin` text format - and diffs two bins so you can see
+exactly what changed.
+
+If you are editing game data rather than art assets, this is the tool you will
+live in. `.bin` files hold champion definitions, skin data, VFX parameters, and
+most other gameplay-adjacent configuration.
+
+**Repository:** [LeagueToolkit/ritobin-tools](https://github.com/LeagueToolkit/ritobin-tools)
+
+## Installation
+
+```powershell
+irm https://raw.githubusercontent.com/LeagueToolkit/ritobin-tools/main/install.ps1 | iex
+```
+
+Installs to `%LOCALAPPDATA%\LeagueToolkit\ritobin-tools` and updates your `PATH`.
+
+From source (requires [Rust 1.85+](https://rustup.rs/), edition 2024):
+
+```bash
+git clone https://github.com/LeagueToolkit/ritobin-tools.git
+cd ritobin-tools
+cargo build --release
+```
+
+Works on Windows, Linux, and macOS.
+
+## Convert
+
+Conversion is bidirectional and the direction is inferred from the input
+extension.
+
+```bash
+# Binary → text
+ritobin-tools convert input.bin      # writes input.py
+
+# Text → binary
+ritobin-tools convert input.py       # writes input.bin
+
+# Explicit output path
+ritobin-tools convert input.bin -o output.py
+
+# A whole directory
+ritobin-tools convert ./data/
+
+# Recursively
+ritobin-tools convert ./data/ -r
+```
+
+The typical editing loop is: convert a `.bin` to text, edit it in any text
+editor, convert it back, and drop the result into your mod project's content
+layer.
+
+## Diff
+
+Compares two bin files and prints a colored unified diff.
+
+```bash
+ritobin-tools diff old.bin new.bin
+ritobin-tools diff old.bin new.bin -C 5      # more context lines (default 3)
+ritobin-tools diff old.bin new.bin --no-color
+```
+
+This is the fastest way to answer "what did Riot change in this patch?" - diff
+the same file from two game versions and read the output.
+
+## Hash resolution
+
+Property and class names inside a `.bin` are stored as hashes, not strings.
+`ritobin-tools` resolves them against community hash tables so the text output
+reads with real names instead of hex.
+
+Where a hash has no known mapping, it stays as `0x...` in the output. That is a
+gap in the hash table, not a corrupt file. See
+[Hashing Algorithms](/reference/hashing/algorithms/) for how the hashes are
+computed, and [Mimir](/tools/mimir/) for how LeagueToolkit distributes the
+tables.
+
+## Related
+
+- [BIN (Property Bins)](/reference/file-formats/bin/) - the binary format
+- [Ritobin](/reference/file-formats/ritobin/) - the text serialization
+- [Metaclasses](/reference/metaclasses/overview/) - what the properties mean
+- [Hashing Algorithms](/reference/hashing/algorithms/)

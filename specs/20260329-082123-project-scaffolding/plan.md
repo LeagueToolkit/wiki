@@ -115,7 +115,7 @@ ltk-wiki/
         └── deploy.yml       # CI: type check → build → Lighthouse → deploy
 ```
 
-**Structure Decision**: Single Astro project following Starlight conventions. Content lives in `src/content/docs/` organized by the information architecture from DESIGN.md. No backend, no separate frontend — everything is a single static site build.
+**Structure Decision**: Single Astro project following Starlight conventions. Content lives in `src/content/docs/` organized by the information architecture from DESIGN.md. No backend, no separate frontend - everything is a single static site build.
 
 ## Complexity Tracking
 

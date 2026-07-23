@@ -1,0 +1,127 @@
+---
+title: Migrating to Projects
+description: How to turn a mod made with older methods - cslol-manager, hand-built fantomes, renamed zips, or RAW folders - into a mod project.
+---
+
+import { CardGrid, FileTree, LinkCard } from '@astrojs/starlight/components';
+import HeadingIcon from '../../../components/HeadingIcon.astro';
+
+Before mod projects, every workflow had its own idea of what a mod was: a folder inside cslol-manager, a `.fantome` assembled by hand, a `.zip` passed around on Discord. A [mod project](/making-mods/mod-projects/) replaces all of those with one editable source folder that builds into any package format. This page takes a mod you already made with an older method and turns it into a project.
+
+This guide is for creators. If you only install mods and want to move your library over, see [Migrating from cslol-manager](/start-here/from-cslol/) instead.
+
+## <HeadingIcon icon="signpost" />Pick Your Starting Point
+
+| You have                                  | Start at                                    |
+| ----------------------------------------- | ------------------------------------------- |
+| The `.fantome` file you publish           | [From a Fantome File](#from-a-fantome-file) |
+| A mod folder inside cslol-manager         | [From cslol-manager](#from-cslol-manager)   |
+| A `.zip` archive                          | [From a Renamed Zip](#from-a-renamed-zip)   |
+| A fantome built on `RAW/`, or loose files | [Migrating by Hand](#migrating-by-hand)     |
+
+Whichever path you take, the end state is the same: a project folder in your workshop with a `mod.config.json` manifest and your files under `content/base/`.
+
+## <HeadingIcon icon="file-zip" />From a Fantome File
+
+If you have the `.fantome` you distribute - whether a tool packed it or you zipped it yourself - the Workshop imports it directly:
+
+1. In the Workshop, click **Import** > **From Fantome**
+2. Select the `.fantome` file
+3. A preview dialog shows the archive's metadata and WAD contents
+4. Choose the project's name and display name
+5. Click **Import**
+
+The importer carries over everything the fantome format can hold:
+
+- **Metadata.** Version, description, author, tags, champions, and maps from `META/info.json` land in the new project's manifest.
+- **Content.** Every `.wad.client` folder under `WAD/` is extracted into `content/base/` unchanged.
+- **README and thumbnail.** `META/README.md` becomes the project's `README.md`, and `META/image.png` is saved as `thumbnail.png`.
+- **Layers.** A plain fantome becomes a single `base` layer. A fantome packed with the [extended format](/making-mods/mod-projects/#the-extended-fantome-format) gets its layers and string overrides recreated from the metadata.
+
+:::note[Point the manifest at the imported thumbnail]
+The import saves the image as `thumbnail.png` but leaves the manifest's `thumbnail` field unset, and packing only looks for `thumbnail.webp` when the field is missing. Set `"thumbnail": "thumbnail.png"` in `mod.config.json` (packing converts it to WebP for you), or convert the file to `thumbnail.webp` yourself.
+:::
+
+:::caution[Pre-packaged .wad files import with hashed names]
+If your fantome ships complete `.wad` files instead of `.wad.client` folders, the importer unpacks them into raw files. A packed WAD stores only path hashes, though, so every extracted file is named by its hash (16 hex digits) instead of its original path. The content still packs and works, but hash-named files are hard to keep editing - one more reason [pre-packaged WADs are discouraged](/making-mods/project/#wad-folder-common).
+:::
+
+## <HeadingIcon icon="clock-counter-clockwise" />From cslol-manager
+
+cslol-manager keeps each installed mod as an extracted fantome: a folder under `installed/` in its directory, holding `META/info.json` and your `WAD/` content. That makes the migration zip-and-import:
+
+1. Open your cslol-manager directory and find your mod's folder under `installed/`
+2. Zip the folder's **contents**, so `META/` and `WAD/` sit at the root of the archive - not nested inside another folder
+3. Rename the archive from `.zip` to `.fantome`
+4. Import it as described in [From a Fantome File](#from-a-fantome-file)
+
+{/* prettier-ignore */}
+<FileTree>
+- cslol-manager/
+  - installed/
+    - my-mod/ zip the contents of this folder
+      - META/
+        - info.json
+      - WAD/
+        - Ahri.wad.client/
+          - …
+</FileTree>
+
+LTK Manager's [migration wizard](/start-here/from-cslol/) also reads these folders, but it installs them into your library as playable copies. To keep developing a mod, bring it into the Workshop with the steps above instead.
+
+## <HeadingIcon icon="file-archive" />From a Renamed Zip
+
+A mod shipped as `.zip` is usually a fantome under a different extension - the fantome format is a ZIP archive. Rename the file from `.zip` to `.fantome` and import it as described in [From a Fantome File](#from-a-fantome-file).
+
+If the import fails because `META/info.json` is missing, the archive does not follow the fantome layout. Open it and look inside: if it holds `.wad.client` folders or loose game files, continue with [Migrating by Hand](#migrating-by-hand).
+
+## <HeadingIcon icon="wrench" />Migrating by Hand
+
+Some mods have no import path and need to be moved manually:
+
+- Fantomes that ship content in a `RAW/` folder - the importer only reads `WAD/`
+- Folders of `.wad.client` directories with no metadata at all
+- Anything else that is not a fantome inside
+
+The manual path is short:
+
+1. In the Workshop, click **New Project** and fill in your mod's metadata
+2. Copy your `.wad.client` folders into the project's `content/base/` directory
+3. If your files came from a `RAW/` folder, reorganize them into `.wad.client` folders first - each file goes under a folder named after the WAD it belongs to
+
+[Creating a Project](/making-mods/project/#migrating-to-a-mod-project) walks through this in more detail, including [what the WAD/ and RAW/ layouts mean](/making-mods/project/#from-fantome-wadraw-folders).
+
+## <HeadingIcon icon="list-checks" />After You Migrate
+
+The import gives you a working project; a few follow-ups turn it into a good one:
+
+- **Fill in what fantome could not hold.** The [manifest](/making-mods/mod-projects/#the-manifest) supports a license, structured author roles, and per-layer descriptions - none of which survive in `META/info.json`.
+- **Split variants into layers.** If your old mod shipped optional parts as separate downloads, they can become [layers](/making-mods/layers/) of one project.
+- **Add a README and thumbnail** if the import did not find any - both [ship inside your packages](/making-mods/mod-projects/#readme-and-thumbnail).
+- **Pack both formats.** Build a `.modpkg` as your native format and keep publishing `.fantome` where mod sites need it - see [Packaging](/making-mods/packaging/).
+- **Consider Git.** The [deterministic layout](/making-mods/mod-projects/#deterministic-content-layout) makes projects safe to version and collaborate on.
+
+## <HeadingIcon icon="link" />Related Pages
+
+<CardGrid>
+  <LinkCard
+    title="Mod Projects"
+    href="/making-mods/mod-projects/"
+    description="The standard you are migrating to"
+  />
+  <LinkCard
+    title="Creating a Project"
+    href="/making-mods/project/"
+    description="Import mechanics and project setup in detail"
+  />
+  <LinkCard
+    title="Packaging"
+    href="/making-mods/packaging/"
+    description="Building .modpkg and .fantome from your project"
+  />
+  <LinkCard
+    title="Migrating from cslol-manager"
+    href="/start-here/from-cslol/"
+    description="The user-side guide for moving your library"
+  />
+</CardGrid>

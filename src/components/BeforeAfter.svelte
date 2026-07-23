@@ -71,8 +71,20 @@
   <div class="slider-line" style="left: {position}%">
     <div class="slider-handle">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-        <path d="M5 3L2 8L5 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M11 3L14 8L11 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path
+          d="M5 3L2 8L5 13"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M11 3L14 8L11 13"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
       </svg>
     </div>
   </div>
@@ -87,7 +99,7 @@
     width: 100%;
     height: var(--height);
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
+    border-radius: var(--ltk-radius-lg);
     overflow: hidden;
     cursor: ew-resize;
     user-select: none;
@@ -146,7 +158,7 @@
     border-radius: 1rem;
     font-family: var(--sl-font);
     font-size: 0.6875rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     z-index: 1;

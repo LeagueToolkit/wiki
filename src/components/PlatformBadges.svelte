@@ -52,7 +52,7 @@
     gap: 0.75rem;
     padding: 0.75rem 1rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     background: var(--sl-color-gray-6);
   }
 
@@ -73,7 +73,7 @@
   }
 
   .badge-name {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.8125rem;
     line-height: 1.2;
     color: var(--sl-color-white);
@@ -88,7 +88,7 @@
   }
 
   .badge-status {
-    font-weight: 500;
+    font-weight: var(--ltk-weight-medium);
     color: var(--status-color);
   }
 

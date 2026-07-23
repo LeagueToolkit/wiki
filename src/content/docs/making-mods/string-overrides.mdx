@@ -1,0 +1,186 @@
+---
+title: String Overrides
+description: Edit the game's stringtables - rename champions, items, and abilities or rewrite descriptions with per-layer, per-locale string overrides in the Creator Workshop.
+---
+
+import {
+  Card,
+  CardGrid,
+  FileTree,
+  LinkCard,
+  Steps,
+  TabItem,
+  Tabs,
+} from '@astrojs/starlight/components';
+
+All of League's text - champion and item names, ability descriptions, tooltips, UI labels - lives in **stringtables**: `.stringtable` files (the [RST format](/reference/file-formats/legacy/#rst---riot-string-table)) stored per language inside the game's localized WAD archives:
+
+{/* prettier-ignore */}
+<FileTree>
+- League_of_Legends/
+  - Game/
+    - DATA/
+      - FINAL/
+        - Localized/
+          - Global.en_US.wad.client contains data/menu/en_us/lol.stringtable
+          - Global.ko_KR.wad.client one archive per installed language
+          - …
+</FileTree>
+
+String overrides let your mod replace individual entries in these tables without editing or shipping any stringtable files.
+
+<CardGrid>
+  <Card title="Rename & Translate" icon="translate">
+    Change the display name of champions, skins, items, or abilities - and ship your custom text in
+    multiple languages at once.
+  </Card>
+  <Card title="Rewrite" icon="open-book">
+    Rework ability descriptions, tooltips, or add custom flavor text.
+  </Card>
+</CardGrid>
+
+## How It Works
+
+An override is a key-value pair: the **field name** of a stringtable entry and the **new text** it should display. Overrides are saved per layer and per locale in your project, and applied while LTK Manager builds the overlay:
+
+<Steps>
+
+1. The game's own stringtable is read from your current game files.
+
+2. The entries you override are replaced.
+
+3. The patched table is written into the overlay.
+
+</Steps>
+
+Because the game's current table is always the starting point, overrides survive game patches - only the entries you changed differ, and everything Riot adds or reworks stays up to date. The status bar shows **Applying string overrides...** during this build stage.
+
+## Editing Overrides
+
+<Steps>
+
+1. Open your project in the Workshop and go to the **Strings** tab.
+
+2. **Pick a layer** - overrides belong to a layer and are only active when that layer is enabled. Tabs show a badge with each layer's override count.
+
+3. **Pick a locale** - start with **Default (All Locales)** unless you're writing language-specific text.
+
+4. Click **Add Override** and enter a field name and its new value.
+
+5. Click **Save Changes**.
+
+</Steps>
+
+### Finding Field Names
+
+The field name input searches every known string in the game as you type. Each suggestion shows the current in-game text underneath, so you can confirm you found the right entry before overriding it. Picking a suggestion prefills the value with the current text, letting you edit it instead of writing from scratch.
+
+Field names are matched case-insensitively, so `game_character_displayname_ahri` and `game_character_displayname_Ahri` target the same entry.
+
+:::note
+The first search after installing may take a moment - the list of known field names is downloaded from [CommunityDragon](https://communitydragon.org/) and cached locally.
+:::
+
+### Targeting Unknown Entries by Hash
+
+Stringtables index entries by the **XXH3** hash of their field name, and not every hash has a known plaintext name. To override an entry whose name is unknown, use its full 64-bit hash as the field name, written as exactly 16 hex digits - pad shorter hashes with leading zeros:
+
+```
+f772a83b33773223
+0000000000000abc
+```
+
+You can also compute the hash of a field name yourself with an [online XXH3 generator](https://md5calc.com/hash/xxh3) - lowercase the name first, since keys are lowercased before hashing.
+
+:::note
+A key is only treated as a raw hash when it is exactly 16 hex digits (case-insensitive). Anything else - including a shortened, unpadded hash - is treated as a plaintext field name and hashed as-is.
+:::
+
+## Locales
+
+Each layer has one override bucket per locale, plus **Default (All Locales)**:
+
+| Bucket                         | Applies to                                                      |
+| ------------------------------ | --------------------------------------------------------------- |
+| **Default (All Locales)**      | Every patched language                                          |
+| Locale-specific (e.g. `ko_kr`) | Only that language - beats the Default entry for the same field |
+
+:::tip[Patching every installed language]
+By default, overrides are only patched into the language your League client is set to. If you switch game languages often, enable **Apply string overrides to all locales** under **Settings → Patching** to patch every installed language instead.
+:::
+
+## Conflict Resolution
+
+When several enabled mods or layers override the same field, string conflicts resolve exactly like file conflicts:
+
+| Scope              | Winner                                                                       |
+| ------------------ | ---------------------------------------------------------------------------- |
+| **Between mods**   | The higher-priority mod, following the same ordering used for file overrides |
+| **Within a mod**   | The layer with the higher [priority](/making-mods/layers/#priority)          |
+| **Within a layer** | The locale-specific entry, beating a **Default (All Locales)** entry         |
+
+Mod priority dominates locale specificity: a higher-priority mod's Default entry still beats a lower-priority mod's locale-specific entry.
+
+## Storage and Distribution
+
+Overrides are stored in your project config under each layer, keyed by locale (`default`, `en_us`, `ko_kr`, ...):
+
+<Tabs>
+  <TabItem label="JSON">
+    ```json
+    {
+      "layers": [
+        {
+          "name": "base",
+          "priority": 0,
+          "string_overrides": {
+            "default": {
+              "game_character_displayname_Ahri": "Fox Spirit"
+            },
+            "ko_kr": {
+              "game_character_displayname_Ahri": "구미호"
+            }
+          }
+        }
+      ]
+    }
+    ```
+  </TabItem>
+  <TabItem label="TOML">
+    ```toml
+    [[layers]]
+    name = "base"
+    priority = 0
+
+    [layers.string_overrides.default]
+    game_character_displayname_Ahri = "Fox Spirit"
+
+    [layers.string_overrides.ko_kr]
+    game_character_displayname_Ahri = "구미호"
+    ```
+
+  </TabItem>
+</Tabs>
+
+Both distribution formats carry overrides, so they survive packing and re-importing:
+
+| Format     | Where overrides are stored            |
+| ---------- | ------------------------------------- |
+| `.modpkg`  | Per-layer package metadata            |
+| `.fantome` | `StringOverrides` in `META/info.json` |
+
+:::caution[Don't ship raw stringtable files]
+Including a whole `lol.stringtable` file in your mod's content is not supported - the overlay builder rejects such files and always patches the game's own table. A shipped table would go stale on the next game patch, silently reverting every string Riot changed. Use string overrides instead; they only touch the entries you actually want to change.
+:::
+
+## Related Pages
+
+<CardGrid>
+  <LinkCard title="Layers" href="/making-mods/layers/" description="Layer system and priorities" />
+  <LinkCard
+    title="Workshop Overview"
+    href="/making-mods/workshop/"
+    description="Project-based mod development"
+  />
+  <LinkCard title="Packaging" href="/making-mods/packaging/" description="Distribution formats" />
+</CardGrid>

@@ -74,7 +74,7 @@ AUGGIE_FILE="$REPO_ROOT/.augment/rules/specify-rules.md"
 ROO_FILE="$REPO_ROOT/.roo/rules/specify-rules.md"
 CODEBUDDY_FILE="$REPO_ROOT/CODEBUDDY.md"
 QODER_FILE="$REPO_ROOT/QODER.md"
-# Amp, Kiro CLI, IBM Bob, and Pi all share AGENTS.md — use AGENTS_FILE to avoid
+# Amp, Kiro CLI, IBM Bob, and Pi all share AGENTS.md - use AGENTS_FILE to avoid
 # updating the same file multiple times.
 AMP_FILE="$AGENTS_FILE"
 SHAI_FILE="$REPO_ROOT/SHAI.md"
@@ -702,8 +702,8 @@ update_specific_agent() {
 }
 
 # Helper: skip non-existent files and files already updated (dedup by
-# realpath so that variables pointing to the same file — e.g. AMP_FILE,
-# KIRO_FILE, BOB_FILE all resolving to AGENTS_FILE — are only written once).
+# realpath so that variables pointing to the same file - e.g. AMP_FILE,
+# KIRO_FILE, BOB_FILE all resolving to AGENTS_FILE - are only written once).
 # Uses a linear array instead of associative array for bash 3.2 compatibility.
 # Note: defined at top level because bash 3.2 does not support true
 # nested/local functions. _updated_paths, _found_agent, and _all_ok are

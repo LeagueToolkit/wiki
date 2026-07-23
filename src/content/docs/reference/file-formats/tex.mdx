@@ -26,15 +26,24 @@ All multi-byte values are **little-endian**.
 
 ### Header
 
-<BinaryStructure client:visible title="Header (12 bytes)" fields={[
-  { name: "magic", type: "u32", size: 4, description: "0x00584554 - ASCII TEX\\0" },
-  { name: "width", type: "u16", size: 2, description: "Texture width in pixels" },
-  { name: "height", type: "u16", size: 2, description: "Texture height in pixels" },
-  { name: "extended_format", type: "u8", size: 1, description: "Extended format flags" },
-  { name: "format", type: "u8", size: 1, description: "Pixel format (see Compression Formats)" },
-  { name: "resource_type", type: "u8", size: 1, description: "Resource type (see Resource Types)" },
-  { name: "flags", type: "u8", size: 1, description: "Texture flags bitfield" }
-]} />
+<BinaryStructure
+  client:visible
+  title="Header (12 bytes)"
+  fields={[
+    { name: 'magic', type: 'u32', size: 4, description: '0x00584554 - ASCII TEX\\0' },
+    { name: 'width', type: 'u16', size: 2, description: 'Texture width in pixels' },
+    { name: 'height', type: 'u16', size: 2, description: 'Texture height in pixels' },
+    { name: 'extended_format', type: 'u8', size: 1, description: 'Extended format flags' },
+    { name: 'format', type: 'u8', size: 1, description: 'Pixel format (see Compression Formats)' },
+    {
+      name: 'resource_type',
+      type: 'u8',
+      size: 1,
+      description: 'Resource type (see Resource Types)',
+    },
+    { name: 'flags', type: 'u8', size: 1, description: 'Texture flags bitfield' },
+  ]}
+/>
 
 ### Pixel Data
 
@@ -52,28 +61,28 @@ For block-compressed formats (BC1, BC3), each mipmap is stored in 4×4 pixel blo
 
 ## Resource Types
 
-| Value | Name           | Description                                   |
-|-------|----------------|-----------------------------------------------|
-| 0     | Texture        | Standard 2D texture                           |
-| 1     | CubeMap        | 6-face cubemap for environment reflections    |
-| 2     | Surface        | Render target surface                         |
-| 3     | VolumeTexture  | 3D volume texture                             |
+| Value | Name          | Description                                |
+| ----- | ------------- | ------------------------------------------ |
+| 0     | Texture       | Standard 2D texture                        |
+| 1     | CubeMap       | 6-face cubemap for environment reflections |
+| 2     | Surface       | Render target surface                      |
+| 3     | VolumeTexture | 3D volume texture                          |
 
 ## Texture Flags
 
-| Bit | Name        | Description                      |
-|-----|-------------|----------------------------------|
-| 0   | HasMipMaps  | Texture includes mipmap chain    |
+| Bit | Name       | Description                   |
+| --- | ---------- | ----------------------------- |
+| 0   | HasMipMaps | Texture includes mipmap chain |
 
 ## Compression Formats
 
-| Value | Name     | Block Size    | Bytes Per Block | Description                              |
-|-------|----------|---------------|-----------------|------------------------------------------|
-| 0     | BGRA8    | 1×1 pixel     | 4               | Uncompressed 8-bit BGRA                  |
-| 1     | BC1      | 4×4 pixels    | 8               | Block Compression 1 (DXT1) - RGB + 1-bit alpha |
-| 3     | BC3      | 4×4 pixels    | 16              | Block Compression 3 (DXT5) - RGB + interpolated alpha |
-| 4     | ETC1     | 4×4 pixels    | 8               | Ericsson Texture Compression 1 (mobile)  |
-| 5     | ETC2_EAC | 4×4 pixels    | 16              | ETC2 + EAC alpha (mobile)                |
+| Value | Name     | Block Size | Bytes Per Block | Description                                           |
+| ----- | -------- | ---------- | --------------- | ----------------------------------------------------- |
+| 0     | BGRA8    | 1×1 pixel  | 4               | Uncompressed 8-bit BGRA                               |
+| 1     | BC1      | 4×4 pixels | 8               | Block Compression 1 (DXT1) - RGB + 1-bit alpha        |
+| 3     | BC3      | 4×4 pixels | 16              | Block Compression 3 (DXT5) - RGB + interpolated alpha |
+| 4     | ETC1     | 4×4 pixels | 8               | Ericsson Texture Compression 1 (mobile)               |
+| 5     | ETC2_EAC | 4×4 pixels | 16              | ETC2 + EAC alpha (mobile)                             |
 
 ### Block Layout
 

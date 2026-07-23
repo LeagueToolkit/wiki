@@ -162,13 +162,13 @@
     gap: 0.5rem;
     padding: 1.25rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
+    border-radius: var(--ltk-radius-lg);
     background: var(--sl-color-gray-6);
     font-family: var(--sl-font);
   }
 
   .structure-title {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.875rem;
     color: var(--sl-color-gray-2);
     text-transform: uppercase;
@@ -190,7 +190,7 @@
   .byte-bar {
     display: flex;
     height: 2.5rem;
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     overflow: hidden;
     border: 1px solid var(--sl-color-gray-5);
   }
@@ -239,7 +239,7 @@
 
   .segment-label {
     font-size: 0.6875rem;
-    font-weight: 500;
+    font-weight: var(--ltk-weight-medium);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -268,7 +268,7 @@
     gap: 0.625rem;
     align-items: center;
     padding: 0.375rem 0.5rem;
-    border-radius: 0.375rem;
+    border-radius: var(--ltk-radius-sm);
     cursor: pointer;
     transition: background 0.1s ease;
     border: none;
@@ -300,7 +300,7 @@
   }
 
   .field-name {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.8125rem;
   }
 
@@ -342,7 +342,7 @@
   }
 
   .bar-tooltip-name {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.8125rem;
     color: var(--sl-color-white);
   }

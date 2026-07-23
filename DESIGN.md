@@ -1,8 +1,8 @@
-# LTK Wiki — Design Document
+# LTK Wiki - Design Document
 
 ## 1. Vision
 
-A comprehensive, community-driven documentation wiki for the LeagueToolkit ecosystem. The wiki serves as the single source of truth for League of Legends modding knowledge — from beginner guides to deep technical references on file formats and tooling.
+A comprehensive, community-driven documentation wiki for the LeagueToolkit ecosystem. The wiki serves as the single source of truth for League of Legends modding knowledge - from beginner guides to deep technical references on file formats and tooling.
 
 ### Goals
 
@@ -17,13 +17,13 @@ A comprehensive, community-driven documentation wiki for the LeagueToolkit ecosy
 
 ### Personas
 
-**Mod User** — Wants to install and manage mods using ltk-manager. Needs clear setup guides, troubleshooting steps, and FAQ answers.
+**Mod User** - Wants to install and manage mods using ltk-manager. Needs clear setup guides, troubleshooting steps, and FAQ answers.
 
-**Mod Creator** — Builds custom skins, maps, or gameplay mods. Needs tool documentation (ltk-manager Creator Workshop), file format references, and best practices.
+**Mod Creator** - Builds custom skins, maps, or gameplay mods. Needs tool documentation (ltk-manager Creator Workshop), file format references, and best practices.
 
-**Tool Developer** — Builds or extends modding tools using league-toolkit or related libraries. Needs API references, format specifications, and architecture docs.
+**Tool Developer** - Builds or extends modding tools using league-toolkit or related libraries. Needs API references, format specifications, and architecture docs.
 
-**Contributor** — Contributes to LeagueToolkit projects or the wiki itself. Needs contribution guides and project conventions.
+**Contributor** - Contributes to LeagueToolkit projects or the wiki itself. Needs contribution guides and project conventions.
 
 ## 3. Information Architecture
 
@@ -86,11 +86,11 @@ Sidebar navigation is defined declaratively in `astro.config.ts` using Starlight
 
 Top-level sections:
 
-1. **Getting Started** — Linear onboarding flow
-2. **Guides** — Task-oriented articles grouped by topic
-3. **Tools** — Per-tool documentation
-4. **Reference** — Technical specs and data
-5. **Community** — External resources and glossary
+1. **Getting Started** - Linear onboarding flow
+2. **Guides** - Task-oriented articles grouped by topic
+3. **Tools** - Per-tool documentation
+4. **Reference** - Technical specs and data
+5. **Community** - External resources and glossary
 
 ## 4. Content Model
 

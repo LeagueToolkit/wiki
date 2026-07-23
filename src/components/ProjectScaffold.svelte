@@ -30,7 +30,7 @@
     JSON.stringify(
       {
         name: name || 'my-mod',
-        displayName: displayName || 'My Mod',
+        display_name: displayName || 'My Mod',
         version: '1.0.0',
         description: description || '',
         authors: [
@@ -69,15 +69,31 @@
     <div class="form-grid">
       <div class="field">
         <label for="scaffold-name">Name (slug)</label>
-        <input id="scaffold-name" type="text" bind:value={name} placeholder="my-skin-mod" spellcheck="false" />
+        <input
+          id="scaffold-name"
+          type="text"
+          bind:value={name}
+          placeholder="my-skin-mod"
+          spellcheck="false"
+        />
       </div>
       <div class="field">
         <label for="scaffold-display">Display name</label>
-        <input id="scaffold-display" type="text" bind:value={displayName} placeholder="My Skin Mod" />
+        <input
+          id="scaffold-display"
+          type="text"
+          bind:value={displayName}
+          placeholder="My Skin Mod"
+        />
       </div>
       <div class="field full">
         <label for="scaffold-desc">Description</label>
-        <input id="scaffold-desc" type="text" bind:value={description} placeholder="What does the mod do?" />
+        <input
+          id="scaffold-desc"
+          type="text"
+          bind:value={description}
+          placeholder="What does the mod do?"
+        />
       </div>
       <div class="field">
         <label for="scaffold-author">Author</label>
@@ -119,7 +135,8 @@
           />
           <span class="layer-priority">P{layer.priority}</span>
           {#if layers.length > 1}
-            <button class="remove-btn" onclick={() => removeLayer(i)} title="Remove layer">x</button>
+            <button class="remove-btn" onclick={() => removeLayer(i)} title="Remove layer">x</button
+            >
           {/if}
         </div>
       {/each}
@@ -135,11 +152,7 @@
       >
         mod.config.json
       </button>
-      <button
-        class="tab"
-        class:active={activeTab === 'tree'}
-        onclick={() => (activeTab = 'tree')}
-      >
+      <button class="tab" class:active={activeTab === 'tree'} onclick={() => (activeTab = 'tree')}>
         File tree
       </button>
     </div>
@@ -155,7 +168,10 @@
           <div class="tree-item" style="--depth: 1">content/</div>
           {#each layers.filter((l) => l.name) as layer}
             <div class="tree-item" style="--depth: 2">{layer.name}/</div>
-            {#each champions.split(',').map((c) => c.trim()).filter(Boolean) as champ}
+            {#each champions
+              .split(',')
+              .map((c) => c.trim())
+              .filter(Boolean) as champ}
               <div class="tree-item" style="--depth: 3">{champ}.wad.client/</div>
               <div class="tree-item dim" style="--depth: 4">DATA/</div>
               <div class="tree-item dim" style="--depth: 5">Characters/</div>
@@ -177,7 +193,7 @@
     gap: 1rem;
     padding: 1.25rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
+    border-radius: var(--ltk-radius-lg);
     background: var(--sl-color-gray-6);
     font-family: var(--sl-font);
   }
@@ -212,7 +228,7 @@
 
   .field label {
     font-size: 0.6875rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-gray-2);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -223,7 +239,7 @@
   .layer-desc {
     padding: 0.375rem 0.625rem;
     border: 1px solid var(--sl-color-gray-4);
-    border-radius: 0.375rem;
+    border-radius: var(--ltk-radius-sm);
     background: var(--sl-color-black);
     color: var(--sl-color-white);
     font-family: var(--sl-font);
@@ -258,7 +274,7 @@
 
   .section-label {
     font-size: 0.6875rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-gray-2);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -267,7 +283,7 @@
   .add-btn {
     padding: 0.25rem 0.625rem;
     border: 1px solid var(--sl-color-gray-4);
-    border-radius: 0.375rem;
+    border-radius: var(--ltk-radius-sm);
     background: var(--sl-color-black);
     color: var(--sl-color-accent);
     font-size: 0.75rem;
@@ -307,7 +323,7 @@
     width: 1.5rem;
     height: 1.5rem;
     border: 1px solid var(--sl-color-gray-4);
-    border-radius: 0.25rem;
+    border-radius: var(--ltk-radius-sm);
     background: none;
     color: var(--sl-color-gray-3);
     cursor: pointer;
@@ -317,19 +333,21 @@
     justify-content: center;
     flex-shrink: 0;
     font-family: var(--sl-font);
-    transition: color 0.15s ease, border-color 0.15s ease;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease;
   }
 
   .remove-btn:hover {
-    color: #ef4444;
-    border-color: #ef4444;
+    color: var(--ltk-danger);
+    border-color: var(--ltk-danger);
   }
 
   .output-section {
     display: flex;
     flex-direction: column;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     overflow: hidden;
     background: var(--sl-color-black);
   }
@@ -348,7 +366,9 @@
     font-family: var(--sl-font-mono);
     font-size: 0.75rem;
     cursor: pointer;
-    transition: color 0.15s ease, background 0.15s ease;
+    transition:
+      color 0.15s ease,
+      background 0.15s ease;
   }
 
   .tab:hover {
@@ -393,7 +413,7 @@
   }
 
   .tree-item.root {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-accent-high);
   }
 

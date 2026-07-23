@@ -1,0 +1,185 @@
+---
+title: ltk-tex-utils
+description: CLI utilities for League of Legends .tex textures, with Windows Explorer thumbnails, previews, and right-click conversion.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+`ltk-tex-utils` converts, inspects, and previews League's `.tex` textures. It is
+built on [league-toolkit](/tools/league-toolkit/overview/).
+
+For most people the useful part is the **Windows Explorer integration**, which
+gives `.tex` files real thumbnails, a preview pane, and right-click conversion.
+If you work with textures, that alone is worth installing it for.
+
+**Repository:** [LeagueToolkit/ltk-tex-utils](https://github.com/LeagueToolkit/ltk-tex-utils)
+
+## Installation
+
+<Tabs>
+  <TabItem label="Windows (quick install)">
+    ```powershell
+    iwr -useb https://raw.githubusercontent.com/LeagueToolkit/ltk-tex-utils/main/scripts/install-windows.ps1 | iex
+    ```
+
+    Installs to `%LOCALAPPDATA%\LeagueToolkit\ltk-tex-utils`, adds a stable
+    `bin` shim to your user `PATH`, and includes the Explorer thumbnail-handler
+    DLL. No admin rights for the install itself.
+
+  </TabItem>
+  <TabItem label="From releases">
+    Download for your platform from the
+    [Releases page](https://github.com/LeagueToolkit/ltk-tex-utils/releases).
+  </TabItem>
+  <TabItem label="From source">
+    Requires the Rust **nightly** toolchain.
+
+    ```bash
+    git clone https://github.com/LeagueToolkit/ltk-tex-utils.git
+    cd ltk-tex-utils
+    cargo build --release
+    ```
+
+  </TabItem>
+</Tabs>
+
+## Windows Explorer integration
+
+### Thumbnails and previews
+
+Registers a shell extension that gives `.tex` files:
+
+- Thumbnails in the Explorer file grid
+- A preview pane rendering on an alpha checkerboard, with a metadata overlay
+- **TEX Format** and **Mip levels** as Explorer columns, sortable and
+  groupable like any other column
+
+```powershell
+ltk-tex-utils handler install                # take over .tex previews
+ltk-tex-utils handler install --no-override  # coexist with an existing handler
+ltk-tex-utils handler status
+ltk-tex-utils handler uninstall
+```
+
+Registration is machine-wide, so install and uninstall require administrator
+rights - from a normal terminal they request elevation via UAC.
+
+:::note
+You may need to restart Windows Explorer, or reboot, before thumbnails appear.
+:::
+
+If another application already claims `.tex` - some LaTeX editors do -
+`handler install` takes over the thumbnail and preview slots so League previews
+win, backing up what it replaces. The double-click **open** association is never
+touched. Pass `--no-override` to stay out of the way instead.
+
+### Right-click conversion
+
+Adds an **LTK Toolz** context menu. Per-user, no admin rights:
+
+```powershell
+ltk-tex-utils shell install
+ltk-tex-utils shell status
+ltk-tex-utils shell uninstall
+```
+
+What it adds:
+
+| Right-clicking          | Gives you                                                                |
+| ----------------------- | ------------------------------------------------------------------------ |
+| A `.tex` file           | **Convert to PNG** / **Convert to DDS** (largest mip, written alongside) |
+| A `.dds` or `.png` file | **Convert to TEX** (BC3, mipmaps on)                                     |
+| A folder                | **Convert all .tex to PNG** / **to DDS**, recursively                    |
+
+Multi-selection works - each file is converted next to itself.
+
+:::caution[Windows 11 needs Developer Mode]
+Windows 11's modern context menu API requires a signed code-signing
+certificate, and this tool is not signed. Enable **Developer Mode** under
+`Settings → System → Advanced` to use it.
+
+If Developer Mode is off, installation falls back to the classic shell menu
+automatically - the entries appear under **Show more options**. Force that with
+`shell install --classic`. Windows 10 gets the classic menu by default.
+:::
+
+:::tip
+Re-run `shell install` after moving or updating the executable so the menu
+points at the new path. The quick-install script's `bin` shim avoids this.
+:::
+
+### Drag and drop
+
+Drop files or folders onto `ltk-tex-utils.exe` - no flags needed:
+
+- A `.tex` decodes to a sibling `.png` (top mip)
+- A standard image (PNG, DDS, JPG, TGA, BMP...) encodes to a sibling `.tex` (BC3, mipmaps on)
+- A folder is searched recursively for `.tex` files, each decoded alongside itself
+
+## CLI
+
+```bash
+ltk-tex-utils <COMMAND> [OPTIONS]
+ltk-tex-utils --help
+ltk-tex-utils <COMMAND> --help
+```
+
+Inputs work positionally or via `-i/--input`. `encode` and `decode` accept any
+number of files and folders; folders are searched recursively and each output
+is written next to its input.
+
+The global `--pause <never|on-error|always>` flag keeps the console window open
+before exiting - useful when launching from Explorer.
+
+### Encode
+
+Converts standard images into `.tex`.
+
+```bash
+# BC3 with default mipmaps
+ltk-tex-utils encode albedo.png -f bc3
+
+# Explicit output path
+ltk-tex-utils encode albedo.png -o out/albedo.tex
+
+# DDS back to TEX with safe defaults
+ltk-tex-utils encode texture.dds
+
+# Batch: files and a whole folder at once
+ltk-tex-utils encode a.png b.dds textures/
+
+# No mipmaps, uncompressed
+ltk-tex-utils encode icon.png -f bgra8 -m false
+
+# Alpha-weighted BC3 for an alpha-blended texture
+ltk-tex-utils encode decal.png -f bc3 --weigh-color-by-alpha
+```
+
+| Flag                     | Purpose                                                                                                                 |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `-f, --format`           | `bc1`, `bc3`, `bc7`, `bgra8`, `rgba16f`, `rgba32f` (default `bc3`)                                                      |
+| `-m, --generate-mipmaps` | `true` / `false` (default `true`)                                                                                       |
+| `--mipmap-filter`        | `nearest`, `triangle`, `catmullrom`, `lanczos3` (default `catmullrom`)                                                  |
+| `--weigh-color-by-alpha` | Improves perceived quality on alpha-blended textures, at some color accuracy cost in transparent regions (BC1/BC3 only) |
+| `-o, --output`           | Only valid with a single input                                                                                          |
+
+Inputs are read via the [`image`](https://crates.io/crates/image) crate, so PNG,
+JPEG, BMP, TIFF, and TGA all work. `.dds` inputs are decoded through
+`ltk_texture`, so block-compressed DDS files work too.
+
+### Decode
+
+Converts `.tex` files into standard images. Output format is inferred from the
+output extension, or from `-f/--format` when no output path is given.
+
+```bash
+ltk-tex-utils decode texture.tex
+ltk-tex-utils decode texture.tex -o out/texture.png
+ltk-tex-utils decode textures/
+```
+
+## Related
+
+- [TEX (Textures)](/reference/file-formats/tex/) - the format itself
+- [league-toolkit](/tools/league-toolkit/overview/) - the library underneath
+- [Mod Creation](/making-mods/) - where textures fit in a mod project

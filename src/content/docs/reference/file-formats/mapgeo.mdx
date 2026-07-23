@@ -28,10 +28,14 @@ All multi-byte values are **little-endian**.
 
 ### Header
 
-<BinaryStructure client:visible title="Header" fields={[
-  { name: "magic", type: "char[]", size: 4, description: "OEGM (ASCII, 4 bytes)" },
-  { name: "version", type: "u32", size: 4, description: "Format version (5-18)" }
-]} />
+<BinaryStructure
+  client:visible
+  title="Header"
+  fields={[
+    { name: 'magic', type: 'char[]', size: 4, description: 'OEGM (ASCII, 4 bytes)' },
+    { name: 'version', type: 'u32', size: 4, description: 'Format version (5-18)' },
+  ]}
+/>
 
 ### Major Sections
 
@@ -49,13 +53,14 @@ After the header, the file contains the following sections (presence varies by v
 Each vertex buffer has a descriptor defining its layout:
 
 | Field         | Type | Description                                         |
-|---------------|------|-----------------------------------------------------|
+| ------------- | ---- | --------------------------------------------------- |
 | element_count | u32  | Number of vertex elements in the buffer             |
 | vertex_size   | u32  | Size of each vertex in bytes (stride)               |
 | elements      | arr  | Array of element descriptors (name, format, offset) |
 | data          | u8[] | Raw vertex data                                     |
 
 Vertex elements can include:
+
 - **Position** - Vec3 (12 bytes)
 - **Normal** - Various packed formats
 - **Texcoord** - Vec2 per UV channel
@@ -63,59 +68,59 @@ Vertex elements can include:
 
 ### Index Buffers
 
-| Field          | Type  | Description                          |
-|----------------|-------|--------------------------------------|
-| index_count    | u32   | Number of indices                    |
-| index_format   | u16   | Format (16-bit or 32-bit indices)    |
-| data           | u8[]  | Raw index data                       |
+| Field        | Type | Description                       |
+| ------------ | ---- | --------------------------------- |
+| index_count  | u32  | Number of indices                 |
+| index_format | u16  | Format (16-bit or 32-bit indices) |
+| data         | u8[] | Raw index data                    |
 
 ### Environment Mesh
 
 Each mesh entry describes a renderable piece of map geometry:
 
-| Field              | Type   | Description                                          |
-|--------------------|--------|------------------------------------------------------|
-| name               | string | Mesh name identifier                                 |
-| vertex_buffer_id   | u32    | Index of the vertex buffer to use                    |
-| vertex_offset      | u32    | Starting vertex in the buffer                        |
-| vertex_count       | u32    | Number of vertices                                   |
-| index_buffer_id    | u32    | Index of the index buffer to use                     |
-| index_offset       | u32    | Starting index in the buffer                         |
-| index_count        | u32    | Number of indices                                    |
-| submesh_count      | u32    | Number of submesh draw ranges (up to 64)             |
-| submeshes          | arr    | Array of submesh entries                             |
-| world_transform    | Mat44  | 4×4 world transformation matrix                     |
-| bounding_box       | AABB   | Axis-aligned bounding box                            |
-| flags              | u32    | Quality and visibility flags                         |
+| Field            | Type   | Description                              |
+| ---------------- | ------ | ---------------------------------------- |
+| name             | string | Mesh name identifier                     |
+| vertex_buffer_id | u32    | Index of the vertex buffer to use        |
+| vertex_offset    | u32    | Starting vertex in the buffer            |
+| vertex_count     | u32    | Number of vertices                       |
+| index_buffer_id  | u32    | Index of the index buffer to use         |
+| index_offset     | u32    | Starting index in the buffer             |
+| index_count      | u32    | Number of indices                        |
+| submesh_count    | u32    | Number of submesh draw ranges (up to 64) |
+| submeshes        | arr    | Array of submesh entries                 |
+| world_transform  | Mat44  | 4×4 world transformation matrix          |
+| bounding_box     | AABB   | Axis-aligned bounding box                |
+| flags            | u32    | Quality and visibility flags             |
 
 #### Submesh Entry
 
-| Field         | Type   | Description                                    |
-|---------------|--------|------------------------------------------------|
-| material_hash | u32    | Hash identifying the material                  |
-| index_offset  | u32    | Starting index within the mesh's index range   |
-| index_count   | u32    | Number of indices for this submesh             |
+| Field         | Type | Description                                  |
+| ------------- | ---- | -------------------------------------------- |
+| material_hash | u32  | Hash identifying the material                |
+| index_offset  | u32  | Starting index within the mesh's index range |
+| index_count   | u32  | Number of indices for this submesh           |
 
 #### Texture Channels
 
 Meshes can reference multiple texture channels for lighting:
 
-| Channel          | Description                                  |
-|------------------|----------------------------------------------|
-| Stationary Light | Diffuse lighting texture (real-time shadows)  |
+| Channel          | Description                                      |
+| ---------------- | ------------------------------------------------ |
+| Stationary Light | Diffuse lighting texture (real-time shadows)     |
 | Baked Light      | Lightmap texture (pre-baked global illumination) |
-| Baked Paint      | Painted detail texture                       |
+| Baked Paint      | Painted detail texture                           |
 
 ### Bucketed Geometry
 
 Bucketed geometry provides spatial acceleration for rendering:
 
-| Field       | Type       | Description                                      |
-|-------------|------------|--------------------------------------------------|
-| bounds      | AABB       | Min/max XZ bounds of the bucket grid             |
-| grid_width  | u32        | Number of buckets in X                           |
-| grid_height | u32        | Number of buckets in Z                           |
-| buckets     | Bucket[][] | 2D array of visibility buckets                   |
+| Field       | Type       | Description                          |
+| ----------- | ---------- | ------------------------------------ |
+| bounds      | AABB       | Min/max XZ bounds of the bucket grid |
+| grid_width  | u32        | Number of buckets in X               |
+| grid_height | u32        | Number of buckets in Z               |
+| buckets     | Bucket[][] | 2D array of visibility buckets       |
 
 Each bucket tracks which faces are visible from that spatial region, enabling efficient view-frustum culling.
 
@@ -123,10 +128,10 @@ Each bucket tracks which faces are visible from that spatial region, enabling ef
 
 Planar reflectors define reflection planes for water and other reflective surfaces:
 
-| Field     | Type  | Description                               |
-|-----------|-------|-------------------------------------------|
-| position  | Vec3  | Position of the reflection plane          |
-| normal    | Vec3  | Normal direction of the reflection plane  |
+| Field    | Type | Description                              |
+| -------- | ---- | ---------------------------------------- |
+| position | Vec3 | Position of the reflection plane         |
+| normal   | Vec3 | Normal direction of the reflection plane |
 
 ### Scene Graph
 
@@ -136,18 +141,55 @@ The scene graph organizes meshes into a spatial hierarchy with bounding volumes,
 
 The MapGeo format has undergone significant evolution. Select a version to see which features it supports:
 
-<VersionMatrix client:visible
+<VersionMatrix
+  client:visible
   allVersions={[5, 6, 7, 9, 11, 12, 13, 14, 15, 17, 18]}
   features={[
-    { name: "Vertex/Index buffers", versions: [5, 6, 7, 9, 11, 12, 13, 14, 15, 17, 18], description: "Raw vertex and index data shared across meshes" },
-    { name: "Environment meshes", versions: [5, 6, 7, 9, 11, 12, 13, 14, 15, 17, 18], description: "Geometry entries referencing buffers with material assignments" },
-    { name: "Bucketed geometry", versions: [5, 6, 7, 9, 11, 12, 13, 14, 15, 17, 18], description: "Spatial partitioning for visibility and rendering" },
-    { name: "Planar reflectors", versions: [6, 7, 9, 11, 12, 13, 14, 15, 17, 18], description: "Reflection plane definitions for water rendering" },
-    { name: "Scene graph", versions: [7, 9, 11, 12, 13, 14, 15, 17, 18], description: "Spatial hierarchy with bounding volumes" },
-    { name: "Quality level flags", versions: [9, 11, 12, 13, 14, 15, 17, 18], description: "Per-mesh quality level filtering" },
-    { name: "Texture channel overrides", versions: [12, 13, 14, 15, 17, 18], description: "Per-sampler texture channel override mappings" },
-    { name: "Shader overrides", versions: [13, 14, 15, 17, 18], description: "Global shader and sampler override definitions" },
-    { name: "Visibility controller", versions: [15, 17, 18], description: "Visibility controller path hash for dynamic mesh visibility" }
+    {
+      name: 'Vertex/Index buffers',
+      versions: [5, 6, 7, 9, 11, 12, 13, 14, 15, 17, 18],
+      description: 'Raw vertex and index data shared across meshes',
+    },
+    {
+      name: 'Environment meshes',
+      versions: [5, 6, 7, 9, 11, 12, 13, 14, 15, 17, 18],
+      description: 'Geometry entries referencing buffers with material assignments',
+    },
+    {
+      name: 'Bucketed geometry',
+      versions: [5, 6, 7, 9, 11, 12, 13, 14, 15, 17, 18],
+      description: 'Spatial partitioning for visibility and rendering',
+    },
+    {
+      name: 'Planar reflectors',
+      versions: [6, 7, 9, 11, 12, 13, 14, 15, 17, 18],
+      description: 'Reflection plane definitions for water rendering',
+    },
+    {
+      name: 'Scene graph',
+      versions: [7, 9, 11, 12, 13, 14, 15, 17, 18],
+      description: 'Spatial hierarchy with bounding volumes',
+    },
+    {
+      name: 'Quality level flags',
+      versions: [9, 11, 12, 13, 14, 15, 17, 18],
+      description: 'Per-mesh quality level filtering',
+    },
+    {
+      name: 'Texture channel overrides',
+      versions: [12, 13, 14, 15, 17, 18],
+      description: 'Per-sampler texture channel override mappings',
+    },
+    {
+      name: 'Shader overrides',
+      versions: [13, 14, 15, 17, 18],
+      description: 'Global shader and sampler override definitions',
+    },
+    {
+      name: 'Visibility controller',
+      versions: [15, 17, 18],
+      description: 'Visibility controller path hash for dynamic mesh visibility',
+    },
   ]}
 />
 

@@ -6,8 +6,10 @@
     delayDuration = 200,
     children,
     ...restProps
-  }: WithoutChildrenOrChild<Tooltip.ProviderProps> & { children?: Snippet; delayDuration?: number } =
-    $props();
+  }: WithoutChildrenOrChild<Tooltip.ProviderProps> & {
+    children?: Snippet;
+    delayDuration?: number;
+  } = $props();
 </script>
 
 <Tooltip.Provider {delayDuration} {...restProps}>

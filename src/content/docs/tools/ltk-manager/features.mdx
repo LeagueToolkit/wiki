@@ -60,16 +60,19 @@ Stop the patcher first, make your changes, then patch again.
 ## Patching Troubleshooting
 
 ### Patcher won't start
+
 - Verify your League path is correct in [Settings](/tools/ltk-manager/configuration/)
 - Make sure League of Legends is installed
-- Check the [log file](/guides/mod-management/troubleshooting/#log-files) for errors
+- Check the [log file](/using-mods/troubleshooting/#log-files) for errors
 
 ### Mods not showing in-game
+
 - Confirm the mods are **enabled** in your current profile
 - Make sure you started the patcher **after** enabling the mods
 - Check that the mod targets the correct game files
 
 ### Patcher is slow
+
 - The first build takes longer as it processes all mod files
 - Large mods with many WAD files take more time
 - Building is the slow phase; applying is near-instant
@@ -92,6 +95,7 @@ The overlay is a directory that mirrors the structure of League's game data fold
 
 For example, if you have a mod that changes Ahri's textures, the overlay might look like this:
 
+{/* prettier-ignore */}
 <FileTree>
 - overlay/
   - DATA/
@@ -106,11 +110,11 @@ The rest of the game's hundreds of WAD files remain untouched and are read from 
 
 When you have multiple mods enabled, their changes are **merged** into the overlay. LTK Manager processes each mod in the order they appear in your mod list (top to bottom). If two mods change the same file, the mod higher in the list takes priority.
 
-This is why [mod ordering](/guides/mod-management/installing-mods/) matters - it determines which mod "wins" when there's a conflict.
+This is why [mod ordering](/using-mods/library/) matters - it determines which mod "wins" when there's a conflict.
 
 ### Profiles and Overlays
 
-Each [profile](/guides/mod-management/profiles/) maintains its own separate overlay directory. When you switch profiles, you're not just swapping a list of enabled mods - you're switching to an entirely different set of built overlay files.
+Each [profile](/using-mods/profiles/) maintains its own separate overlay directory. When you switch profiles, you're not just swapping a list of enabled mods - you're switching to an entirely different set of built overlay files.
 
 This means:
 
@@ -153,6 +157,7 @@ Your original game files are **never modified** throughout this entire process. 
 
 Overlays are stored inside your LTK Manager storage directory, organized by profile:
 
+{/* prettier-ignore */}
 <FileTree>
 - LTK Manager Storage/
   - profiles/

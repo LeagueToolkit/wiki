@@ -49,7 +49,7 @@
   .mermaid-wrapper {
     padding: 1.25rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
+    border-radius: var(--ltk-radius-lg);
     background: var(--sl-color-gray-6);
     overflow-x: auto;
     min-height: 4rem;

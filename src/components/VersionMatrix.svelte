@@ -22,9 +22,7 @@
   );
 
   let unsupportedFeatures = $derived(
-    selectedVersion !== null
-      ? features.filter((f) => !f.versions.includes(selectedVersion!))
-      : [],
+    selectedVersion !== null ? features.filter((f) => !f.versions.includes(selectedVersion!)) : [],
   );
 </script>
 
@@ -55,8 +53,7 @@
 
   <div class="feature-list">
     {#each features as feature, i}
-      {@const supported =
-        selectedVersion === null || feature.versions.includes(selectedVersion)}
+      {@const supported = selectedVersion === null || feature.versions.includes(selectedVersion)}
       {@const firstVersion = Math.min(...feature.versions)}
       <div
         class="feature-row"
@@ -107,7 +104,7 @@
     gap: 0.75rem;
     padding: 1.25rem;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.75rem;
+    border-radius: var(--ltk-radius-lg);
     background: var(--sl-color-gray-6);
     font-family: var(--sl-font);
   }
@@ -120,7 +117,7 @@
 
   .selector-label {
     font-size: 0.8125rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     color: var(--sl-color-gray-2);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -164,12 +161,12 @@
     align-items: center;
     padding: 0.5rem 0.75rem;
     background: var(--sl-color-black);
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     border: 1px solid var(--sl-color-gray-5);
   }
 
   .summary-version {
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     font-size: 0.875rem;
     color: var(--sl-color-accent-high);
   }
@@ -191,7 +188,7 @@
     gap: 0.5rem;
     align-items: center;
     padding: 0.4375rem 0.5rem;
-    border-radius: 0.375rem;
+    border-radius: var(--ltk-radius-sm);
     cursor: default;
     transition:
       background 0.1s ease,
@@ -204,7 +201,7 @@
   }
 
   .feature-row.supported .feature-icon {
-    color: #22c55e;
+    color: var(--ltk-success);
   }
 
   .feature-row.unsupported {
@@ -218,12 +215,12 @@
   .feature-icon {
     display: flex;
     align-items: center;
-    color: #22c55e;
+    color: var(--ltk-success);
   }
 
   .feature-name {
     font-size: 0.8125rem;
-    font-weight: 500;
+    font-weight: var(--ltk-weight-medium);
     color: var(--sl-color-white);
   }
 

@@ -1,0 +1,70 @@
+---
+/**
+ * A Phosphor glyph for use inside an MDX heading, sized and aligned to the
+ * heading's own font.
+ *
+ * Applied as a mask - the same technique as TopicCards and the sidebar section
+ * icons - so the glyph inherits sizing from the heading and stays theme-aware
+ * through the accent token. Icon URLs are resolved at build time, which means
+ * the set has to be a static map: add an entry here before referencing its key
+ * from a page.
+ *
+ * Usage: attach directly to the heading text with no space in between
+ * (`## <HeadingIcon icon="scroll" />The Manifest` would leak a leading hyphen
+ * into the generated anchor slug; `/>The Manifest` keeps it clean). Spacing
+ * comes from the component's own margin.
+ */
+import article from '@phosphor-icons/core/assets/regular/article.svg';
+import clockCounterClockwise from '@phosphor-icons/core/assets/regular/clock-counter-clockwise.svg';
+import fileArchive from '@phosphor-icons/core/assets/regular/file-archive.svg';
+import fileZip from '@phosphor-icons/core/assets/regular/file-zip.svg';
+import flask from '@phosphor-icons/core/assets/regular/flask.svg';
+import folders from '@phosphor-icons/core/assets/regular/folders.svg';
+import link from '@phosphor-icons/core/assets/regular/link.svg';
+import listChecks from '@phosphor-icons/core/assets/regular/list-checks.svg';
+import magicWand from '@phosphor-icons/core/assets/regular/magic-wand.svg';
+import pkg from '@phosphor-icons/core/assets/regular/package.svg';
+import scroll from '@phosphor-icons/core/assets/regular/scroll.svg';
+import signpost from '@phosphor-icons/core/assets/regular/signpost.svg';
+import treeStructure from '@phosphor-icons/core/assets/regular/tree-structure.svg';
+import wrench from '@phosphor-icons/core/assets/regular/wrench.svg';
+
+const icons = {
+  article,
+  'clock-counter-clockwise': clockCounterClockwise,
+  'file-archive': fileArchive,
+  'file-zip': fileZip,
+  flask,
+  folders,
+  link,
+  'list-checks': listChecks,
+  'magic-wand': magicWand,
+  package: pkg,
+  scroll,
+  signpost,
+  'tree-structure': treeStructure,
+  wrench,
+} as const;
+
+export type HeadingIconName = keyof typeof icons;
+
+interface Props {
+  icon: HeadingIconName;
+}
+
+const { icon } = Astro.props;
+---
+
+<span class="heading-icon" aria-hidden="true" style={`--icon: url(${icons[icon].src})`}></span>
+
+<style>
+  .heading-icon {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    margin-inline-end: 0.45em;
+    vertical-align: -0.04em;
+    background-color: var(--sl-color-accent-high);
+    mask: var(--icon) center / contain no-repeat;
+  }
+</style>

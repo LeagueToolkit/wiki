@@ -13,11 +13,11 @@ WAD files bundle all game assets - textures, models, animations, configuration, 
 
 Download the latest release for your platform from the [GitHub Releases page](https://github.com/LeagueToolkit/wadtools/releases):
 
-| Platform | Binary |
-|----------|--------|
+| Platform      | Binary                 |
+| ------------- | ---------------------- |
 | Windows (x64) | `wadtools-windows.exe` |
-| Linux (x64) | `wadtools-linux` |
-| macOS (x64) | `wadtools-macos` |
+| Linux (x64)   | `wadtools-linux`       |
+| macOS (x64)   | `wadtools-macos`       |
 
 ### Windows Quick Install
 
@@ -79,18 +79,18 @@ Extract files from one or more WAD archives.
 wadtools extract -i <WAD_PATH> [OPTIONS]
 ```
 
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--input <PATH>` | `-i` | Input WAD file(s). Supports repeated flags or semicolon-delimited paths |
-| `--output <DIR>` | `-o` | Output directory (default: sibling directory named after the WAD) |
-| `--hashtable <PATH>` | `-H` | Additional hashtable file for name resolution |
-| `--filter-type <TYPE>` | `-f` | Filter by detected file type (e.g., `png`, `bin`, `dds`). Repeatable |
-| `--pattern <REGEX>` | `-x` | Filter by regex on resolved path (case-insensitive) |
-| `--hash <HASH>` | | Filter by specific 16-character hex path hashes. Repeatable |
-| `--filter-invert` | `-v` | Invert all filters (exclude matches instead of including) |
-| `--overwrite` | | Overwrite existing files (default: skip) |
-| `--stats` | `-s` | Show summary statistics (default: true) |
-| `--list-filters` | `-l` | List available filter types |
+| Option                 | Short | Description                                                             |
+| ---------------------- | ----- | ----------------------------------------------------------------------- |
+| `--input <PATH>`       | `-i`  | Input WAD file(s). Supports repeated flags or semicolon-delimited paths |
+| `--output <DIR>`       | `-o`  | Output directory (default: sibling directory named after the WAD)       |
+| `--hashtable <PATH>`   | `-H`  | Additional hashtable file for name resolution                           |
+| `--filter-type <TYPE>` | `-f`  | Filter by detected file type (e.g., `png`, `bin`, `dds`). Repeatable    |
+| `--pattern <REGEX>`    | `-x`  | Filter by regex on resolved path (case-insensitive)                     |
+| `--hash <HASH>`        |       | Filter by specific 16-character hex path hashes. Repeatable             |
+| `--filter-invert`      | `-v`  | Invert all filters (exclude matches instead of including)               |
+| `--overwrite`          |       | Overwrite existing files (default: skip)                                |
+| `--stats`              | `-s`  | Show summary statistics (default: true)                                 |
+| `--list-filters`       | `-l`  | List available filter types                                             |
 
 **Examples**:
 
@@ -128,10 +128,10 @@ wadtools list -i <WAD_PATH> [OPTIONS]
 
 Supports the same filtering options as `extract`, plus:
 
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--format <FORMAT>` | `-F` | Output format: `table` (default), `json`, `csv`, `flat` |
-| `--stats` | `-s` | Show summary statistics |
+| Option              | Short | Description                                             |
+| ------------------- | ----- | ------------------------------------------------------- |
+| `--format <FORMAT>` | `-F`  | Output format: `table` (default), `json`, `csv`, `flat` |
+| `--stats`           | `-s`  | Show summary statistics                                 |
 
 **Examples**:
 
@@ -161,15 +161,15 @@ Compare two WAD files and show differences. Detects new, removed, modified, and 
 wadtools diff -r <REFERENCE_WAD> -t <TARGET_WAD> [OPTIONS]
 ```
 
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--reference <PATH>` | `-r` | Reference (old) WAD file |
-| `--target <PATH>` | `-t` | Target (new) WAD file |
-| `--hashtable <PATH>` | `-H` | Hashtable file for name resolution |
-| `--output <PATH>` | `-o` | Output diffs to CSV file |
-| `--pattern <REGEX>` | `-x` | Filter diffs by regex |
-| `--hash <HASH>` | | Filter by specific hashes. Repeatable |
-| `--filter-invert` | `-v` | Invert filters |
+| Option               | Short | Description                           |
+| -------------------- | ----- | ------------------------------------- |
+| `--reference <PATH>` | `-r`  | Reference (old) WAD file              |
+| `--target <PATH>`    | `-t`  | Target (new) WAD file                 |
+| `--hashtable <PATH>` | `-H`  | Hashtable file for name resolution    |
+| `--output <PATH>`    | `-o`  | Output diffs to CSV file              |
+| `--pattern <REGEX>`  | `-x`  | Filter diffs by regex                 |
+| `--hash <HASH>`      |       | Filter by specific hashes. Repeatable |
+| `--filter-invert`    | `-v`  | Invert filters                        |
 
 **Example**:
 
@@ -207,12 +207,12 @@ wadtools hashtable-dir
 
 These options apply to all commands:
 
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--verbosity <LEVEL>` | `-L` | Log verbosity: `error`, `warning`, `info` (default), `debug`, `trace` |
-| `--config <FILE>` | | Path to TOML config file (default: `wadtools.toml` next to the binary) |
-| `--progress <true\|false>` | | Show or hide progress bars (persisted to config) |
-| `--hashtable-dir <DIR>` | | Recursively load hashtable files from this directory |
+| Option                     | Short | Description                                                            |
+| -------------------------- | ----- | ---------------------------------------------------------------------- |
+| `--verbosity <LEVEL>`      | `-L`  | Log verbosity: `error`, `warning`, `info` (default), `debug`, `trace`  |
+| `--config <FILE>`          |       | Path to TOML config file (default: `wadtools.toml` next to the binary) |
+| `--progress <true\|false>` |       | Show or hide progress bars (persisted to config)                       |
+| `--hashtable-dir <DIR>`    |       | Recursively load hashtable files from this directory                   |
 
 ## Configuration
 
@@ -223,10 +223,10 @@ show_progress = true
 hashtable_dir = "C:\\Users\\YourName\\Documents\\LeagueToolkit\\wad_hashtables"
 ```
 
-| Key | Type | Description |
-|-----|------|-------------|
+| Key             | Type    | Description                                          |
+| --------------- | ------- | ---------------------------------------------------- |
 | `show_progress` | boolean | Show progress bars during extraction (default: true) |
-| `hashtable_dir` | string | Default directory for hashtable files |
+| `hashtable_dir` | string  | Default directory for hashtable files                |
 
 ### Hashtable Discovery
 

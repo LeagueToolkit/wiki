@@ -118,5 +118,5 @@ A contributor wants to add an interactive Svelte component to an MDX documentati
 - GitHub Pages is the target deployment platform for the initial release.
 - The documentation theme's built-in search integration provides full-text search without additional configuration.
 - Internationalization (i18n) is not required in this initial scaffolding phase.
-- No authentication or server-side functionality is needed — the wiki is fully public and static.
+- No authentication or server-side functionality is needed - the wiki is fully public and static.
 - Project branding assets (logo, favicon) will be added in a subsequent phase; scaffolding uses default theme branding.

@@ -1,16 +1,82 @@
 ---
-title: Welcome to LTK Wiki
+title: LTK Wiki
 description: Documentation and knowledge base for the LeagueToolkit ecosystem.
 template: splash
 hero:
-  tagline: Guides, tooling documentation, and reference material for League of Legends modding tools.
-  image:
-    file: ../../assets/logo.svg
+  title: |
+    <span class="accent">League Toolkit</span>
+  tagline: |
+    The modern modding ecosystem for League.<br />Install your favorite mods, or learn how to create your own.
   actions:
-    - text: Get Started
-      link: /getting-started/introduction/
-      icon: right-arrow
-    - text: Browse Tools
-      link: /tools/ltk-manager/overview/
+    - text: Quick start
+      link: /start-here/
+    - text: Create mods
+      link: /making-mods/
       variant: minimal
 ---
+
+import PathCards from '../../components/PathCards.astro';
+import TopicCards from '../../components/TopicCards.astro';
+
+<PathCards />
+
+## New to League modding?
+
+<TopicCards
+  topics={[
+    {
+      title: 'How Modding Works',
+      href: '/start-here/how-modding-works/',
+      description:
+        'What a mod actually does to your game - WAD archives, the overlay, and the patcher.',
+      icon: 'gear',
+    },
+    {
+      title: 'FAQ & Safety',
+      href: '/start-here/faq/',
+      description: 'Is modding allowed? Will mods survive a patch? What breaks and why?',
+      icon: 'shield',
+    },
+    {
+      title: 'Finding Mods',
+      href: '/start-here/finding-mods/',
+      description: 'Where mods are shared, what archives are, and how to get them into your game.',
+      icon: 'search',
+    },
+    {
+      title: 'Mod Creation',
+      href: '/making-mods/workshop/',
+      description:
+        'What goes into building one - the Workshop, layered edits, and packaging a .modpkg.',
+      icon: 'brush',
+    },
+  ]}
+/>
+
+## Building tools?
+
+The wiki doubles as a technical reference for the file formats and libraries
+behind the ecosystem.
+
+<TopicCards
+  topics={[
+    {
+      title: 'File Format Reference',
+      href: '/reference/file-formats/wad/',
+      description: 'WAD, SKN, SKL, ANM, BIN, TEX, MapGeo and more - format documentation.',
+      icon: 'fileCode',
+    },
+    {
+      title: 'All Tools',
+      href: '/tools/',
+      description: 'The libraries and CLIs that make up the LeagueToolkit ecosystem.',
+      icon: 'toolbox',
+    },
+  ]}
+/>
+
+:::note[Coming from cslol-manager?]
+cslol-manager is being deprecated in favor of LTK Manager. The
+[migration guide](/start-here/from-cslol/) walks you through bringing your
+existing mods across.
+:::

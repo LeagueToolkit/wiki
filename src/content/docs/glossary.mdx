@@ -1,0 +1,299 @@
+---
+title: Glossary
+description: Common terms and definitions used in League of Legends modding.
+---
+
+import GlossarySearch from '../../components/GlossarySearch.svelte';
+
+A reference of common terms and definitions used throughout the League of Legends modding community.
+
+<GlossarySearch
+  client:visible
+  terms={[
+    {
+      name: 'ANM',
+      category: 'Format',
+      description:
+        'Animation file format. Stores per-joint keyframe data for champion and map animations.',
+      link: '/reference/file-formats/anm/',
+    },
+    {
+      name: 'BIN',
+      category: 'Format',
+      description:
+        'Binary property file format (magic PROP). Stores configuration, game data, and asset metadata. The most complex and widely-used data format in the engine.',
+      link: '/reference/file-formats/bin/',
+    },
+    {
+      name: 'cslol-manager',
+      category: 'Tool',
+      description:
+        'Legacy community mod manager for League of Legends, written in C++/Qt. Being deprecated in favor of LTK Manager.',
+      link: '/start-here/from-cslol/',
+    },
+    {
+      name: 'Fantome',
+      category: 'Format',
+      description:
+        'Mod archive format (.fantome) based on ZIP, from the cslol era. Technically superseded by modpkg, but still the format to publish on mod sites, none of which fully support modpkg yet.',
+    },
+    {
+      name: 'Folder',
+      category: 'Concept',
+      description:
+        'A named group of mods in the LTK Manager library, used to enable or disable a whole set at once. Library-level and single-depth; enabled state stays per-profile.',
+      link: '/using-mods/folders/',
+    },
+    {
+      name: 'Hash',
+      category: 'Concept',
+      description:
+        'League identifies files and BIN properties by a hash of their path or name rather than the string itself. Hash tables map known hashes back to readable names.',
+      link: '/reference/hashing/algorithms/',
+    },
+    {
+      name: 'Layer',
+      category: 'Concept',
+      description:
+        'A named group of files within a mod project. Layers let mod creators offer optional components that users can toggle independently.',
+      link: '/making-mods/layers/',
+    },
+    {
+      name: 'league-mod',
+      category: 'Tool',
+      description:
+        'CLI toolkit for creating, packing, extracting, and inspecting .modpkg mod projects. The engine the Creator Workshop is built on.',
+      link: '/tools/league-mod/overview/',
+    },
+    {
+      name: 'league-toolkit',
+      category: 'Tool',
+      description:
+        'Rust library for reading and writing League of Legends file formats. Most LeagueToolkit tools are built on it.',
+      link: '/tools/league-toolkit/overview/',
+    },
+    {
+      name: 'lol-meta-classes',
+      category: 'Tool',
+      description:
+        "Toolchain that extracts League's metaclass schema per game version and tracks it in a diff-friendly database.",
+      link: '/tools/lol-meta-classes/',
+    },
+    {
+      name: 'LTK Manager',
+      category: 'Tool',
+      description:
+        'Current-generation desktop mod manager for League of Legends, built with Tauri (Rust + React). Successor to cslol-manager.',
+      link: '/tools/ltk-manager/overview/',
+    },
+    {
+      name: 'ltk-tex-utils',
+      category: 'Tool',
+      description:
+        'CLI for encoding, decoding, and inspecting .tex textures, plus Windows Explorer thumbnails, previews, and right-click conversion.',
+      link: '/tools/ltk-tex-utils/',
+    },
+    {
+      name: 'Metaclass',
+      category: 'Concept',
+      description:
+        'A typed schema defining the structure of a BIN object: its class hash, property names, types, and defaults.',
+      link: '/reference/metaclasses/overview/',
+    },
+    {
+      name: 'Mimir',
+      category: 'Tool',
+      description:
+        'Toolkit for generating and serving hash-to-path tables as compact, memory-mapped .hashdb files, replacing hundreds of megabytes of plain-text hash lists.',
+      link: '/tools/mimir/',
+    },
+    {
+      name: 'modpkg',
+      category: 'Format',
+      description:
+        'Modern mod package format (.modpkg). Supports full metadata, multi-layer content, thumbnails, and author information. The format to author against; see Packaging for which format to publish.',
+    },
+    {
+      name: 'modtools.exe',
+      category: 'Tool',
+      description:
+        'Legacy CLI tool bundled with cslol-manager for command-line mod operations. Superseded by league-mod.',
+      link: '/tools/league-mod/overview/',
+    },
+    {
+      name: 'ritobin-tools',
+      category: 'Tool',
+      description:
+        'CLI for converting BIN property trees to readable text and back, and for diffing two bin files.',
+      link: '/tools/ritobin-tools/',
+    },
+    {
+      name: 'Overlay',
+      category: 'Concept',
+      description:
+        "A directory that mirrors League's game data structure but contains only files modified by your mods. The patcher redirects the game to read from the overlay.",
+      link: '/tools/ltk-manager/features/#the-core-idea-overlays',
+    },
+    {
+      name: 'Patcher',
+      category: 'Concept',
+      description:
+        "The component that applies mod overlays to League of Legends at runtime by hooking into the game's file reading mechanism.",
+    },
+    {
+      name: 'Profile',
+      category: 'Concept',
+      description:
+        'A named mod configuration in LTK Manager. Each profile has its own enabled mods, load order, and overlay.',
+      link: '/using-mods/profiles/',
+    },
+    {
+      name: 'Ritobin',
+      category: 'Format',
+      description:
+        'Human-readable text serialization of BIN files, using the header #PROP_text. Used for editing BIN data with text editors.',
+      link: '/reference/file-formats/ritobin/',
+    },
+    {
+      name: 'SKL',
+      category: 'Format',
+      description:
+        'Skeleton file format. Defines the joint hierarchy and bind pose for character models.',
+      link: '/reference/file-formats/skl/',
+    },
+    {
+      name: 'SKN',
+      category: 'Format',
+      description:
+        'Skinned mesh file format. Contains vertex data, bone weights, and material references for character models.',
+      link: '/reference/file-formats/skn/',
+    },
+    {
+      name: 'TEX',
+      category: 'Format',
+      description: 'Texture file format. Stores compressed image data with mipmaps.',
+      link: '/reference/file-formats/tex/',
+    },
+    {
+      name: 'WAD',
+      category: 'Format',
+      description:
+        'Primary archive format (magic RW) used by League of Legends to bundle game assets. Each WAD contains compressed files identified by path hashes.',
+      link: '/reference/file-formats/wad/',
+    },
+    {
+      name: 'wadtools',
+      category: 'Tool',
+      description:
+        "High-performance CLI utility for extracting, listing, and diffing WAD archive files. Built on league-toolkit's ltk_wad crate.",
+      link: '/tools/wadtools/overview/',
+    },
+    {
+      name: 'Workshop',
+      category: 'Tool',
+      description:
+        'Integrated mod creation environment in LTK Manager. Provides a project-based workflow for building, editing, validating, and packaging mods.',
+      link: '/making-mods/workshop/',
+    },
+  ]}
+/>
+
+## A
+
+### ANM
+
+Animation file format used by League of Legends. Stores per-joint keyframe data for champion and map animations. See [ANM reference](/reference/file-formats/anm/).
+
+## B
+
+### BIN
+
+Binary property file format (magic `PROP`) used by League of Legends to store configuration, game data, and asset metadata. The most complex and widely-used data format in the engine. See [BIN reference](/reference/file-formats/bin/).
+
+## C
+
+### cslol-manager
+
+The legacy community mod manager for League of Legends, written in C++/Qt. Being deprecated in favor of [LTK Manager](#ltk-manager). Mods can be migrated using the [migration wizard](/start-here/from-cslol/).
+
+## F
+
+### Fantome
+
+A mod archive format (`.fantome`) based on ZIP, originating in cslol-manager. Technically superseded by [modpkg](#modpkg), but still the right choice when publishing to a mod distribution site - see [Choosing a format](/making-mods/packaging/#choosing-a-format).
+
+## L
+
+### Layer
+
+A named group of files within a mod project. Layers let mod creators offer optional components (e.g. high-res textures, alternate colors) that users can toggle independently. See [Layers](/making-mods/layers/).
+
+### LTK Manager
+
+The current-generation desktop mod manager for League of Legends, built with Tauri (Rust + React). Successor to [cslol-manager](#cslol-manager). See [LTK Manager overview](/tools/ltk-manager/overview/).
+
+## M
+
+### Metaclass
+
+A typed schema that defines the structure of a [BIN](#bin) object - its class hash, property names, types, and defaults. Extracted from the game client by the lol-meta-classes toolchain. See [Metaclasses overview](/reference/metaclasses/overview/).
+
+### modpkg
+
+The modern mod package format (`.modpkg`) used by LTK Manager. Supports full metadata, multi-layer content, thumbnails, and author information. The format to author against, though [Fantome](#fantome) is still what you publish to mod sites - see [Choosing a format](/making-mods/packaging/#choosing-a-format).
+
+### modtools.exe
+
+The legacy CLI tool bundled with cslol-manager for command-line mod operations. Its modern equivalent is [league-mod](/tools/league-mod/overview/), which creates, packs, extracts, and inspects `.modpkg` projects from the command line.
+
+## O
+
+### Overlay
+
+A directory that mirrors League's game data structure but contains only the files modified by your mods. The [patcher](#patcher) redirects the game to read from the overlay instead of original files. See [how overlays work](/tools/ltk-manager/features/#the-core-idea-overlays).
+
+## P
+
+### Patcher
+
+The component that applies mod overlays to League of Legends at runtime. It hooks into the game's file reading mechanism and redirects reads to overlay files. Based on the original cslol patcher.
+
+### Profile
+
+A named mod configuration in LTK Manager. Each profile has its own set of enabled mods, load order, and overlay. Useful for switching between different mod setups. See [Profiles](/using-mods/profiles/).
+
+## R
+
+### Ritobin
+
+A human-readable text serialization of [BIN](#bin) files, using the header `#PROP_text`. Used for editing BIN data with text editors. See [Ritobin reference](/reference/file-formats/ritobin/).
+
+## S
+
+### SKL
+
+Skeleton file format used by League of Legends. Defines the joint hierarchy and bind pose for character models. See [SKL reference](/reference/file-formats/skl/).
+
+### SKN
+
+Skinned mesh file format used by League of Legends. Contains vertex data, bone weights, and material references for character models. See [SKN reference](/reference/file-formats/skn/).
+
+## T
+
+### TEX
+
+Texture file format used by League of Legends. Stores compressed image data with mipmaps. See [TEX reference](/reference/file-formats/tex/).
+
+## W
+
+### WAD
+
+The primary archive format (magic `RW`) used by League of Legends to bundle game assets. Each WAD contains compressed files identified by path hashes. See [WAD reference](/reference/file-formats/wad/).
+
+### wadtools
+
+A high-performance CLI utility for extracting, listing, and diffing [WAD](#wad) archive files. Built in Rust on [league-toolkit](/tools/league-toolkit/overview/)'s `ltk_wad` crate. Supports parallel extraction, multiple output formats, and community-maintained hashtable files for resolving path hashes to human-readable filenames. See [wadtools overview](/tools/wadtools/overview/).
+
+### Workshop
+
+The integrated mod creation environment in LTK Manager. Provides a project-based workflow for building, editing, validating, and packaging mods. See [Workshop overview](/making-mods/workshop/).

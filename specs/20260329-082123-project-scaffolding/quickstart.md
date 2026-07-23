@@ -73,8 +73,8 @@ The wiki will be available at `http://localhost:4321`.
 
 ## Project Layout
 
-- `src/content/docs/` — All documentation content (Markdown/MDX)
-- `src/components/` — Svelte interactive components
-- `src/styles/` — Custom CSS overrides
-- `astro.config.ts` — Astro, Starlight, and sidebar configuration
-- `public/` — Static assets served as-is (favicon, robots.txt)
+- `src/content/docs/` - All documentation content (Markdown/MDX)
+- `src/components/` - Svelte interactive components
+- `src/styles/` - Custom CSS overrides
+- `astro.config.ts` - Astro, Starlight, and sidebar configuration
+- `public/` - Static assets served as-is (favicon, robots.txt)

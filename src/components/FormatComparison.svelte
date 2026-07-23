@@ -93,15 +93,31 @@
               <span class="icon" aria-hidden="true">
                 {#if feature.supported === true}
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M3 8.5L6.5 12L13 4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path
+                      d="M3 8.5L6.5 12L13 4"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
                   </svg>
                 {:else if feature.supported === 'partial'}
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M3 8H13" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                    <path
+                      d="M3 8H13"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                    />
                   </svg>
                 {:else}
                   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                    <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                    <path
+                      d="M4 4L12 12M12 4L4 12"
+                      stroke="currentColor"
+                      stroke-width="2.2"
+                      stroke-linecap="round"
+                    />
                   </svg>
                 {/if}
               </span>
@@ -138,7 +154,7 @@
     display: flex;
     flex-direction: column;
     border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.875rem;
+    border-radius: var(--ltk-radius-lg);
     background: linear-gradient(
       180deg,
       color-mix(in srgb, var(--accent) 6%, var(--sl-color-gray-6)) 0%,
@@ -188,7 +204,7 @@
 
   .format-name {
     font-size: 1.25rem;
-    font-weight: 700;
+    font-weight: var(--ltk-weight-bold);
     letter-spacing: -0.01em;
     color: var(--sl-color-white);
   }
@@ -197,7 +213,7 @@
     font-family: var(--sl-font-mono);
     font-size: 0.75rem;
     padding: 0.1875rem 0.4375rem;
-    border-radius: 0.3125rem;
+    border-radius: var(--ltk-radius-sm);
     background: color-mix(in srgb, var(--accent) 12%, var(--sl-color-gray-5));
     color: color-mix(in srgb, var(--accent) 60%, var(--sl-color-gray-1));
     border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
@@ -205,7 +221,7 @@
 
   .badge {
     font-size: 0.6875rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.06em;
     padding: 0.1875rem 0.5rem;
@@ -223,7 +239,7 @@
     color: var(--sl-color-white);
     line-height: 1.45;
     margin: 0;
-    font-weight: 500;
+    font-weight: var(--ltk-weight-medium);
   }
 
   .best-for {
@@ -231,14 +247,14 @@
     flex-direction: column;
     gap: 0.1875rem;
     padding: 0.625rem 0.75rem;
-    border-radius: 0.5rem;
+    border-radius: var(--ltk-radius-md);
     background: color-mix(in srgb, var(--sl-color-gray-5) 60%, transparent);
     border-left: 2px solid var(--accent);
   }
 
   .best-for-label {
     font-size: 0.6875rem;
-    font-weight: 600;
+    font-weight: var(--ltk-weight-semibold);
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--sl-color-gray-3);
@@ -268,11 +284,11 @@
   }
 
   .feature.supported .icon {
-    color: #22c55e;
+    color: var(--ltk-success);
   }
 
   .feature.partial .icon {
-    color: #f59e0b;
+    color: var(--ltk-warning);
   }
 
   .feature.unsupported .icon {
@@ -304,7 +320,7 @@
 
   .feature-label {
     color: var(--sl-color-white);
-    font-weight: 500;
+    font-weight: var(--ltk-weight-medium);
   }
 
   .feature-note {

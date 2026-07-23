@@ -20,7 +20,7 @@ Where LTK Manager stores installed mods. Defaults to the app data directory. Cha
 
 ### Workshop Path
 
-The directory containing your mod projects. Set this to use the [Creator Workshop](/guides/mod-creation/workshop-overview/).
+The directory containing your mod projects. Set this to use the [Creator Workshop](/making-mods/workshop/).
 
 ## Appearance
 
@@ -74,10 +74,10 @@ A live preview shows how many files the pattern currently matches and lists them
 
 Examples:
 
-| Pattern | Matches |
-|---------|---------|
+| Pattern                        | Matches                                          |
+| ------------------------------ | ------------------------------------------------ |
 | `^map\d+\.en_us\.wad\.client$` | All English map WADs (Map11, Map12, Map22, etc.) |
-| `^aatrox` | Every WAD whose name starts with `aatrox` |
+| `^aatrox`                      | Every WAD whose name starts with `aatrox`        |
 
 If a regex fails to compile at patch time (for example, after a corrupted edit to `settings.json`), it is logged and skipped: one bad pattern will not break the rest of the list.
 
@@ -96,10 +96,10 @@ Entries you saved with an older version of LTK Manager (plain strings) are migra
 
 Settings and data are stored in the app data directory:
 
-| Platform | Path |
-|----------|------|
-| Windows | `%APPDATA%\dev.leaguetoolkit.manager\` |
-| Linux | `~/.local/share/dev.leaguetoolkit.manager/` |
+| Platform | Path                                        |
+| -------- | ------------------------------------------- |
+| Windows  | `%APPDATA%\dev.leaguetoolkit.manager\`      |
+| Linux    | `~/.local/share/dev.leaguetoolkit.manager/` |
 
 ### Files
 
