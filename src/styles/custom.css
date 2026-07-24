@@ -793,14 +793,41 @@ header.header .social-icons a:hover {
   font-family: var(--ltk-font-display);
   font-weight: var(--ltk-weight-bold);
   letter-spacing: -0.02em;
-  background-size: 160% 100%;
-  transition: background-position 0.4s ease;
+  background-image:
+    linear-gradient(
+      105deg,
+      transparent 40%,
+      color-mix(in srgb, var(--ltk-on-brand) 20%, transparent) 50%,
+      transparent 60%
+    ),
+    var(--ltk-wordmark);
+  background-size:
+    200% 100%,
+    160% 100%;
+  background-position:
+    -30% 50%,
+    0% 50%;
+  transition:
+    background-position 0.7s ease,
+    filter 0.7s ease;
 }
 
-/* Hover slides the clipped gradient across the letters. Header title only;
-   the splash headline stays still. */
+/* Hover slides the gradient and sweeps the highlight band across the letters.
+   The glow is drop-shadow (text-shadow would show through the clipped fill),
+   split blue-left / violet-right to echo the ramp, over a wide ambient bloom. */
 .site-title:hover span {
-  background-position: 100% 50%;
+  background-position:
+    130% 50%,
+    100% 50%;
+  filter: drop-shadow(-0.3rem 0 0.5rem color-mix(in srgb, var(--ltk-blue) 35%, transparent))
+    drop-shadow(0.3rem 0 0.5rem color-mix(in srgb, var(--ltk-violet) 35%, transparent))
+    drop-shadow(0 0 1.5rem color-mix(in srgb, var(--ltk-blue) 20%, transparent));
+}
+
+:root[data-theme='light'] .site-title:hover span {
+  filter: drop-shadow(-0.3rem 0 0.5rem color-mix(in srgb, var(--ltk-blue) 20%, transparent))
+    drop-shadow(0.3rem 0 0.5rem color-mix(in srgb, var(--ltk-violet) 20%, transparent))
+    drop-shadow(0 0 1.5rem color-mix(in srgb, var(--ltk-blue) 12%, transparent));
 }
 
 /* ── Splash Page ────────────────────────────────────────────── */
