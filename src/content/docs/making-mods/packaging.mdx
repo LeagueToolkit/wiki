@@ -40,7 +40,7 @@ A modpkg file is a binary archive containing:
 
 ## fantome
 
-The `.fantome` format came from cslol-manager, and it is still what most League mods are packaged as. ltk-manager supports it fully: import, export, and library management all work the same as for modpkg, and it reads metadata fields beyond the original cslol-manager specification, so existing libraries keep working as they are.
+The `.fantome` format comes from [Fantome](https://github.com/LeagueToolkit/Fantome), the mod manager the LeagueToolkit organization built under its original name; cslol-manager carried the format forward, and it is still what most League mods are packaged as. ltk-manager supports it fully: import, export, and library management all work the same as for modpkg, and it reads metadata fields beyond the original cslol-manager specification, so existing libraries keep working as they are.
 
 ### When to choose fantome
 
@@ -70,7 +70,7 @@ The bridging is best-effort: not every modpkg feature has a fantome equivalent, 
 
 ### Trade-offs vs modpkg
 
-The fantome format is a renamed ZIP archive. That's its strength for portability and its weakness for runtime cost. Compared to modpkg, fantome:
+The fantome format is a renamed ZIP archive - the [Fantome package reference](/reference/mod-packages/fantome/) documents the layout in full. That's its strength for portability and its weakness for runtime cost. Compared to modpkg, fantome:
 
 - Is single-layer by design
 - Has no concept of per-layer string overrides

@@ -77,9 +77,10 @@ You have three levers, in increasing order of effort:
 
 1. **Parse the manifest directly.** It is plain JSON or TOML with a
    [documented schema](/making-mods/mod-projects/#the-manifest). Any language handles it.
-2. **Handle `.fantome` yourself.** It is a renamed ZIP with metadata in `META/info.json`. The
-   [extended fields](/making-mods/mod-projects/#the-extended-fantome-format) are additive: read
-   them when present, treat files without them as plain fantomes.
+2. **Handle `.fantome` yourself.** It is a renamed ZIP with metadata in `META/info.json`, with
+   a [full format reference](/reference/mod-packages/fantome/) on this wiki. The
+   [extended fields](/reference/mod-packages/fantome/#the-leaguetoolkit-extension) are additive:
+   read them when present, treat files without them as plain fantomes.
 3. **Shell out to `league-mod`** for anything touching `.modpkg`:
    [`pack`](/making-mods/command-line/#pack), [`extract`](/making-mods/command-line/#extract),
    and [`info`](/making-mods/command-line/#info) build, unpack, and inspect packages so you

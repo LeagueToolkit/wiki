@@ -36,14 +36,14 @@ The importer carries over everything the fantome format can hold:
 - **Metadata.** Version, description, author, tags, champions, and maps from `META/info.json` land in the new project's manifest.
 - **Content.** Every `.wad.client` folder under `WAD/` is extracted into `content/base/` unchanged.
 - **README and thumbnail.** `META/README.md` becomes the project's `README.md`, and `META/image.png` is saved as `thumbnail.png`.
-- **Layers.** A plain fantome becomes a single `base` layer. A fantome packed with the [extended format](/making-mods/mod-projects/#the-extended-fantome-format) gets its layers and string overrides recreated from the metadata.
+- **Layers.** A plain fantome becomes a single `base` layer. A fantome packed with the [extended format](/reference/mod-packages/fantome/#the-leaguetoolkit-extension) gets its layers and string overrides recreated from the metadata.
 
 :::note[Point the manifest at the imported thumbnail]
 The import saves the image as `thumbnail.png` but leaves the manifest's `thumbnail` field unset, and packing only looks for `thumbnail.webp` when the field is missing. Set `"thumbnail": "thumbnail.png"` in `mod.config.json` (packing converts it to WebP for you), or convert the file to `thumbnail.webp` yourself.
 :::
 
 :::caution[Pre-packaged .wad files import with hashed names]
-If your fantome ships complete `.wad` files instead of `.wad.client` folders, the importer unpacks them into raw files. A packed WAD stores only path hashes, though, so every extracted file is named by its hash (16 hex digits) instead of its original path. The content still packs and works, but hash-named files are hard to keep editing - one more reason [pre-packaged WADs are discouraged](/making-mods/project/#wad-folder-common).
+If your fantome ships complete `.wad` files instead of `.wad.client` folders, the importer unpacks them into raw files. A packed WAD stores only path hashes, though, so every extracted file is named by its hash (16 hex digits) instead of its original path. The content still packs and works, but hash-named files are hard to keep editing - one more reason [pre-packaged WADs are discouraged](/reference/mod-packages/fantome/#packed-wad-files).
 :::
 
 ## <HeadingIcon icon="clock-counter-clockwise" />From cslol-manager
@@ -89,7 +89,7 @@ The manual path is short:
 2. Copy your `.wad.client` folders into the project's `content/base/` directory
 3. If your files came from a `RAW/` folder, reorganize them into `.wad.client` folders first - each file goes under a folder named after the WAD it belongs to
 
-[Creating a Project](/making-mods/project/#migrating-to-a-mod-project) walks through this in more detail, including [what the WAD/ and RAW/ layouts mean](/making-mods/project/#from-fantome-wadraw-folders).
+[Creating a Project](/making-mods/project/#migrating-to-a-mod-project) walks through this in more detail; the [Fantome package reference](/reference/mod-packages/fantome/#wad-content) explains what the WAD/ and RAW/ layouts mean.
 
 ## <HeadingIcon icon="list-checks" />After You Migrate
 

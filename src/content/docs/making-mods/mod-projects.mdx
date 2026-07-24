@@ -112,7 +112,7 @@ Everything under `content/` is declared, never inferred:
 - **Layers are folders.** Each entry in `layers` maps to `content/<layer-name>/`.
 - **WAD assignment is explicit.** Inside a layer, a folder named after its target archive (`Ahri.wad.client/`) holds raw files at the paths they occupy inside that WAD.
 
-Because the mapping from source file to game file is spelled out in the folder structure, a build never has to index your game installation or guess where a file belongs - the failure mode of the legacy [RAW/ folder](/making-mods/project/#raw-folder-legacy-avoid) approach. The same project produces the same package anywhere, which is what makes projects safe to version in Git and build in CI.
+Because the mapping from source file to game file is spelled out in the folder structure, a build never has to index your game installation or guess where a file belongs - the failure mode of the legacy [RAW/ folder](/reference/mod-packages/fantome/#raw-content) approach. The same project produces the same package anywhere, which is what makes projects safe to version in Git and build in CI.
 
 Layers themselves - variants, optional add-ons, priority resolution - are covered on the [Layers](/making-mods/layers/) page. [String overrides](/making-mods/string-overrides/) also live in the manifest, per layer and per locale, so translated or renamed text builds into the package alongside the files.
 
@@ -160,32 +160,9 @@ Packing runs from the Workshop's **Pack** button or [`league-mod pack`](/making-
 
 ### The Extended Fantome Format
 
-LeagueToolkit defines an official extension of the `.fantome` format so projects lose as little as possible when targeting legacy tooling. On top of the original cslol-era spec, a packed fantome's `META/info.json` carries `Tags`, `Champions`, `Maps`, and a `Layers` map with each layer's name, display name, priority, and string overrides:
+LeagueToolkit defines an official extension of the `.fantome` format so projects lose as little as possible when targeting legacy tooling. On top of the original spec, a packed fantome's `META/info.json` carries the project's tags, champions, maps, and per-layer metadata including string overrides. The fantome format itself remains single-layer: only the `base` layer's WAD content is packed, and the Workshop warns you when other layers would be left out. The extension preserves the layer _metadata_ - so string overrides work and survive a round-trip through import - while tools that predate it simply read the file as a plain fantome.
 
-```json
-{
-  "Name": "Old Summoners Rift",
-  "Author": "TheKillerey, Crauzer",
-  "Version": "1.0.0",
-  "Description": "Brings back the classic Summoners Rift map",
-  "Tags": ["map-skin"],
-  "Layers": {
-    "base": {
-      "Name": "base",
-      "Priority": 0,
-      "StringOverrides": {
-        "default": { "game_character_displayname_Ahri": "Fox Spirit" }
-      }
-    }
-  }
-}
-```
-
-The fantome format itself remains single-layer: only the `base` layer's WAD content is packed, and the Workshop warns you when other layers would be left out. The extension preserves the layer _metadata_ - so string overrides work and survive a round-trip through import - while tools that predate it simply read the file as a plain fantome.
-
-:::note[Layer support is work in progress]
-The `Layers` part of the extension is still in development. Expect it to change before it stabilizes; this section will be updated when it does.
-:::
+The full schema, along with the rest of the format, is documented in the [Fantome package reference](/reference/mod-packages/fantome/#the-leaguetoolkit-extension).
 
 ## <HeadingIcon icon="flask" />In Development
 

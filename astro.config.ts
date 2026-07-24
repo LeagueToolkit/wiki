@@ -176,6 +176,11 @@ export default defineConfig({
           badge: { text: 'Advanced', variant: 'caution' },
           items: [
             {
+              label: 'Mod Packages',
+              collapsed: true,
+              items: [{ label: 'Fantome', slug: 'reference/mod-packages/fantome' }],
+            },
+            {
               label: 'File Formats',
               collapsed: true,
               items: [

@@ -1,0 +1,199 @@
+---
+title: Fantome Package
+description: Reference for the .fantome mod package format - its history, archive layout, the info.json schema, and the LeagueToolkit extension.
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+
+`.fantome` is the package format most League of Legends mods are distributed in. A fantome file is a ZIP archive under a different extension: metadata in `META/`, game content in `WAD/`, a single content layer. This page is the format reference - what a well-formed fantome contains, where the format came from, and the backward-compatible extension LeagueToolkit defines on top.
+
+For guidance on when to package as fantome versus modpkg, see [Choosing a format](/making-mods/packaging/#choosing-a-format).
+
+## History
+
+The format was designed by the Fantome organization - known today as LeagueToolkit - for [Fantome](https://github.com/LeagueToolkit/Fantome), its mod manager of the time, and the format carries that manager's name. The [original specification](https://github.com/LeagueToolkit/Fantome/wiki/Mod-File-Format) still lives on the deprecated repository's wiki; it describes the same `META/`, `WAD/`, and `RAW/` layout documented here, distributed as a plain `.zip` archive. cslol-manager kept the format when it became the community's primary manager, and that continuity made `.fantome` the de facto packaging standard - mod distribution sites host it, and every manager since has read it.
+
+LTK Manager supports the format fully: install, [import](/making-mods/project/#from-fantome), export, and library management all work the same as for `.modpkg`. It also defines [an official extension](#the-leaguetoolkit-extension) - the format's original designers extending their own spec - so modern project features degrade gracefully instead of disappearing when a project targets legacy tooling. `.modpkg` has superseded fantome as the format to author against ([why?](#why-ditch-the-format)), but fantome remains the one to publish to mod sites.
+
+## Archive Layout
+
+A fantome file is a standard ZIP archive renamed to `.fantome` - rename it to `.zip` and any archive tool opens it. LTK's packer writes Deflate-compressed entries; readers accept anything the ZIP format allows.
+
+{/* prettier-ignore */}
+<FileTree>
+- my-mod.fantome (ZIP)
+  - META/
+    - info.json required metadata
+    - README.md optional documentation
+    - image.png optional preview image
+  - WAD/
+    - Ahri.wad.client/
+      - DATA/
+        - …
+  - RAW/ legacy, avoid
+    - …
+</FileTree>
+
+`META/info.json` is the only required entry. Everything else is optional - a fantome with metadata and no content is valid, if pointless.
+
+## Metadata
+
+### info.json
+
+UTF-8 JSON with four fields, all required. This is the complete original schema; the [extension](#the-leaguetoolkit-extension) adds optional fields on top.
+
+| Field         | Description                                                                                |
+| ------------- | ------------------------------------------------------------------------------------------ |
+| `Name`        | Display name of the mod.                                                                   |
+| `Author`      | Author credit as a single string. Multiple authors are conventionally comma-separated.     |
+| `Version`     | Version string. LTK writes the project's semantic version; legacy files may hold anything. |
+| `Description` | What the mod does.                                                                         |
+
+```json
+{
+  "Name": "Old Summoners Rift",
+  "Author": "TheKillerey, Crauzer",
+  "Version": "1.0.0",
+  "Description": "Brings back the classic Summoners Rift map"
+}
+```
+
+### README.md
+
+Optional Markdown documentation that travels with the mod. Packing a project copies the project's `README.md` here, and the fantome importer recovers it as the project readme.
+
+### image.png
+
+Optional preview image, in PNG format. Managers show it in the library. Packing converts the project's thumbnail to PNG here; importing converts it back to `thumbnail.webp`.
+
+## WAD Content
+
+Game files live under `WAD/`, organized per target WAD archive. An entry directly under `WAD/` is treated as WAD content when its name ends in `.wad.client`, `.wad`, or `.wad.mobile`. It takes one of two shapes:
+
+### WAD directories (recommended)
+
+A folder named after the target archive, holding raw files at the paths they occupy inside that WAD:
+
+{/* prettier-ignore */}
+<FileTree>
+- my-mod.fantome (ZIP)
+  - WAD/
+    - Ahri.wad.client/
+      - DATA/
+        - Characters/
+          - Ahri/
+            - Skins/
+              - …
+  - META/
+    - info.json
+</FileTree>
+
+The manager packs these into the corresponding WAD when it builds the overlay, using the WAD version that matches the installed game. This is the shape to ship: raw files with explicit WAD assignment, nothing to guess and no format-version coupling.
+
+### Packed WAD files (avoid)
+
+A `.wad.client` entry under `WAD/` can also be a single file instead of a directory: a complete, pre-built [WAD archive](/reference/file-formats/wad/). The manager doesn't use it as-is - it mounts the archive, unpacks its chunks, and overlays them exactly like the files of a WAD directory. The only difference is that the content arrives pre-packaged.
+
+:::caution[Avoid pre-packaged .wad files]
+Shipping pre-packaged `.wad` files is fragile. The WAD format version can change between game patches, so the manager must keep parsing whatever version the mod was built with - and outdated versions may stop being supported. There is also a lossy side effect: a packed WAD stores only path hashes, so any tool that unpacks one - including the [fantome importer](/making-mods/migrating/) - recovers files named by hash instead of by their original paths. Prefer WAD directories: raw files carry no WAD version at all.
+:::
+
+### Name resolution
+
+Entry names are expected to match WADs in the game installation, but the overlay builder does not depend on it. Content under a name that matches no game WAD is assigned to the game WAD sharing the most chunk paths with it, and chunks that overlap no game WAD at all are routed alongside the bulk of the mod's content. Uniquely-named entries in old mods therefore still load - but name entries after real game WADs so the heuristic never has to guess.
+
+## RAW Content
+
+:::danger[Legacy, avoid in new mods]
+The `RAW/` folder is a legacy mechanism. Don't use it in new mods; it survives only so old archives keep working.
+:::
+
+`RAW/` holds files at their game asset paths with no WAD assignment, e.g. `RAW/DATA/Characters/Ahri/…`. To install them, a manager must index the entire game installation and assign each file to the correct WAD based on that index - slow, fragile, and dependent on a complete index being available.
+
+## The LeagueToolkit Extension
+
+LeagueToolkit - the organization that [designed the format](#history) - defines an official extension of the original `info.json` schema so [mod projects](/making-mods/mod-projects/) lose as little as possible when packed to fantome. The extension is purely additive: four optional fields, each omitted when empty, that tools predating the extension simply never look at - such tools read the file as a plain fantome.
+
+| Field       | Description                                                                                                      |
+| ----------- | ---------------------------------------------------------------------------------------------------------------- |
+| `Tags`      | Array of category strings such as `champion-skin`, `sfx`. Same values as the project manifest's `tags`.          |
+| `Champions` | Array of champion names the mod targets.                                                                         |
+| `Maps`      | Array of well-known map ids (`summoners-rift`, `aram`, `teamfight-tactics`, `arena`, `swarm`) or custom strings. |
+| `Layers`    | Per-layer metadata, keyed by layer name. See below.                                                              |
+
+### Layers
+
+The fantome format itself stays single-layer: only the `base` layer's WAD content is packed, and the Workshop warns when other layers would be left out. The `Layers` field preserves layer _metadata_ - names, priorities, and [string overrides](/making-mods/string-overrides/) - so string overrides still apply and the structure survives a round trip through import.
+
+Each entry in the `Layers` object maps a layer name to:
+
+| Field             | Description                                                                                                                                  |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Name`            | <span class="field-required">Required.</span> The layer's slug (`base`, `high-res`).                                                         |
+| `DisplayName`     | Human-readable layer name.                                                                                                                   |
+| `Priority`        | <span class="field-required">Required.</span> Integer priority; `base` is 0.                                                                 |
+| `StringOverrides` | Map of locale to overrides, where each override maps a field name to its replacement string. The `default` locale applies to every language. |
+
+A full extended `info.json`:
+
+```json
+{
+  "Name": "Old Summoners Rift",
+  "Author": "TheKillerey, Crauzer",
+  "Version": "1.0.0",
+  "Description": "Brings back the classic Summoners Rift map",
+  "Tags": ["map-skin"],
+  "Maps": ["summoners-rift"],
+  "Layers": {
+    "base": {
+      "Name": "base",
+      "Priority": 0,
+      "StringOverrides": {
+        "default": { "game_character_displayname_Ahri": "Fox Spirit" }
+      }
+    }
+  }
+}
+```
+
+LTK's packer writes a `Layers` entry only for layers that carry string overrides - an entry without them would hold nothing a fantome reader can use, since the layer's WAD content is not in the archive.
+
+:::note[Layer support is work in progress]
+The `Layers` part of the extension is still in development. Expect it to change before it stabilizes; this section will be updated when it does.
+:::
+
+If you build a tool that reads or writes fantome files, treat the extended fields as optional on read and emit them when you have the data - see [Ecosystem Integration](/developers/ecosystem-integration/) for the broader guidance.
+
+## Compatibility Notes
+
+Fantome files in the wild are messier than this page. Write strictly, read leniently:
+
+- **Folder casing.** The canonical entry names are uppercase `META/`, `WAD/`, `RAW/`. Lowercase variants exist in the wild, so LTK's readers match all three case-insensitively. Writers should emit the canonical casing.
+- **info.json encoding.** Write UTF-8 without a byte-order mark. LTK's readers tolerate a leading BOM because some editors insert one.
+- **ZIP integrity.** Some packers write incorrect CRC32 checksums. LTK's readers skip CRC validation rather than reject such archives; writers must still emit correct checksums.
+
+## Why Ditch the Format?
+
+Fantome carried the community for years, but its weaknesses are structural - fixing them meant a new container, not another extension. What drove the move to [`.modpkg`](/making-mods/packaging/#modpkg):
+
+- **Three ways to package the same content.** WAD directories, packed WAD files, and `RAW/` all ship game files, so every reader must implement all three paths - and two of them are the fragile ones this page warns against.
+- **Double compression.** A packed WAD already holds [Zstandard-compressed chunks](/reference/file-formats/wad/#compression-types), and the ZIP entry wrapping it is Deflate-compressed on top. The second pass costs pack and install time and saves next to nothing on data that is already compressed.
+- **ZIP as the substrate.** Building an overlay means decompressing and repacking ZIP entries one at a time, and reader code inherits every awkward corner of ZIP library APIs along the way. modpkg's layout is aligned with the WAD chunk format instead, so the launcher copies chunks straight into the overlay without re-encoding.
+- **Uncontrolled extensions.** `info.json` is schemaless JSON with no format version, so tools have extended it independently - and files that one manager understands, another silently does not. The [LeagueToolkit extension](#the-leaguetoolkit-extension) stays strictly additive to avoid this, but nothing in the format enforces that discipline on anyone else.
+- **No conformance guarantees.** Nothing validates a fantome at creation time, so the wild is full of lowercase folder names, BOMs, and broken checksums - see [Compatibility Notes](#compatibility-notes). Every reader pays for that leniency forever.
+- **Single layer, flat metadata.** One content layer and a four-field metadata block. Layers, per-layer string overrides, and structured authorship had to be bolted on through the extension, and non-`base` WAD content still cannot ship at all.
+
+None of this makes existing fantomes a problem to keep using - the format stays fully supported, and remains [the right one to publish to mod sites](/making-mods/packaging/#choosing-a-format). It is a dead end for new capabilities, not for existing mods.
+
+## Related Pages
+
+- [Packaging](/making-mods/packaging/) - choosing between `.fantome` and `.modpkg`
+- [Mod Projects](/making-mods/mod-projects/) - the source format both packages are built from
+- [Creating a Project](/making-mods/project/#from-fantome) - importing a fantome into the Workshop
+- [Migrating to Projects](/making-mods/migrating/) - bringing legacy fantomes into the project standard
+- [WAD Archives](/reference/file-formats/wad/) - the archive format packed WADs use
+
+## Implementation References
+
+- **Rust**: [`league-mod` - `ltk_fantome` crate](https://github.com/LeagueToolkit/league-mod) - packing and extraction, including the extended `info.json` schema
+- **Rust**: [`league-mod` - `ltk_overlay` crate](https://github.com/LeagueToolkit/league-mod) - reads fantome archives directly when building overlays
