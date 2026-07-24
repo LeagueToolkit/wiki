@@ -65,17 +65,21 @@
 
 /* ── Status Palette ─────────────────────────────────────────── */
 
-/* Semantic state colours. Theme-invariant except --ltk-required, which
-   flips for contrast. */
+/* Semantic state colours. Theme-invariant except --ltk-required and
+   --ltk-warning-text, which flip for contrast. Amber carries fills and
+   borders at any size, but as small text it only clears contrast on a dark
+   surface - --ltk-warning-text is the variant to label with. */
 :root {
   --ltk-success: #22c55e;
   --ltk-warning: #f59e0b;
+  --ltk-warning-text: var(--ltk-warning);
   --ltk-danger: #ef4444;
   --ltk-required: #f193a9;
 }
 
 :root[data-theme='light'] {
   --ltk-required: #ad3a58;
+  --ltk-warning-text: color-mix(in srgb, var(--ltk-warning) 60%, black);
 }
 
 /* ── Corner Radius ──────────────────────────────────────────── */
@@ -732,6 +736,10 @@ header.header .social-icons a:hover {
 
 .sidebar-pane ul.top-level > li:has(a[href='/glossary/']) {
   --ltk-section-icon: url('@phosphor-icons/core/assets/bold/list-bullets-bold.svg');
+}
+
+.sidebar-pane ul.top-level > li:has(a[href='/tags/']) {
+  --ltk-section-icon: url('@phosphor-icons/core/assets/bold/tag-bold.svg');
 }
 
 /* Indent guide lines for nested sidebar items */

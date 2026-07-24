@@ -1,0 +1,203 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { getPagesByTag } from '../../lib/tagged-pages';
+import {
+  AUDIENCES,
+  AUDIENCE_META,
+  STATUSES,
+  STATUS_META,
+  SUBJECTS,
+  SUBJECT_GROUP_LABELS,
+  SUBJECT_META,
+  TYPES,
+  TYPE_META,
+  tagHref,
+  type SubjectGroup,
+  type TagSlug,
+} from '../../lib/tags';
+
+const pagesByTag = await getPagesByTag();
+
+interface Entry {
+  slug: TagSlug;
+  label: string;
+  description: string;
+  count: number;
+}
+
+// Terms nobody has used yet are reserved vocabulary, not navigation - listing
+// them here would only offer dead ends.
+const used = (
+  slugs: readonly TagSlug[],
+  meta: Record<string, { label: string; description: string }>,
+): Entry[] =>
+  slugs.flatMap((slug) => {
+    const pages = pagesByTag.get(slug);
+    return pages ? [{ slug, ...meta[slug], count: pages.length }] : [];
+  });
+
+const types = used(TYPES, TYPE_META);
+const audiences = used(AUDIENCES, AUDIENCE_META);
+const statuses = used(STATUSES, STATUS_META);
+
+const subjectGroups = (Object.keys(SUBJECT_GROUP_LABELS) as SubjectGroup[])
+  .map((group) => ({
+    label: SUBJECT_GROUP_LABELS[group],
+    entries: used(
+      SUBJECTS.filter((slug) => SUBJECT_META[slug].group === group),
+      SUBJECT_META,
+    ),
+  }))
+  .filter((group) => group.entries.length > 0);
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Tags',
+    description: 'Every tag used across the wiki, and the pages behind each one.',
+    tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 2 },
+  }}
+>
+  <p>
+    Every page carries a page type, who it is written for, one to three subjects, and - when the
+    thing it documents is not settled yet - a status. Follow any of them to see what else covers the
+    same ground.
+  </p>
+
+  <h2 id="page-type">Page type</h2>
+  <p>What kind of page it is, and how to read it.</p>
+  <div class="tag-list not-content">
+    {
+      types.map((entry) => (
+        <a class="tag-entry" href={tagHref(entry.slug)}>
+          <span class="tag-label">
+            {entry.label}
+            <span class="tag-count">{entry.count}</span>
+          </span>
+          <span class="tag-desc">{entry.description}</span>
+        </a>
+      ))
+    }
+  </div>
+
+  <h2 id="audience">Audience</h2>
+  <p>Who a page is written for. Several pages are written for more than one.</p>
+  <div class="tag-list not-content">
+    {
+      audiences.map((entry) => (
+        <a class="tag-entry" href={tagHref(entry.slug)}>
+          <span class="tag-label">
+            {entry.label}
+            <span class="tag-count">{entry.count}</span>
+          </span>
+          <span class="tag-desc">{entry.description}</span>
+        </a>
+      ))
+    }
+  </div>
+
+  <h2 id="subject">Subject</h2>
+  <p>What a page is actually about - the tags worth following.</p>
+  {
+    subjectGroups.map((group) => (
+      <>
+        <h3>{group.label}</h3>
+        <div class="tag-list not-content">
+          {group.entries.map((entry) => (
+            <a class="tag-entry" href={tagHref(entry.slug)}>
+              <span class="tag-label">
+                {entry.label}
+                <span class="tag-count">{entry.count}</span>
+              </span>
+              <span class="tag-desc">{entry.description}</span>
+            </a>
+          ))}
+        </div>
+      </>
+    ))
+  }
+
+  {
+    statuses.length > 0 && (
+      <>
+        <h2 id="status">Status</h2>
+        <p>
+          Carried only by pages documenting something unfinished, superseded, or kept around for
+          compatibility. No status tag means the page describes something settled.
+        </p>
+        <div class="tag-list not-content">
+          {statuses.map((entry) => (
+            <a class="tag-entry" data-status href={tagHref(entry.slug)}>
+              <span class="tag-label">
+                {entry.label}
+                <span class="tag-count">{entry.count}</span>
+              </span>
+              <span class="tag-desc">{entry.description}</span>
+            </a>
+          ))}
+        </div>
+      </>
+    )
+  }
+</StarlightPage>
+
+<style>
+  .tag-list {
+    display: grid;
+    gap: 0.625rem;
+    margin-block: 1rem 2rem;
+  }
+
+  @media (min-width: 50rem) {
+    .tag-list {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .tag-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem 0.875rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: var(--ltk-radius-md);
+    text-decoration: none;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease;
+  }
+
+  .tag-entry:hover {
+    border-color: color-mix(in srgb, var(--sl-color-accent) 50%, transparent);
+    background-color: color-mix(in srgb, var(--sl-color-gray-6) 55%, transparent);
+  }
+
+  .tag-entry:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 3px;
+  }
+
+  .tag-label {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-weight: var(--ltk-weight-semibold);
+    color: var(--sl-color-white);
+  }
+
+  .tag-entry[data-status] .tag-label {
+    color: var(--ltk-warning-text);
+  }
+
+  .tag-count {
+    font-size: 0.75rem;
+    font-weight: var(--ltk-weight-medium);
+    color: var(--sl-color-gray-3);
+  }
+
+  .tag-desc {
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: var(--sl-color-gray-2);
+  }
+</style>

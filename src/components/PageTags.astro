@@ -1,0 +1,133 @@
+---
+/**
+ * The tag row under a page title.
+ *
+ * Chips are styled by facet rather than uniformly: subject tags carry the
+ * accent because they are the ones worth following, type and audience stay
+ * quiet, and status borrows the warning colour. The `wip` chip goes further
+ * and wears hazard tape, since "this page documents something unfinished" is
+ * the one status a reader must not skim past.
+ */
+import warning from '@phosphor-icons/core/assets/bold/warning-bold.svg';
+import { resolvePageTags, tagHref, type PageTags } from '../lib/tags';
+
+interface Props {
+  tags: PageTags;
+}
+
+const tags = resolvePageTags(Astro.props.tags);
+---
+
+<nav class="page-tags not-content" aria-label="Page tags">
+  {
+    tags.map((tag) => (
+      <a class="tag" data-facet={tag.facet} data-slug={tag.slug} href={tagHref(tag.slug)}>
+        {tag.slug === 'wip' && (
+          <span class="glyph" aria-hidden="true" style={`--icon: url(${warning.src})`} />
+        )}
+        {tag.label}
+      </a>
+    ))
+  }
+</nav>
+
+<style>
+  .page-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-block-start: 0.75rem;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.15rem 0.55rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: var(--ltk-radius-sm);
+    font-size: 0.75rem;
+    font-weight: var(--ltk-weight-medium);
+    line-height: 1.5;
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease,
+      background-color 0.15s ease;
+  }
+
+  .tag:hover {
+    border-color: var(--sl-color-gray-4);
+    background-color: color-mix(in srgb, var(--sl-color-gray-6) 60%, transparent);
+    color: var(--sl-color-white);
+  }
+
+  .tag[data-facet='subject'] {
+    border-color: color-mix(in srgb, var(--sl-color-accent) 40%, transparent);
+    color: var(--sl-color-accent-high);
+  }
+
+  .tag[data-facet='subject']:hover {
+    border-color: var(--sl-color-accent);
+    background-color: color-mix(in srgb, var(--sl-color-accent) 12%, transparent);
+  }
+
+  .tag[data-facet='status'] {
+    border-color: color-mix(in srgb, var(--ltk-warning) 45%, transparent);
+    color: var(--ltk-warning-text);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .tag[data-facet='status']:hover {
+    border-color: var(--ltk-warning);
+    background-color: color-mix(in srgb, var(--ltk-warning) 12%, transparent);
+    color: var(--ltk-warning-text);
+  }
+
+  /* Hazard tape, banded along the top and bottom edges so the label keeps a
+     clear channel through the middle. One gradient painted twice, pinned to
+     each edge; derived from --ltk-warning-text so it holds up on white as
+     well as on the dark surface, and left as background-image so the hover
+     fill still shows through underneath. */
+  .tag[data-slug='wip'] {
+    --tape: repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--ltk-warning-text) 34%, transparent) 0 6px,
+      transparent 6px 12px
+    );
+    background-image: var(--tape), var(--tape);
+    background-repeat: repeat-x;
+    /* Held inside the padding box: the border is semi-transparent, so stripes
+       painted under it show through and blotch it. Origin has to match the
+       clip, or the bands sit a sub-pixel border-width off each edge and fray. */
+    background-origin: padding-box;
+    background-clip: padding-box;
+    background-position:
+      top left,
+      bottom left;
+    background-size: 100% 5px;
+    font-weight: var(--ltk-weight-semibold);
+  }
+
+  .glyph {
+    flex-shrink: 0;
+    width: 0.9em;
+    height: 0.9em;
+    background-color: currentColor;
+    mask: var(--icon) center / contain no-repeat;
+  }
+
+  .tag:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  @media print {
+    .page-tags {
+      display: none;
+    }
+  }
+</style>

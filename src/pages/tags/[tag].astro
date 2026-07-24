@@ -1,0 +1,142 @@
+---
+import type { GetStaticPaths } from 'astro';
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { getPagesByTag, type TaggedPage } from '../../lib/tagged-pages';
+import { ALL_TAGS, TYPES, TYPE_META, resolveTag, type ResolvedTag } from '../../lib/tags';
+
+export const getStaticPaths = (async () => {
+  const pagesByTag = await getPagesByTag();
+  // Unused vocabulary gets no route, so /tags/ never links to an empty page.
+  return ALL_TAGS.flatMap((tag) => {
+    const pages = pagesByTag.get(tag.slug);
+    return pages ? [{ params: { tag: tag.slug }, props: { tag, pages } }] : [];
+  });
+}) satisfies GetStaticPaths;
+
+interface Props {
+  tag: ResolvedTag;
+  pages: TaggedPage[];
+}
+
+const { tag, pages } = Astro.props;
+
+// A type tag would group every page under its own heading, so it lists flat.
+const groups =
+  tag.facet === 'type'
+    ? [{ label: '', pages }]
+    : TYPES.map((type) => ({
+        label: TYPE_META[type].label,
+        pages: pages.filter((page) => page.tags.type === type),
+      })).filter((group) => group.pages.length > 0);
+
+const otherTags = (page: TaggedPage): ResolvedTag[] =>
+  page.tags.subject.filter((slug) => slug !== tag.slug).map(resolveTag);
+---
+
+<StarlightPage
+  frontmatter={{
+    title: tag.label,
+    description: tag.description,
+    tableOfContents: false,
+  }}
+>
+  <p>
+    {tag.description}
+    {
+      tag.glossary && (
+        <>
+          {' '}
+          <a href={`/glossary/${tag.glossary}`}>See the glossary definition</a>.
+        </>
+      )
+    }
+  </p>
+  <p class="count">
+    {`${pages.length} ${pages.length === 1 ? 'page' : 'pages'}`} · <a href="/tags/">all tags</a>
+  </p>
+
+  {
+    groups.map((group) => (
+      <>
+        {group.label && <h2>{group.label}</h2>}
+        <div class="results not-content">
+          {group.pages.map((page) => (
+            <a class="result" href={page.href}>
+              <span class="result-title">{page.title}</span>
+              {page.description && <span class="result-desc">{page.description}</span>}
+              {otherTags(page).length > 0 && (
+                <span class="result-tags">
+                  {otherTags(page).map((other) => (
+                    <span class="result-tag">{other.label}</span>
+                  ))}
+                </span>
+              )}
+            </a>
+          ))}
+        </div>
+      </>
+    ))
+  }
+</StarlightPage>
+
+<style>
+  .count {
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-3);
+  }
+
+  .results {
+    display: grid;
+    gap: 0.625rem;
+    margin-block: 1rem 2rem;
+  }
+
+  .result {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: var(--ltk-radius-md);
+    text-decoration: none;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease;
+  }
+
+  .result:hover {
+    border-color: color-mix(in srgb, var(--sl-color-accent) 50%, transparent);
+    background-color: color-mix(in srgb, var(--sl-color-gray-6) 55%, transparent);
+  }
+
+  .result:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 3px;
+  }
+
+  .result-title {
+    font-weight: var(--ltk-weight-semibold);
+    color: var(--sl-color-white);
+  }
+
+  .result-desc {
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: var(--sl-color-gray-2);
+  }
+
+  .result-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-block-start: 0.15rem;
+  }
+
+  .result-tag {
+    padding: 0.05rem 0.4rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: var(--ltk-radius-sm);
+    font-size: 0.6875rem;
+    color: var(--sl-color-gray-3);
+  }
+</style>

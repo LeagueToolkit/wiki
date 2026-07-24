@@ -70,6 +70,7 @@ export default defineConfig({
         Hero: './src/components/starlight/Hero.astro',
         Header: './src/components/starlight/Header.astro',
         Head: './src/components/starlight/Head.astro',
+        PageTitle: './src/components/starlight/PageTitle.astro',
       },
       sidebar: [
         {
@@ -231,6 +232,7 @@ export default defineConfig({
           items: [{ label: 'Useful Links', slug: 'community/links' }],
         },
         { label: 'Glossary', slug: 'glossary' },
+        { label: 'Tags', link: '/tags/' },
       ],
     }),
     svelte(),

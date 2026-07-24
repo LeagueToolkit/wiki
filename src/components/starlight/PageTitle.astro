@@ -1,0 +1,12 @@
+---
+import Default from '@astrojs/starlight/components/PageTitle.astro';
+import PageTags from '../PageTags.astro';
+
+// Tagging every page from here rather than from the pages themselves keeps the
+// row out of the content body, where it would sit inside the prose styles and
+// have to be repeated in 55 files.
+const { tags } = Astro.locals.starlightRoute.entry.data;
+---
+
+<Default />
+{tags && <PageTags tags={tags} />}
