@@ -17,8 +17,10 @@ import search from '@phosphor-icons/core/assets/bold/magnifying-glass-bold.svg';
 import brush from '@phosphor-icons/core/assets/bold/paint-brush-bold.svg';
 import fileCode from '@phosphor-icons/core/assets/bold/file-code-bold.svg';
 import toolbox from '@phosphor-icons/core/assets/bold/toolbox-bold.svg';
+import plugs from '@phosphor-icons/core/assets/bold/plugs-connected-bold.svg';
+import pkg from '@phosphor-icons/core/assets/bold/package-bold.svg';
 
-const icons = { gear, shield, search, brush, fileCode, toolbox } as const;
+const icons = { gear, shield, search, brush, fileCode, toolbox, plugs, package: pkg } as const;
 
 export type TopicIcon = keyof typeof icons;
 
