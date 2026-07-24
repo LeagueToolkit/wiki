@@ -1,0 +1,181 @@
+---
+title: Ecosystem Integration
+description: What to build against if you want your tool to work with LTK mods, what you get for it, and what is still missing - including the modtools CLI.
+---
+
+This page is for anyone building a tool - a mod site, a launcher, an installer, a map editor -
+that should work with LTK mods. It covers what to build against, what that buys, and what will
+get in the way. It is honest about the gaps; the biggest one gets its own section.
+
+The short version:
+
+- Build against three standards: [mod projects](/making-mods/mod-projects/), the `.modpkg` and
+  extended `.fantome` [package formats](/making-mods/packaging/), and the project-level feature
+  set (layers, string overrides, embedded readme and thumbnail).
+- On Rust, there are crates for all of it. On anything else, you parse the manifest yourself and
+  shell out to [`league-mod`](/making-mods/command-line/) for the binary formats.
+- Content-creation apps - map editors, particle viewers, workstation environments - integrate on
+  top of mod projects themselves: they work directly inside the project folder and let the build
+  system do the packing.
+- Mod _creation_ is well covered today; _management_ is not. Libraries, profiles, and overlay
+  building live inside LTK Manager, with no way to drive them from another tool. The in-progress
+  LTK modtools CLI will change that.
+
+## The standards
+
+Three things, all documented on this wiki:
+
+| Standard        | What it is                                                                                                         | Where it is specified                           |
+| --------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| Mod projects    | Folder layout plus a `mod.config.json` / `mod.config.toml` manifest                                                | [Mod Projects](/making-mods/mod-projects/)      |
+| Packages        | `.modpkg` (native) and extended `.fantome` (legacy-compatible)                                                     | [Packaging](/making-mods/packaging/)            |
+| The feature set | [Layers](/making-mods/layers/), [string overrides](/making-mods/string-overrides/), readme and thumbnail embedding | Defined once at the project level, not per-tool |
+
+Integrating means reading and writing these instead of inventing your own. That is the whole
+model: a project or package your tool produces is one every other tool already understands.
+
+## What you get for it
+
+**Your users are not locked in.** A project your tool writes opens in the
+[Creator Workshop](/making-mods/workshop/), packs with `league-mod`, and installs in LTK Manager.
+That cuts both ways: people can leave your tool, and they can arrive with everything they already
+have. In practice the second effect dominates.
+
+**You skip the format design work.** Layers, priorities, string overrides, metadata, and
+licensing are already specified, validated, and understood by the rest of the toolchain. You
+implement none of the semantics.
+
+**Builds are deterministic.** Project content is declared, never inferred from a game install, so
+the same project produces the same package on any machine. Projects version cleanly in Git and
+build in CI.
+
+**Someone else maintains the parsers.** The reference implementations track the game and the
+standard as they change.
+
+**Planned features arrive on their own.** File transformers and the bin delta pipeline are
+[in development](/making-mods/mod-projects/#in-development) at the project level. Stay on the
+standard and they show up in your tool without a migration.
+
+## Hooking in
+
+### From Rust
+
+Use the crates from the [league-mod workspace](https://github.com/LeagueToolkit/league-mod):
+
+| Crate             | Purpose                                                                  |
+| ----------------- | ------------------------------------------------------------------------ |
+| `ltk_modpkg`      | Read and write the `.modpkg` binary format                               |
+| `ltk_mod_project` | Project configuration files, metadata, layer and transformer definitions |
+| `ltk_mod_core`    | Shared utilities, including League installation detection                |
+
+For the game's own file formats (WAD, SKN, BIN, and the rest), see
+[the format libraries](#the-format-libraries) below.
+
+### From anything else
+
+You have three levers, in increasing order of effort:
+
+1. **Parse the manifest directly.** It is plain JSON or TOML with a
+   [documented schema](/making-mods/mod-projects/#the-manifest). Any language handles it.
+2. **Handle `.fantome` yourself.** It is a renamed ZIP with metadata in `META/info.json`. The
+   [extended fields](/making-mods/mod-projects/#the-extended-fantome-format) are additive: read
+   them when present, treat files without them as plain fantomes.
+3. **Shell out to `league-mod`** for anything touching `.modpkg`:
+   [`pack`](/making-mods/command-line/#pack), [`extract`](/making-mods/command-line/#extract),
+   and [`info`](/making-mods/command-line/#info) build, unpack, and inspect packages so you
+   never parse the binary format.
+
+### If you build a creation tool
+
+Map editors, particle viewers, and other workstation-style apps that produce mod content
+integrate a level above package handling: they work on the mod project itself. The declarative
+build system and the packaging pipeline are designed to give this kind of tool first-class
+support.
+
+- **The project folder is open.** An app can write its own project configuration metadata,
+  tool-specific data and assets, or anything else it needs directly into the mod project folder,
+  alongside the standard layout.
+- **Keep app state in dot-files.** Tool configuration belongs in the app's own dot-files at the
+  project root - nothing outside `content/` is ever packed, so those need no further handling.
+  For working files the app writes inside `content/`, add entries to the project's
+  [`.modignore`](/making-mods/mod-projects/#ignore-files), which filters exactly that directory.
+- **Two planned pipelines target exactly this.** The
+  [file transformer pipeline](/making-mods/mod-projects/#file-transformers) will let an app keep
+  editable source formats in the project and have game-ready ones produced at pack time, and the
+  bin delta pipeline will integrate directly with tools that edit property bins. Both are in
+  development.
+
+### The format libraries
+
+A creation tool spends most of its time reading and writing League's file formats. Two libraries
+cover that, one per runtime:
+
+| Library                                           | Language | Repository                                                                      |
+| ------------------------------------------------- | -------- | ------------------------------------------------------------------------------- |
+| [league-toolkit](/tools/league-toolkit/overview/) | Rust     | [LeagueToolkit/league-toolkit](https://github.com/LeagueToolkit/league-toolkit) |
+| LeagueToolkit                                     | C#       | [LeagueToolkit/LeagueToolkit](https://github.com/LeagueToolkit/LeagueToolkit)   |
+
+Both share the same aims: memory-efficient representations of the formats with APIs shaped
+around the common operations, and semantics that match the game's own handling - where possible
+they assert the same edge cases and conditions the engine does. Expect bleeding-edge features
+and updates whenever something changes in the League engine.
+
+### If you run a mod site
+
+Accept `.modpkg` uploads next to `.fantome`, and read the extended fantome metadata (`Tags`,
+`Champions`, `Maps`, `Layers`) when it is there. Authors currently publish fantomes because no
+site fully supports `.modpkg` - site support is the half of that loop the toolchain itself
+cannot fix.
+
+## What will bite you
+
+None of these is a reason to stay away, but plan around them:
+
+- **Moving parts.** The extended fantome `Layers` block, the `transformers` manifest field, and
+  the bin delta pipeline are all unstable or unimplemented. Do not build load-bearing features on
+  them yet.
+- **`.modpkg` has exactly one implementation.** The `ltk_modpkg` crate is the reference, and no
+  byte-level specification is published. Off Rust, your options are shelling out to `league-mod`
+  or porting the crate.
+- **There is no management API.** `league-mod` creates, packs, and inspects. Installing into a
+  library, toggling, profiles, and overlay building all live inside LTK Manager, and nothing
+  outside the app can call them. That is the gap the next section is about.
+
+## The gap: LTK modtools
+
+cslol-manager shipped `modtools.exe`, a CLI that exposed its mod handling - importing mods,
+building the overlay - to other programs. That is how third-party launchers of that era
+integrated. LTK has no equivalent yet, so today the management side of the ecosystem ends at LTK
+Manager's window.
+
+The replacement is a Rust-based CLI, **LTK modtools**, currently work in progress. The blocker is
+architectural: LTK Manager's core backend logic has to be decoupled into a crate the app and the
+CLI share, so both run the same code paths.
+
+When it ships, you drive the CLI from whatever your app is written in, and get:
+
+- **Library management as the UI does it** - install, remove, and organize mods in the
+  standardized library format, against the same library the app uses.
+- **Overlay building without owning it** - the CLI runs LTK Manager's overlay builder, with its
+  incremental builds, so repeat builds only process what changed.
+- **Any mod source** - `.fantome`, `.modpkg`, or a raw [mod project](/making-mods/mod-projects/)
+  straight off the filesystem.
+- **The backend's feature set for free** - [layers](/making-mods/layers/) and
+  [string overrides](/making-mods/string-overrides/) are applied automatically; bin delta
+  patching joins them when it lands.
+- **The safeguards too** - WAD blacklisting and mod integrity scanning for common issues come
+  from the shared backend instead of needing a per-tool implementation.
+
+:::note[Status]
+No release date. Follow the [LeagueToolkit organization](https://github.com/LeagueToolkit) on
+GitHub or the [Discord](https://discord.gg/B36wgabjmD) for progress; this page will document the
+CLI when it exists.
+:::
+
+## Where to go next
+
+- [Mod Projects](/making-mods/mod-projects/) - the layout and manifest standard everything builds from
+- [Packaging](/making-mods/packaging/) - `.modpkg` and `.fantome` in depth
+- [league-mod](/making-mods/command-line/) - the authoring CLI and the crates underneath it
+- [league-toolkit](/tools/league-toolkit/overview/) - the Rust library for League's file formats
+- [Architecture](/contributing/architecture/) - how LTK Manager is put together today

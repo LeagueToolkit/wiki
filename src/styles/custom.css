@@ -248,10 +248,13 @@ starlight-file-tree {
    because Starlight shapes sidebar and .small badges differently; em keeps
    it proportional. No letter-spacing: it trails the last glyph and eats the
    right inset. */
+/* nowrap because the sidebar's overflow-wrap: anywhere otherwise breaks a
+   squeezed chip mid-word; a chip must stay one line and let the label wrap. */
 .sl-badge {
   font-family: var(--sl-font-mono);
   padding: 0.2em 0.45em;
   line-height: 1.15;
+  white-space: nowrap;
 }
 
 /* Gap on the chip, not Starlight's label-span margin (that also spaces
@@ -415,6 +418,17 @@ header.header > .ltk-read-progress {
   pointer-events: none;
 }
 
+/* Social icons rest neutral and brighten on hover - Starlight rests them
+   on the accent, which fights the wordmark beside them. */
+header.header .social-icons a {
+  color: var(--sl-color-gray-2);
+  transition: color 0.15s ease;
+}
+
+header.header .social-icons a:hover {
+  color: var(--sl-color-white);
+}
+
 /* Light mode runs both harder: the dark-mode mixes wash out on near-white. */
 :root[data-theme='light'] header.header::before {
   background: radial-gradient(
@@ -471,6 +485,141 @@ header.header > .ltk-read-progress {
   color: var(--sl-color-white);
 }
 
+/* Chips ride the row's end so the labels read as one column. Links go
+   flex for it; group labels grow to fill the summary so their chip lands
+   next to the caret. */
+.sidebar-content a {
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-content summary > .group-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-content :is(a, .group-label) > .sl-badge {
+  margin-inline-start: auto;
+}
+
+/* Leaf rows have no caret, so their chips would overshoot the group rows'
+   by the caret box. Reserve that width (1.25rem, the caret's Icon size in
+   Starlight's SidebarSublist) so every chip ends on one shared column and
+   the carets form their own outer lane. */
+.sidebar-content a > .sl-badge {
+  margin-inline-end: 1.25rem;
+}
+
+/* Chips are quiet at rest - no fill, variant-tinted outline, neutral
+   text - so the labels lead; the full variant colours return when the
+   row is hovered or current. */
+.sidebar-content .sl-badge {
+  background-color: transparent;
+  border-color: color-mix(in srgb, var(--sl-color-border-badge) 50%, transparent);
+  color: var(--sl-color-gray-2);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.sidebar-content :is(a:hover, a[aria-current='page'], summary:hover) .sl-badge {
+  background-color: var(--sl-color-bg-badge);
+  border-color: var(--sl-color-border-badge);
+  color: var(--sl-color-text-badge);
+}
+
+/* Starlight ghosts the badge variables on the current-page row (white
+   outline, no fill - built for its solid accent row). Restore each
+   variant's colours so the active rule above has real values to use.
+   Per-variant because the ghost rule overrides the variant custom
+   properties on the same element, and there is no way to reference "the
+   variant's own value" generically. */
+
+.sidebar-content a[aria-current='page'] > .sl-badge.default {
+  --sl-color-bg-badge: var(--sl-badge-default-bg);
+  --sl-color-border-badge: var(--sl-badge-default-border);
+}
+
+.sidebar-content a[aria-current='page'] > .sl-badge.note {
+  --sl-color-bg-badge: var(--sl-badge-note-bg);
+  --sl-color-border-badge: var(--sl-badge-note-border);
+}
+
+.sidebar-content a[aria-current='page'] > .sl-badge.tip {
+  --sl-color-bg-badge: var(--sl-badge-tip-bg);
+  --sl-color-border-badge: var(--sl-badge-tip-border);
+}
+
+.sidebar-content a[aria-current='page'] > .sl-badge.caution {
+  --sl-color-bg-badge: var(--sl-badge-caution-bg);
+  --sl-color-border-badge: var(--sl-badge-caution-border);
+}
+
+.sidebar-content a[aria-current='page'] > .sl-badge.success {
+  --sl-color-bg-badge: var(--sl-badge-success-bg);
+  --sl-color-border-badge: var(--sl-badge-success-border);
+}
+
+.sidebar-content a[aria-current='page'] > .sl-badge.danger {
+  --sl-color-bg-badge: var(--sl-badge-danger-bg);
+  --sl-color-border-badge: var(--sl-badge-danger-border);
+}
+
+/* Search rides the top of the sidebar (mounted by the Sidebar override) as
+   a full-width pill of panel glass - solid fill first, upgraded under
+   @supports, per the Glass Surfaces contract. Starlight styles this button
+   for its header slot (borderless icon below 50rem), so every rule here
+   rebuilds the pill unconditionally for the sidebar and drawer context. */
+.sidebar-pane button[data-open-modal] {
+  width: 100%;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 999px;
+  padding: 0.5rem 0.875rem;
+  font-size: var(--sl-text-sm);
+  background-color: var(--sl-color-gray-6);
+  color: var(--sl-color-gray-2);
+  transition:
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .sidebar-pane button[data-open-modal] {
+    background-color: var(--ltk-glass-panel-fill);
+    -webkit-backdrop-filter: var(--ltk-glass-panel-blur);
+    backdrop-filter: var(--ltk-glass-panel-blur);
+  }
+}
+
+.sidebar-pane button[data-open-modal]:hover {
+  border-color: color-mix(in srgb, var(--sl-color-accent) 55%, transparent);
+  color: var(--sl-color-white);
+}
+
+/* Starlight hides the button's label below 50rem for its header slot; in
+   the drawer it must show. */
+.sidebar-pane button[data-open-modal] > span {
+  display: block;
+}
+
+/* Keycap hint pushed to the pill's end; the wrapper goes naked so the pill
+   shows through, and the key glyphs become tiny keycaps on the radius
+   scale. */
+.sidebar-pane button[data-open-modal] > kbd {
+  margin-inline-start: auto;
+  background-color: transparent;
+  padding: 0;
+}
+
+.sidebar-pane button[data-open-modal] kbd kbd {
+  border: 1px solid var(--sl-color-gray-4);
+  border-radius: var(--ltk-radius-sm);
+  background-color: var(--sl-color-gray-5);
+  padding-inline: 0.35rem;
+}
+
 /* Group headers are `summary`, not links, but need the same hover affordance. */
 .sidebar-content summary {
   border-radius: var(--ltk-radius-sm);
@@ -506,42 +655,19 @@ header.header > .ltk-read-progress {
     content-visibility 0.2s allow-discrete;
 }
 
-/* Linked group rows (see components/starlight/Sidebar.astro): the label
-   navigates, the caret toggles. The halves take over the summary's padding
-   so no strip of the row belongs to neither. */
-.sidebar-pane summary[data-linked] {
-  padding: 0;
+/* Group carets: dimmed at rest so the label leads, brightened with the
+   row hover. The transition restates Starlight's transform tween - this
+   unlayered rule replaces it, so dropping transform would snap the
+   open/close rotation. */
+.sidebar-pane summary .caret {
+  color: var(--sl-color-gray-3);
+  transition:
+    transform 0.2s ease-in-out,
+    color 0.15s ease;
 }
 
-.sidebar-pane summary[data-linked] > a.group-label {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  padding: 0.2em var(--sl-sidebar-item-padding-inline);
-}
-
-.sidebar-pane summary[data-linked] > a.group-label:hover > span.large {
-  text-decoration: underline;
-  text-underline-offset: 0.25em;
-}
-
-.sidebar-pane summary[data-linked] > .caret-zone {
-  display: flex;
-  align-items: center;
-  align-self: stretch;
-  padding-inline: var(--sl-sidebar-item-padding-inline);
-  border-radius: var(--ltk-radius-sm);
-  transition: background 0.15s ease;
-}
-
-/* Flat fill: the nav-hover gradient disappears on a target this narrow. */
-.sidebar-pane summary[data-linked] > .caret-zone:hover {
-  background: color-mix(in srgb, var(--sl-color-white) 14%, transparent);
-}
-
-/* Each half lights up on its own; suppress the row-wide highlight. */
-.sidebar-content summary[data-linked]:hover {
-  background: none;
+.sidebar-pane summary:hover .caret {
+  color: var(--sl-color-white);
 }
 
 /* Top-level section icons. Starlight's sidebar config has no icon field, so
@@ -576,7 +702,7 @@ header.header > .ltk-read-progress {
   --ltk-section-icon: url('@phosphor-icons/core/assets/bold/rocket-launch-bold.svg');
 }
 
-.sidebar-pane ul.top-level > li:has(a[href='/using-mods/']) {
+.sidebar-pane ul.top-level > li:has(a[href='/mod-management/']) {
   --ltk-section-icon: url('@phosphor-icons/core/assets/bold/puzzle-piece-bold.svg');
 }
 
@@ -590,6 +716,10 @@ header.header > .ltk-read-progress {
 
 .sidebar-pane ul.top-level > li:has(a[href^='/reference/']) {
   --ltk-section-icon: url('@phosphor-icons/core/assets/bold/book-open-text-bold.svg');
+}
+
+.sidebar-pane ul.top-level > li:has(a[href^='/developers/']) {
+  --ltk-section-icon: url('@phosphor-icons/core/assets/bold/code-bold.svg');
 }
 
 .sidebar-pane ul.top-level > li:has(a[href^='/contributing/']) {
@@ -663,6 +793,14 @@ header.header > .ltk-read-progress {
   font-family: var(--ltk-font-display);
   font-weight: var(--ltk-weight-bold);
   letter-spacing: -0.02em;
+  background-size: 160% 100%;
+  transition: background-position 0.4s ease;
+}
+
+/* Hover slides the clipped gradient across the letters. Header title only;
+   the splash headline stays still. */
+.site-title:hover span {
+  background-position: 100% 50%;
 }
 
 /* ── Splash Page ────────────────────────────────────────────── */
@@ -704,18 +842,96 @@ body:has(.ltk-hero) .sl-link-card:hover {
 
 :root {
   --sl-content-width: 48rem;
+  --ltk-toc-width: 14rem;
+}
+
+/* Starlight's TwoColumnContent keys the TOC column on --sl-sidebar-width;
+   these restate its width formulas with the narrower --ltk-toc-width. */
+@media (min-width: 72rem) {
+  .right-sidebar-container {
+    width: max(
+      var(--ltk-toc-width),
+      calc(var(--ltk-toc-width) + (100% - var(--sl-content-width) - var(--ltk-toc-width)) / 2)
+    );
+  }
+
+  [data-has-sidebar][data-has-toc] .main-pane {
+    width: min(
+      calc(100% - var(--ltk-toc-width)),
+      calc(var(--sl-content-width) + (100% - var(--sl-content-width) - var(--ltk-toc-width)) / 2)
+    );
+  }
+
+  .right-sidebar-panel .sl-container {
+    width: calc(var(--ltk-toc-width) - 2 * var(--sl-sidebar-pad-x));
+  }
 }
 
 /* ── Links ──────────────────────────────────────────────────── */
 
+/* Starlight only colours content links and Tailwind's preflight strips the
+   UA underline, so the underline must be drawn here. Kept translucent at
+   rest so links read without shouting; hover strengthens text and underline
+   together (accent-high inverts per theme: light blue on dark, deep navy
+   on light). The colour pulls the
+   theme's text-accent toward brand blue for extra saturation - the mix
+   stays AA on both themes' backgrounds. */
 .sl-markdown-content a:not([class]) {
+  color: color-mix(in srgb, var(--sl-color-text-accent) 60%, var(--ltk-blue));
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
   text-decoration-thickness: 1px;
   text-underline-offset: 0.15em;
-  transition: color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    text-decoration-color 0.15s ease;
 }
 
 .sl-markdown-content a:not([class]):hover {
   color: var(--sl-color-accent-high);
+  text-decoration-color: currentColor;
+}
+
+/* ── Pagination ─────────────────────────────────────────────── */
+
+/* Starlight's stock prev/next cards ship 2xl titles, 1.5rem arrows, and
+   18rem-minimum grid tracks that make the pair stack early. Bring them
+   down to the site's card scale: smaller type, hairline hover matching
+   .sl-link-card, side by side except on narrow phones. */
+.pagination-links {
+  grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+}
+
+.pagination-links a {
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--ltk-radius-lg);
+  box-shadow: none;
+  font-size: var(--sl-text-xs);
+  color: var(--sl-color-gray-3);
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.pagination-links a:hover {
+  border-color: color-mix(in srgb, var(--sl-color-accent) 55%, transparent);
+  transform: translateY(-2px);
+}
+
+.pagination-links .link-title {
+  font-size: var(--sl-text-base);
+  font-weight: var(--ltk-weight-medium);
+}
+
+.pagination-links svg {
+  font-size: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pagination-links a:hover {
+    transform: none;
+  }
 }
 
 /* ── Horizontal Rules ───────────────────────────────────────── */

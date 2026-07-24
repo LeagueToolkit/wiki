@@ -189,19 +189,16 @@
 <style>
   .scaffold {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    /* Sized off the container, not the viewport — the doc column is narrower
+       than any sensible breakpoint. auto-fit stacks the panels vertically
+       unless each can get a genuinely usable column width. */
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
     gap: 1rem;
     padding: 1.25rem;
     border: 1px solid var(--sl-color-gray-5);
     border-radius: var(--ltk-radius-lg);
     background: var(--sl-color-gray-6);
     font-family: var(--sl-font);
-  }
-
-  @media (max-width: 768px) {
-    .scaffold {
-      grid-template-columns: 1fr;
-    }
   }
 
   .form-section {
@@ -212,7 +209,7 @@
 
   .form-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 0.5rem;
   }
 

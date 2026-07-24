@@ -43,32 +43,6 @@ export default defineConfig({
     },
   ],
 
-  // Permanent redirects from the pre-2026-07 URL structure.
-  // DO NOT DELETE!
-  redirects: {
-    '/getting-started': '/start-here/',
-    '/getting-started/introduction': '/start-here/what-is-leaguetoolkit/',
-    '/getting-started/installation': '/start-here/install/',
-    '/getting-started/first-mod': '/start-here/first-mod/',
-    '/getting-started/migration': '/start-here/from-cslol/',
-    '/guides/mod-management': '/using-mods/',
-    '/guides/mod-management/installing-mods': '/using-mods/library/',
-    '/guides/mod-management/profiles': '/using-mods/profiles/',
-    '/guides/mod-management/mod-folders': '/using-mods/folders/',
-    '/guides/mod-management/troubleshooting': '/using-mods/troubleshooting/',
-    '/guides/mod-creation': '/making-mods/',
-    '/guides/mod-creation/workshop-overview': '/making-mods/workshop/',
-    '/guides/mod-creation/creating-a-project': '/making-mods/project/',
-    '/guides/mod-creation/layers': '/making-mods/layers/',
-    '/guides/mod-creation/string-overrides': '/making-mods/string-overrides/',
-    '/guides/mod-creation/packaging': '/making-mods/packaging/',
-    '/guides/contributing/wiki-authoring': '/contributing/wiki-authoring/',
-    '/guides/contributing/project-guidelines': '/contributing/project-guidelines/',
-    '/guides/contributing/building-from-source': '/contributing/building-from-source/',
-    '/guides/contributing/architecture': '/contributing/architecture/',
-    '/community/glossary': '/glossary/',
-  },
-
   integrations: [
     starlight({
       title: 'LTK Wiki',
@@ -97,12 +71,6 @@ export default defineConfig({
         Header: './src/components/starlight/Header.astro',
         Head: './src/components/starlight/Head.astro',
       },
-      head: [
-        {
-          tag: 'script',
-          content: `document.addEventListener('DOMContentLoaded',()=>{requestAnimationFrame(()=>{document.querySelector('.sidebar-pane')?.classList.add('sl-sidebar-loaded')})})`,
-        },
-      ],
       sidebar: [
         {
           label: 'Start Here',
@@ -114,22 +82,18 @@ export default defineConfig({
             { label: 'Your First Mod', slug: 'start-here/first-mod' },
             { label: 'Where to Find Mods', slug: 'start-here/finding-mods' },
             { label: 'FAQ & Safety', slug: 'start-here/faq' },
-            {
-              label: 'Coming from cslol?',
-              slug: 'start-here/from-cslol',
-              badge: { text: 'Migrating', variant: 'tip' },
-            },
+            { label: 'Migrating from cslol', slug: 'start-here/from-cslol' },
           ],
         },
         {
-          label: 'Using Mods',
+          label: 'Mod Management',
           items: [
-            { label: 'Overview', slug: 'using-mods' },
-            { label: 'Managing Your Library', slug: 'using-mods/library' },
-            { label: 'Profiles', slug: 'using-mods/profiles' },
-            { label: 'Mod Folders', slug: 'using-mods/folders' },
-            { label: 'Updating After a Patch', slug: 'using-mods/patch-updates' },
-            { label: 'Troubleshooting', slug: 'using-mods/troubleshooting' },
+            { label: 'Overview', slug: 'mod-management' },
+            { label: 'Managing Your Library', slug: 'mod-management/library' },
+            { label: 'Profiles', slug: 'mod-management/profiles' },
+            { label: 'Mod Folders', slug: 'mod-management/folders' },
+            { label: 'Updating After a Patch', slug: 'mod-management/patch-updates' },
+            { label: 'Troubleshooting', slug: 'mod-management/troubleshooting' },
           ],
         },
         {
@@ -145,7 +109,7 @@ export default defineConfig({
             { label: 'Packaging', slug: 'making-mods/packaging' },
             {
               label: 'From the Command Line',
-              slug: 'tools/league-mod/overview',
+              slug: 'making-mods/command-line',
               badge: { text: 'CLI', variant: 'note' },
             },
           ],
@@ -164,12 +128,6 @@ export default defineConfig({
                 { label: 'Features', slug: 'tools/ltk-manager/features' },
                 { label: 'Configuration', slug: 'tools/ltk-manager/configuration' },
               ],
-            },
-            {
-              label: 'league-mod',
-              collapsed: true,
-              badge: { text: 'CLI', variant: 'note' },
-              items: [{ label: 'Overview', slug: 'tools/league-mod/overview' }],
             },
             {
               label: 'league-toolkit',
@@ -245,6 +203,11 @@ export default defineConfig({
               items: [{ label: 'Algorithms', slug: 'reference/hashing/algorithms' }],
             },
           ],
+        },
+        {
+          label: 'For Developers',
+          collapsed: true,
+          items: [{ label: 'Ecosystem Integration', slug: 'developers/ecosystem-integration' }],
         },
         {
           label: 'Contributing',

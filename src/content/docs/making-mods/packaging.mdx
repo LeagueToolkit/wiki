@@ -12,7 +12,7 @@ LeagueToolkit ships two mod package formats: `.modpkg` and `.fantome`. Both are 
 
 Until that changes, package as `.fantome` when you publish through a centralized platform such as [Runeforge](https://runeforge.dev/). Reach for `.modpkg` when you distribute outside one - your own GitHub releases, a direct download, or a Discord server - where nothing sits between you and the person installing it.
 
-This is a limitation of platform support, not of the format. Nothing about your project changes: the [Creator Workshop](/making-mods/workshop/) and [`league-mod`](/tools/league-mod/overview/) both pack either format from the same project.
+This is a limitation of platform support, not of the format. Nothing about your project changes: the [Creator Workshop](/making-mods/workshop/) and [`league-mod`](/making-mods/command-line/) both pack either format from the same project.
 :::
 
 <FormatComparison client:visible />
@@ -52,7 +52,7 @@ Installing a `.fantome` and importing one are different operations, and it is
 worth keeping them apart:
 
 - **Installing** adds the archive to your library to play with. The file stays a
-  fantome - see [Managing Your Library](/using-mods/library/).
+  fantome - see [Managing Your Library](/mod-management/library/).
 - **Importing** turns the archive into an editable Workshop project, so you can
   change it and repack it.
 
@@ -82,7 +82,7 @@ These are limitations of the format, not the implementation: ltk-manager support
 
 Both formats are packed from the same project by the
 [Creator Workshop](/making-mods/workshop/) and by
-[`league-mod pack`](/tools/league-mod/overview/#pack), so you never have to
+[`league-mod pack`](/making-mods/command-line/#pack), so you never have to
 commit upfront. Decide per release, by where the mod is going:
 
 | Where you're publishing                                             | Package as               |

@@ -17,8 +17,11 @@ The rules that get violated most, inlined so they apply even without network acc
   hacking!").
 - **No contrast clichés** ("it's not just X, it's Y"), **no rule-of-three padding** ("fast,
   reliable, and easy to use"), **no hollow openers** ("it's worth noting that", "let's dive in").
-- **Drop the vocabulary tells**: delve, leverage, seamless, robust, comprehensive, elevate,
-  streamline, cutting-edge, plethora. Use the plain word.
+- **Judge vocabulary by substance, not by a blocklist.** Delve, leverage, seamless, robust,
+  comprehensive, elevate, streamline, cutting-edge, bleeding-edge, plethora: any of these is
+  filler when it stands in for a concrete claim, and fine when a concrete claim backs it.
+  "Bleeding-edge updates whenever the League engine changes" passes; "a robust, seamless
+  toolkit" does not. With nothing concrete behind the word, use the plain one.
 - **Bold marks one term, not half the sentence.** Headings are navigation, not decoration.
 - **Second person, present tense, active voice.** Concrete numbers or no claim at all.
 - **Say what failed.** Report skipped steps and failing tests plainly; don't claim verification
@@ -39,7 +42,8 @@ worst failure mode available to you.
 ## Code
 
 - Match the surrounding code: naming, error handling, module layout, and comment density.
-- Comment _why_, not _what_.
+- Comment _why_, not _what_ - in a line or two. A comment that reads like a
+  design-decision writeup gets cut, not kept.
 - `cargo fmt --all -- --check`, `cargo clippy -- -D warnings`, and `cargo test` must pass before
   you call the work done.
 - Add a test with every bug fix - one that fails before the change.

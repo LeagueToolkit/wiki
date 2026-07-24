@@ -16,7 +16,7 @@ The project standard is the pillar the modern mod ecosystem rests on. It defines
 - **A shared feature set** - [layers](/making-mods/layers/), [string overrides](/making-mods/string-overrides/), readme and thumbnail support, file transformers - defined once, at the project level, instead of per-tool.
 - **The build outputs**: the native `.modpkg` format and an extended `.fantome` format for legacy compatibility, both packed from the same project.
 
-The [Creator Workshop](/making-mods/workshop/) and the [`league-mod` CLI](/tools/league-mod/overview/) both operate on this standard, so projects move freely between them - and any third-party tool that follows it is compatible with both.
+The [Creator Workshop](/making-mods/workshop/) and the [`league-mod` CLI](/making-mods/command-line/) both operate on this standard, so projects move freely between them - and any third-party tool that follows it is compatible with both.
 
 ## <HeadingIcon icon="tree-structure" />Project Structure
 
@@ -24,6 +24,7 @@ The [Creator Workshop](/making-mods/workshop/) and the [`league-mod` CLI](/tools
 <FileTree>
 - my-mod/
   - mod.config.json the manifest (or mod.config.toml)
+  - .modignore optional, excludes working files from builds
   - README.md optional, ships inside the package
   - thumbnail.webp optional preview image
   - content/
@@ -121,6 +122,16 @@ A `README.md` at the project root travels with the mod. Packing embeds it in the
 
 The thumbnail follows the `thumbnail` manifest field, or `thumbnail.webp` at the project root when the field is absent. A `.modpkg` embeds the image directly; a `.fantome` build converts it to `META/image.png`.
 
+## <HeadingIcon icon="eye-slash" />Ignore Files
+
+A `.modignore` file at the project root keeps working files out of builds. Entries use `.gitignore`-style patterns; whatever matches is skipped when the project is packed. That lets editable sources - a `.psd` next to the textures exported from it, or a tool's scratch data - live in the project without shipping in the package.
+
+Matching follows gitignore semantics exactly - the builder uses the same matcher as [ripgrep](https://github.com/BurntSushi/ripgrep) (the [`ignore`](https://crates.io/crates/ignore) crate) - so existing `.gitignore` knowledge carries over: `#` comments, `!` negation to re-include files, directory-only patterns (`cache/`), and last-match-wins precedence all behave as they do in Git.
+
+Its scope is `content/` and nothing else. The ignore file filters which files inside the content directory the builder considers for packaging; the rest of the project is out of its reach. That also means nothing outside `content/` needs an entry: the manifest, readme, and thumbnail are picked up by declaration, and other root-level files - build output, editor state, a tool's dot-files - are never packing candidates to begin with.
+
+Third-party apps that work inside project folders are encouraged to add entries for any working files they write under `content/` - see [Ecosystem Integration](/developers/ecosystem-integration/#if-you-build-a-creation-tool).
+
 ## <HeadingIcon icon="magic-wand" />File Transformers<Hint client:visible style="vertical-align: middle; margin-inline-start: 0.5em;" tip="Planned feature: the manifest reserves the field, but transformers do not run during packing yet."><Badge text="Under Construction" variant="caution" /></Hint>
 
 Transformers are a planned build step: they will process matching files while the package is built, so you can keep editable source formats in the project and ship game-ready ones. The manifest already reserves the field - each entry names a transformer and selects its inputs by glob `patterns`, explicit `files`, or both, with an optional `options` map for transformer-specific settings.
@@ -145,7 +156,7 @@ One project packs into either distribution format - choose per release, not upfr
 - **`.modpkg`** - the native format. Carries the full project model: metadata, multiple layers with priorities, per-layer string overrides, readme, and thumbnail.
 - **`.fantome`** - the legacy-compatible format, for mod sites and users on older managers.
 
-Packing runs from the Workshop's **Pack** button or [`league-mod pack`](/tools/league-mod/overview/#pack), which writes `build/<name>_<version>.modpkg` by default. Validation runs first: required fields present, layer names valid, `base` at priority 0, and a content folder existing for every declared layer. See [Packaging](/making-mods/packaging/) for the format comparison and publishing guidance.
+Packing runs from the Workshop's **Pack** button or [`league-mod pack`](/making-mods/command-line/#pack), which writes `build/<name>_<version>.modpkg` by default. Validation runs first: required fields present, layer names valid, `base` at priority 0, and a content folder existing for every declared layer. See [Packaging](/making-mods/packaging/) for the format comparison and publishing guidance.
 
 ### The Extended Fantome Format
 
@@ -178,9 +189,8 @@ The `Layers` part of the extension is still in development. Expect it to change 
 
 ## <HeadingIcon icon="flask" />In Development
 
-Two additions to the standard are being built and are not available yet. This page will document them when they land:
+One addition to the standard is being built and is not available yet. This page will document it when it lands:
 
-- **Ignore files** - a `.modignore` (or `.ltkignore`) at the project root, with `.gitignore`-style patterns, to keep working files such as source `.psd` textures out of builds.
 - **Bin delta pipeline** - shipping only the changes a mod makes to property bin files instead of whole edited copies.
 
 ## <HeadingIcon icon="link" />Related Pages
@@ -193,7 +203,7 @@ Two additions to the standard are being built and are not available yet. This pa
   />
   <LinkCard
     title="From the Command Line"
-    href="/tools/league-mod/overview/"
+    href="/making-mods/command-line/"
     description="The same standard, driven from a terminal"
   />
   <LinkCard

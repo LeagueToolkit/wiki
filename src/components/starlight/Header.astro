@@ -1,5 +1,21 @@
 ---
-import Default from '@astrojs/starlight/components/Header.astro';
+import Search from '@astrojs/starlight/components/Search.astro';
+import SiteTitle from '@astrojs/starlight/components/SiteTitle.astro';
+import SocialIcons from '@astrojs/starlight/components/SocialIcons.astro';
+import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
+
+// Composed from Starlight's building blocks rather than wrapping the default
+// Header: the layout is our own - title | centered section nav | socials.
+// Search rides the sidebar instead (see Sidebar.astro); splash pages have no
+// sidebar, so they mount it here next to the nav. LanguageSelect is dropped
+// because the site is single-locale.
+const sections = [
+  { label: 'Start Here', href: '/start-here/' },
+  { label: 'Mod Management', href: '/mod-management/' },
+  { label: 'Mod Creation', href: '/making-mods/' },
+  { label: 'Tools', href: '/tools/' },
+];
+const { pathname } = Astro.url;
 
 // Reading-progress bar along the header's bottom edge, where custom.css
 // already draws the brand-gradient hairline: the fill reads as that hairline
@@ -7,7 +23,32 @@ import Default from '@astrojs/starlight/components/Header.astro';
 const isSplash = Astro.locals.starlightRoute.entry.data.template === 'splash';
 ---
 
-<Default><slot /></Default>
+<div class="header">
+  <div class="title-wrapper sl-flex">
+    <SiteTitle />
+  </div>
+  <div class="center-group sl-flex print:hidden">
+    <nav class="section-nav" aria-label="Site sections">
+      {
+        sections.map((section) => (
+          <a
+            href={section.href}
+            aria-current={pathname.startsWith(section.href) ? 'true' : undefined}
+          >
+            {section.label}
+          </a>
+        ))
+      }
+    </nav>
+    {isSplash && <Search />}
+  </div>
+  <div class="sl-hidden md:sl-flex print:hidden right-group">
+    <div class="sl-flex social-icons">
+      <SocialIcons />
+    </div>
+    <ThemeSelect />
+  </div>
+</div>
 {
   /* Styled from custom.css (Header section): the rule must outrank the
   `header.header > *` positioning rule there, which an Astro-scoped class
@@ -56,3 +97,96 @@ const isSplash = Astro.locals.starlightRoute.entry.data.template === 'splash';
   addEventListener('resize', schedule, { passive: true });
   update();
 </script>
+
+<style>
+  .header {
+    display: flex;
+    gap: var(--sl-nav-gap);
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+  }
+
+  .title-wrapper {
+    /* Prevent long titles overflowing and covering the search and menu
+       buttons on narrow viewports (kept from Starlight's default Header). */
+    overflow: clip;
+    /* Avoid clipping focus ring around link inside title wrapper. */
+    padding: 0.25rem;
+    margin: -0.25rem;
+    min-width: 0;
+  }
+
+  .center-group {
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    min-width: 0;
+  }
+
+  .right-group,
+  .social-icons {
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .social-icons::after {
+    content: '';
+    height: 2rem;
+    border-inline-end: 1px solid var(--sl-color-gray-5);
+  }
+
+  /* Symmetric flanks pin the nav to the bar's true center regardless of
+     how wide the title and the right group happen to be. */
+  @media (min-width: 50rem) {
+    .header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-content: center;
+    }
+
+    .right-group {
+      justify-content: flex-end;
+    }
+  }
+
+  /* Section nav: quiet links, hidden on the narrow header where the
+     hamburger menu takes over. */
+  .section-nav {
+    display: none;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 50rem) {
+    .section-nav {
+      display: flex;
+    }
+  }
+
+  .section-nav a {
+    position: relative;
+    font-size: var(--sl-text-sm);
+    font-weight: var(--ltk-weight-medium);
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+    transition: color 0.15s ease;
+    white-space: nowrap;
+  }
+
+  .section-nav a:hover,
+  .section-nav a[aria-current='true'] {
+    color: var(--sl-color-white);
+  }
+
+  /* The current section carries the brand hairline under its label. */
+  .section-nav a[aria-current='true']::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: -0.35rem;
+    height: 2px;
+    border-radius: 1px;
+    background: linear-gradient(90deg, var(--ltk-blue), var(--ltk-violet));
+  }
+</style>

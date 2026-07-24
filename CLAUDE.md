@@ -171,9 +171,10 @@ components`. A component never reaches back into another page's frontmatter.
 
 22. **Override through the `components` map in `astro.config.ts`,** never by
     editing anything under `node_modules`. Current overrides: `Sidebar.astro`
-    (makes a group with an Overview page navigate to it), `Hero.astro` (the
-    splash hero), `Head.astro` (Fonts API `<Font>` tags), and `Header.astro`
-    (reading-progress bar and the mobile hide-on-scroll script).
+    (reveals the current page and arms the collapse animation), `Hero.astro`
+    (the splash hero), `Head.astro` (Fonts API `<Font>` tags), and
+    `Header.astro` (section nav, reading-progress bar, and the mobile
+    hide-on-scroll script).
 
 23. **Don't import Starlight internals.** Only the documented entry points are
     exported; a deep specifier like `@astrojs/starlight/constants` fails the
@@ -181,12 +182,15 @@ components`. A component never reaches back into another page's frontmatter.
     `Hero.astro` does for `PAGE_TITLE_ID`.
 
 24. **Wrap, don't rewrite, when you only need to add behaviour.**
-    `Sidebar.astro` renders Starlight's default component and layers a script on
-    top rather than reimplementing the tree.
+    `Sidebar.astro` renders Starlight's default component and layers a script
+    on top rather than reimplementing the tree. When new markup must land
+    _inside_ the default's layout, compose from Starlight's building blocks
+    instead, as `Header.astro` does.
 
-25. **Redirects in `astro.config.ts` are permanent.** The block mapping the
-    pre-2026-07 URLs keeps links shared elsewhere working. Add to it when you
-    move a page; never delete from it.
+25. **Redirects start mattering at launch.** The site is pre-launch, so moving
+    a page needs no redirect today (the old table was cleared 2026-07). Once
+    real users hold links to the site, every page move must add a permanent
+    `redirects` entry in `astro.config.ts`, and entries never get deleted.
 
 ---
 
@@ -198,7 +202,13 @@ components`. A component never reaches back into another page's frontmatter.
     current values ("at 65% the frost stays visible...") - they go stale on the
     next tweak.
 
-27. **Structure multi-point comments as lists.** When a comment covers more
+27. **One or two lines is the budget.** State the single non-obvious
+    constraint and stop. No problem-statement preamble, no trade-off
+    narration, no describing what neighbouring rules do - if the rationale
+    seems to need a paragraph, the extra sentences are narration, not
+    constraint.
+
+28. **Structure multi-point comments as lists.** When a comment covers more
     than a couple of distinct points (tiers of a scale, reasons for a rule,
     steps of a behaviour), open with a one-line summary and put the points in a
     `-` or numbered list, as the Glass Surfaces block in `custom.css` does.
