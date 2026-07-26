@@ -30,6 +30,7 @@ The [Creator Workshop](/making-mods/workshop/) and the [`league-mod` CLI](/makin
   - mod.config.json the manifest (or mod.config.toml)
   - .modignore optional, excludes working files from builds
   - README.md optional, ships inside the package
+  - LICENSE optional, ships inside the package
   - thumbnail.webp optional preview image
   - content/
     - base/ one folder per layer
@@ -55,7 +56,7 @@ The manifest lives at the project root as `mod.config.json` or `mod.config.toml`
 | `version`      | <span class="field-required">Required.</span> Semantic version (`1.0.0`). Parsed at pack time, so it must be valid semver.                                          |
 | `description`  | <span class="field-required">Required.</span> What the mod does.                                                                                                    |
 | `authors`      | <span class="field-required">Required.</span> Plain strings, or objects with `name` and `role`.                                                                     |
-| `license`      | An SPDX identifier (`"MIT"`), or an object with `name` and `url` for a custom license.                                                                              |
+| `license`      | An SPDX identifier (`"MIT"`), or an object with `name` and `url` for a custom license. The full text ships as a [`LICENSE` file](#readme-license-and-thumbnail).    |
 | `tags`         | Categories such as `champion-skin`, `map-skin`, `sfx`. Custom strings are allowed.                                                                                  |
 | `champions`    | Champions the mod targets.                                                                                                                                          |
 | `maps`         | Well-known ids (`summoners-rift`, `aram`, `teamfight-tactics`, `arena`, `swarm`) or custom strings.                                                                 |
@@ -120,9 +121,11 @@ Because the mapping from source file to game file is spelled out in the folder s
 
 Layers themselves - variants, optional add-ons, priority resolution - are covered on the [Layers](/making-mods/layers/) page. [String overrides](/making-mods/string-overrides/) also live in the manifest, per layer and per locale, so translated or renamed text builds into the package alongside the files.
 
-## <HeadingIcon icon="article" />README and Thumbnail
+## <HeadingIcon icon="article" />README, License, and Thumbnail
 
 A `README.md` at the project root travels with the mod. Packing embeds it in the `.modpkg`, and a `.fantome` build copies it to `META/README.md`, so whoever installs the mod sees your documentation without needing the project.
+
+A `LICENSE` file at the project root travels the same way, into the `.modpkg` or into [`META/LICENSE`](/reference/mod-packages/fantome/#license). `LICENSE.md` and `LICENSE.txt` are recognized too. The `license` manifest field names the terms; this file carries them in full. Neither is required, and a mod that needs its terms read should ship both - the field is what a mod site can filter on, the file is what someone opening the package finds.
 
 The thumbnail follows the `thumbnail` manifest field, or `thumbnail.webp` at the project root when the field is absent. A `.modpkg` embeds the image directly; a `.fantome` build converts it to `META/image.png`.
 
@@ -164,7 +167,7 @@ Packing runs from the Workshop's **Pack** button or [`league-mod pack`](/making-
 
 ### The Extended Fantome Format
 
-LeagueToolkit defines an official extension of the `.fantome` format so projects lose as little as possible when targeting legacy tooling. On top of the original spec, a packed fantome's `META/info.json` carries the project's tags, champions, maps, and per-layer metadata including string overrides. The fantome format itself remains single-layer: only the `base` layer's WAD content is packed, and the Workshop warns you when other layers would be left out. The extension preserves the layer _metadata_ - so string overrides work and survive a round-trip through import - while tools that predate it simply read the file as a plain fantome.
+LeagueToolkit defines an official extension of the `.fantome` format so projects lose as little as possible when targeting legacy tooling. On top of the original spec, a packed fantome's `META/info.json` carries the project's license, tags, champions, maps, and per-layer metadata including string overrides, and the project's license file is copied to `META/LICENSE`. The fantome format itself remains single-layer: only the `base` layer's WAD content is packed, and the Workshop warns you when other layers would be left out. The extension preserves the layer _metadata_ - so string overrides work and survive a round-trip through import - while tools that predate it simply read the file as a plain fantome.
 
 The full schema, along with the rest of the format, is documented in the [Fantome package reference](/reference/mod-packages/fantome/#the-leaguetoolkit-extension).
 

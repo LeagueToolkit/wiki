@@ -30,6 +30,7 @@ A fantome file is a standard ZIP archive renamed to `.fantome` - rename it to `.
   - META/
     - info.json required metadata
     - README.md optional documentation
+    - LICENSE optional license text
     - image.png optional preview image
   - WAD/
     - Ahri.wad.client/
@@ -66,6 +67,14 @@ UTF-8 JSON with four fields, all required. This is the complete original schema;
 ### README.md
 
 Optional Markdown documentation that travels with the mod. Packing a project copies the project's `README.md` here, and the fantome importer recovers it as the project readme.
+
+### LICENSE
+
+Optional full text of the mod's license terms, defined by [the extension](#the-leaguetoolkit-extension) rather than the original spec. Packing a project copies the project's [license file](/making-mods/mod-projects/#readme-license-and-thumbnail) here, and the importer recovers it as the project's `LICENSE`.
+
+The canonical entry name is extensionless `META/LICENSE`. Readers should also accept `LICENSE.md` and `LICENSE.txt`, matched case-insensitively like the [folder names](#compatibility-notes).
+
+Shipping the text and declaring the license are independent: the [`License` field](#license-field) names the terms, this file carries them. A mod may have either, both, or neither.
 
 ### image.png
 
@@ -117,14 +126,36 @@ The `RAW/` folder is a legacy mechanism. Don't use it in new mods; it survives o
 
 ## The LeagueToolkit Extension
 
-LeagueToolkit - the organization that [designed the format](#history) - defines an official extension of the original `info.json` schema so [mod projects](/making-mods/mod-projects/) lose as little as possible when packed to fantome. The extension is purely additive: four optional fields, each omitted when empty, that tools predating the extension simply never look at - such tools read the file as a plain fantome.
+LeagueToolkit - the organization that [designed the format](#history) - defines an official extension of the original `info.json` schema so [mod projects](/making-mods/mod-projects/) lose as little as possible when packed to fantome. The extension is purely additive: five optional fields, each omitted when empty, plus the optional [`META/LICENSE`](#license) entry. Tools predating the extension simply never look at any of it - they read the file as a plain fantome.
 
 | Field       | Description                                                                                                      |
 | ----------- | ---------------------------------------------------------------------------------------------------------------- |
+| `License`   | The mod's license, as an SPDX identifier or an object. See below.                                                |
 | `Tags`      | Array of category strings such as `champion-skin`, `sfx`. Same values as the project manifest's `tags`.          |
 | `Champions` | Array of champion names the mod targets.                                                                         |
 | `Maps`      | Array of well-known map ids (`summoners-rift`, `aram`, `teamfight-tactics`, `arena`, `swarm`) or custom strings. |
 | `Layers`    | Per-layer metadata, keyed by layer name. See below.                                                              |
+
+### License field
+
+`License` takes the same two shapes as the project manifest's [`license`](/making-mods/mod-projects/#the-manifest), so the field survives a round trip through pack and import. A string is an [SPDX identifier](https://spdx.org/licenses/):
+
+```json
+{ "License": "MIT" }
+```
+
+An object names a license that has no SPDX identifier - a custom or hand-written one:
+
+| Field  | Description                                                                 |
+| ------ | --------------------------------------------------------------------------- |
+| `Name` | <span class="field-required">Required.</span> Display name of the license.  |
+| `Url`  | Optional. Where the full terms live, for a package that does not ship them. |
+
+```json
+{ "License": { "Name": "Ahri Fan Works License", "Url": "https://example.com/afwl" } }
+```
+
+Readers should treat an unrecognized identifier as an opaque display string rather than rejecting the file: the SPDX list grows, and mod licenses are often not on it.
 
 ### Layers
 
@@ -147,6 +178,7 @@ A full extended `info.json`:
   "Author": "TheKillerey, Crauzer",
   "Version": "1.0.0",
   "Description": "Brings back the classic Summoners Rift map",
+  "License": "MIT",
   "Tags": ["map-skin"],
   "Maps": ["summoners-rift"],
   "Layers": {

@@ -37,9 +37,9 @@ If you have the `.fantome` you distribute - whether a tool packed it or you zipp
 
 The importer carries over everything the fantome format can hold:
 
-- **Metadata.** Version, description, author, tags, champions, and maps from `META/info.json` land in the new project's manifest.
+- **Metadata.** Version, description, author, license, tags, champions, and maps from `META/info.json` land in the new project's manifest.
 - **Content.** Every `.wad.client` folder under `WAD/` is extracted into `content/base/` unchanged.
-- **README and thumbnail.** `META/README.md` becomes the project's `README.md`, and `META/image.png` is saved as `thumbnail.png`.
+- **README, license, and thumbnail.** `META/README.md` becomes the project's `README.md`, `META/LICENSE` its `LICENSE`, and `META/image.png` is saved as `thumbnail.png`.
 - **Layers.** A plain fantome becomes a single `base` layer. A fantome packed with the [extended format](/reference/mod-packages/fantome/#the-leaguetoolkit-extension) gets its layers and string overrides recreated from the metadata.
 
 :::note[Point the manifest at the imported thumbnail]
@@ -99,9 +99,9 @@ The manual path is short:
 
 The import gives you a working project; a few follow-ups turn it into a good one:
 
-- **Fill in what fantome could not hold.** The [manifest](/making-mods/mod-projects/#the-manifest) supports a license, structured author roles, and per-layer descriptions - none of which survive in `META/info.json`.
+- **Fill in what fantome could not hold.** The [manifest](/making-mods/mod-projects/#the-manifest) supports structured author roles and per-layer descriptions, which a plain `META/info.json` has no room for. A license comes across only from a fantome packed with the [extension](/reference/mod-packages/fantome/#license-field), so older archives import without one.
 - **Split variants into layers.** If your old mod shipped optional parts as separate downloads, they can become [layers](/making-mods/layers/) of one project.
-- **Add a README and thumbnail** if the import did not find any - both [ship inside your packages](/making-mods/mod-projects/#readme-and-thumbnail).
+- **Add a README, license, and thumbnail** if the import did not find any - all three [ship inside your packages](/making-mods/mod-projects/#readme-license-and-thumbnail).
 - **Pack both formats.** Build a `.modpkg` as your native format and keep publishing `.fantome` where mod sites need it - see [Packaging](/making-mods/packaging/).
 - **Consider Git.** The [deterministic layout](/making-mods/mod-projects/#deterministic-content-layout) makes projects safe to version and collaborate on.
 

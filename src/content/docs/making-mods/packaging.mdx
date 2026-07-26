@@ -29,8 +29,9 @@ The `.modpkg` format is the modern container, and the one we recommend authoring
 
 A modpkg file is a binary archive containing:
 
-- **Metadata**: name, version, authors, description, tags, champions, maps
+- **Metadata**: name, version, authors, description, license, tags, champions, maps
 - **Thumbnail**: optional preview image (webp or png)
+- **Documents**: optional readme and license text
 - **Layers**: one or more content layers, each containing game files
 - **Configuration**: layer priorities, string overrides, and other settings
 
@@ -64,7 +65,7 @@ On import, the Workshop:
 
 1. Reads the archive's `META/info.json` for name, version, author, and description
 2. Extracts each WAD in the archive into the new project's content layer
-3. Pulls in the archive's readme, if it has one
+3. Pulls in the archive's readme and license text, if it has them
 4. Writes the result out as a standard Workshop project
 
 You can preview an archive's metadata and WAD list before committing to the
