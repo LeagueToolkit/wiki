@@ -42,11 +42,53 @@ worst failure mode available to you.
 ## Code
 
 - Match the surrounding code: naming, error handling, module layout, and comment density.
-- Comment _why_, not _what_ - in a line or two. A comment that reads like a
-  design-decision writeup gets cut, not kept.
 - `cargo fmt --all -- --check`, `cargo clippy -- -D warnings`, and `cargo test` must pass before
   you call the work done.
 - Add a test with every bug fix - one that fails before the change.
+
+### Comments
+
+- **Comment _why_, not _what_** - in a line or two. A comment that reads like a design-decision
+  writeup gets cut, not kept.
+- **Open with what the thing is, not what it does or creates.** The first words are a noun phrase
+  naming the construct. "Animatable stops for the card ring", not "Registered so the ramp
+  interpolates on hover". A comment that opens with a verb is restating the declaration beneath it
+  in prose, and a reader who already read the declaration learns nothing.
+- **Mechanism narration is not rationale.** How the layers stack, what gets painted, what the
+  browser would otherwise do - the code shows all of that. Keep the one constraint a reader would
+  violate by accident; drop the rest.
+
+#### Two comments that got this wrong
+
+Both shipped in `src/styles/custom.css`. Same failure in both: usage-first opener, then a
+paragraph explaining the CSS properties underneath.
+
+```css
+/* The brand ramp as the card's edge. `border-color` takes no gradient, so the
+   ramp fills the border box and an opaque surface layer clipped to the padding
+   box covers all of it but the 1px border ring. Both layers are painted, never
+   subtracted - a hollowed-out mask leaves gaps at the corners on fractional
+   device pixel ratios. The card is opaque as a result: it must sit on the page
+   background, not on a tinted surface. */
+
+/* Registered so the ramp and the fill interpolate on hover; a var() the
+   browser treats as a plain token would jump between the two states. */
+```
+
+The first opens on a metaphor ("as the card's edge") and then narrates four declarations that are
+visible three lines down. The second opens on a verb about an effect. Neither tells you what the
+block _is_ before telling you what it accomplishes. Rewritten:
+
+```css
+/* Gradient border for link cards: ramp on the border box, opaque fill clipped to
+   the padding box. Opaque by construction - needs the page background under it. */
+
+/* Animatable percentage stops for the card ring and fill; plain custom properties
+   would jump instead of interpolating. */
+```
+
+Each names its subject in the first three words, then spends its remaining budget on the single
+fact the code cannot show - the opacity constraint, and the reason `@property` is there at all.
 
 ## Commits
 

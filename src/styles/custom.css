@@ -861,18 +861,6 @@ body:has(.ltk-hero) .sl-markdown-content h2::before {
   background: linear-gradient(90deg, var(--ltk-violet), var(--ltk-blue));
 }
 
-body:has(.ltk-hero) .sl-link-card {
-  border-radius: var(--ltk-radius-lg);
-  transition:
-    border-color 0.2s ease,
-    transform 0.2s ease;
-}
-
-body:has(.ltk-hero) .sl-link-card:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--sl-color-accent) 55%, transparent);
-}
-
 /* ── Content Width ──────────────────────────────────────────── */
 
 :root {
@@ -927,12 +915,75 @@ body:has(.ltk-hero) .sl-link-card:hover {
   text-decoration-color: currentColor;
 }
 
+/* ── Link Cards ─────────────────────────────────────────────── */
+
+/* The brand ramp as the card's edge. `border-color` takes no gradient, so the
+   ramp fills the border box and an opaque surface layer clipped to the padding
+   box covers all of it but the 1px border ring. Both layers are painted, never
+   subtracted - a hollowed-out mask leaves gaps at the corners on fractional
+   device pixel ratios. The card is opaque as a result: it must sit on the page
+   background, not on a tinted surface. */
+
+/* Registered so the ramp and the fill interpolate on hover; a var() the
+   browser treats as a plain token would jump between the two states. */
+@property --ltk-card-ring {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 40%;
+}
+
+@property --ltk-card-fill {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+.sl-link-card {
+  --ltk-card-ring: 40%;
+  --ltk-card-fill: 0%;
+  border-color: transparent;
+  border-radius: var(--ltk-radius-lg);
+  background:
+    linear-gradient(
+        color-mix(in srgb, var(--sl-color-gray-6) var(--ltk-card-fill), var(--sl-color-bg)) 0 0
+      )
+      padding-box,
+    linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--ltk-blue) var(--ltk-card-ring), transparent),
+        color-mix(in srgb, var(--ltk-violet) var(--ltk-card-ring), transparent)
+      )
+      border-box;
+  transition:
+    --ltk-card-ring 0.2s ease,
+    --ltk-card-fill 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* :where() keeps the light-mode rest value below the hover rule below. */
+:where(:root[data-theme='light']) .sl-link-card {
+  /* The ramp washes out on a near-white surface, so light mode rests higher. */
+  --ltk-card-ring: 55%;
+}
+
+.sl-link-card:hover {
+  --ltk-card-ring: 100%;
+  --ltk-card-fill: 55%;
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-link-card:hover {
+    transform: none;
+  }
+}
+
 /* ── Pagination ─────────────────────────────────────────────── */
 
 /* Starlight's stock prev/next cards ship 2xl titles, 1.5rem arrows, and
    18rem-minimum grid tracks that make the pair stack early. Bring them
-   down to the site's card scale: smaller type, hairline hover matching
-   .sl-link-card, side by side except on narrow phones. */
+   down to the site's card scale: smaller type, hairline hover, side by
+   side except on narrow phones. */
 .pagination-links {
   grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
 }

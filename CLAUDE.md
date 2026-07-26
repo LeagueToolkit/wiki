@@ -214,6 +214,11 @@ components`. A component never reaches back into another page's frontmatter.
     `-` or numbered list, as the Glass Surfaces block in `custom.css` does.
     Single-point comments stay plain sentences.
 
+29. **Open with what the thing is, not what it does.** The first words are a
+    noun phrase naming the construct, not a verb describing its effect.
+    [AGENTS.md](./AGENTS.md#comments) carries the rule and two worked
+    before/after examples from `custom.css`.
+
 ---
 
 ## Verify before you call it done
