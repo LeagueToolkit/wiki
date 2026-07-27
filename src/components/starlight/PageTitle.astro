@@ -1,12 +1,54 @@
 ---
+import { Image } from 'astro:assets';
 import Default from '@astrojs/starlight/components/PageTitle.astro';
 import PageTags from '../PageTags.astro';
+import fantome from '@assets/fantome.png';
+
+// Icon URLs are resolved at build time, which means the set has to be a static
+// map: add an entry here and to the `titleIcon` enum in content.config.ts together.
+const icons = { fantome } as const;
 
 // Tagging every page from here rather than from the pages themselves keeps the
 // row out of the content body, where it would sit inside the prose styles and
 // have to be repeated in 55 files.
-const { tags } = Astro.locals.starlightRoute.entry.data;
+const { tags, titleIcon } = Astro.locals.starlightRoute.entry.data;
 ---
 
-<Default />
+{
+  titleIcon ? (
+    <div class="titled">
+      <Image
+        class="icon"
+        src={icons[titleIcon]}
+        alt=""
+        width={40}
+        height={40}
+        densities={[2]}
+        loading="eager"
+      />
+      <Default />
+    </div>
+  ) : (
+    <Default />
+  )
+}
 {tags && <PageTags tags={tags} />}
+
+<style>
+  .titled {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  /* Starlight's h1 carries the block spacing the title row now owns. */
+  .titled :global(h1) {
+    margin: 0;
+  }
+
+  .icon {
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: auto;
+  }
+</style>

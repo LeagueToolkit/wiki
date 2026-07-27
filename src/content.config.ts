@@ -13,9 +13,14 @@ const tags = z.object({
   status: z.enum(STATUSES).optional(),
 });
 
+// Values must match the `icons` map in components/starlight/PageTitle.astro.
+const titleIcon = z.enum(['fantome']);
+
 export const collections = {
   docs: defineCollection({
     loader: docsLoader(),
-    schema: docsSchema({ extend: z.object({ tags: tags.optional() }) }),
+    schema: docsSchema({
+      extend: z.object({ tags: tags.optional(), titleIcon: titleIcon.optional() }),
+    }),
   }),
 };
