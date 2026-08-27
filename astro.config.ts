@@ -179,7 +179,10 @@ export default defineConfig({
             {
               label: 'Mod Packages',
               collapsed: true,
-              items: [{ label: 'Fantome', slug: 'reference/mod-packages/fantome' }],
+              items: [
+                { label: 'Fantome', slug: 'reference/mod-packages/fantome' },
+                { label: 'Embedded Hashtables', slug: 'reference/mod-packages/hashtables' },
+              ],
             },
             {
               label: 'File Formats',
