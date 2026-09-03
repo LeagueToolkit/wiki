@@ -32,14 +32,14 @@ The fix is for the package to carry the edit, not the result: a small, human-rea
 
 The standard has two parts:
 
-- **Declaration modules** - `.yaml`, `.toml` or `.json` files under `game_data/` in each layer. A module is one target bin, or several under `bin`. Each target holds one or more bindings.
+- **Declaration modules** - `.yaml`, `.toml` or `.json` files under `game_data/` in each layer, placed at the chunk path of the target they edit. A module holds one or more bindings and has no target of its own.
 - **Bindings** - the kinds of edit a target accepts. Each binding has one meaning, one precedence rule across layers and mods, and one materialised form the game loads.
 
 The same declarations appear in three containers:
 
 | Container   | Declaration location                                   | Notes                                                        |
 | ----------- | ------------------------------------------------------ | ------------------------------------------------------------ |
-| Mod project | `content/{layer}/game_data/*.yaml`, `*.toml`, `*.json` | The authored form.                                           |
+| Mod project | `content/{layer}/game_data/{chunk path}.yaml`, `.toml`, `.json` | The authored form.                                    |
 | `.modpkg`   | Per-layer package metadata                             | The merged set of the layer's modules.                       |
 | `.fantome`  | `Layers.{name}.GameData` in `META/info.json`           | The same merged set, in the LeagueToolkit extension.         |
 
@@ -47,7 +47,7 @@ The mod project is the subject of this standard. A `.modpkg` and a `.fantome` ar
 
 ## Vocabulary
 
-- **Target** - the game bin a declaration edits, named by its WAD chunk path. The build never changes which file the game loads; it changes the contents of that file.
+- **Target** - the game bin a declaration edits, named by its WAD chunk path, which is where the module sits under `game_data/`. The build never changes which file the game loads; it changes the contents of that file.
 - **Base** - the bytes the build materialises over: the game's own chunk, or the highest-precedence mod copy of that chunk when one is enabled.
 - **Binding** - one kind of edit on a target: `links`, `overrides`, entries, `objects`.
 - **Override** - a `PTCH` bin, a file of property-level records the loader applies over a target. An override is a file in a layer; it is not a layer.
@@ -57,13 +57,13 @@ The mod project is the subject of this standard. A `.modpkg` and a `.fantome` ar
 - **Layer** - a named, prioritised slice of a mod's content. See [Layers](/making-mods/layers/).
 - **Schema** - the [meta class dump](/reference/metaclasses/overview/) for the installed patch: every class, its properties and their types. LTK Manager holds one per patch.
 
-Two vocabularies meet in a module and a reader always knows which it is holding. **This standard's words** - `version`, `modules`, `bin`, `path`, `links`, `overrides`, `objects`, `clone`, `class`, `set`, `remove`, the sign prefixes and the type names - are bare words. **The game's words** - entry names, property paths, map keys - appear only as keys of an entry, a `set` or a map-valued table, and an entry name at target level always carries a slash or is in hash form. Every one of the 359,477 entry names in the community `binentries` list carries a slash; a slash-less entry is written in hash form. Inside an entry no key of this standard appears except `+`, `-` and a type name in a pin.
+Two vocabularies meet in a module and a reader always knows which it is holding. **This standard's words** - `version`, `modules`, `links`, `overrides`, `objects`, `clone`, `class`, `set`, `remove`, the sign prefixes and the type names - are bare words. **The game's words** - entry names, property paths, map keys - appear only as keys of an entry, a `set` or a map-valued table, and an entry name at the root always carries a slash or is in hash form. Every one of the 359,477 entry names in the community `binentries` list carries a slash; a slash-less entry is written in hash form. Inside an entry no key of this standard appears except `+`, `-` and a type name in a pin.
 
 ## Declaration Modules
 
 ### Location
 
-A layer's declarations live in modules under `content/{layer}/game_data/`: any number of `.yaml`, `.toml` or `.json` files, in any directory structure the author likes. The three express the same schema, and a layer may mix them. `.yml` is accepted as `.yaml`. Discovery is by convention: a layer directory that holds `game_data/` has declarations, one that does not has none. The manifest does not list the modules.
+A layer's declarations live under `content/{layer}/game_data/`, laid out by target: the module for a target sits at the target's chunk path, the way a shipped chunk sits at its chunk path under the WAD directory beside it. A module has no notion of its target; the position is the target.
 
 ```
 my-mod/
@@ -71,23 +71,28 @@ my-mod/
 |-- content/
 |   |-- base/
 |   |   |-- game_data/
-|   |   |   |-- teemo/
-|   |   |   |   |-- skin0.yaml
+|   |   |   |-- data/characters/teemo/teemo.bin.yaml
+|   |   |   |-- data/characters/teemo/skins/skin0.bin/
+|   |   |   |   |-- 10-skin.yaml
+|   |   |   |   |-- 20-particles.yaml
 |   |   |   |   |-- skin0.rito
-|   |   |   |   |-- particles/
-|   |   |   |   |   |-- r_mis.yaml
 |   |   |   |-- shared.yaml
 |   |   |-- Teemo.wad.client/
 |   |   |   |-- data/characters/teemo/classic.bin
 |   |-- high-res/
-|   |   |-- game_data.yaml
+|   |   |-- game_data/
+|   |   |   |-- data/characters/teemo/skins/skin0.bin.yaml
 |   |   |-- Teemo.wad.client/
 |   |   |   |-- ...
 ```
 
-A layer with one module can write it as `content/{layer}/game_data.yaml`, `game_data.toml` or `game_data.json` instead, with no directory. More than one present is an error.
+- **A file** `{chunk path}.yaml`, `.toml` or `.json` is the one module for that target. `.yml` is accepted as `.yaml`.
+- **A directory** `{chunk path}/` holds several modules for one target, plus that target's [override files](#overrides). A file and a directory for the same target is an error.
+- The chunk path is spelled as the game has it, extension included: `data/characters/teemo/skins/skin0.bin.yaml` targets `data/characters/teemo/skins/skin0.bin`, `shared.yaml` targets the extensionless chunk `shared`, and `0xd2343ed1.yaml` targets a chunk by its xxh64 hash.
 
-Every module is self-contained: it has its own `version` and its own targets, and it means the same thing wherever it sits in the directory. The layer's declaration set is the concatenation of its modules in module order, each module in its declaration order. Two modules may declare the same target; their bindings merge in that order. Two modules of one layer that set the same unsigned key on the same target are a packing error; signed keys accumulate. A file under `game_data/` that is neither a module nor an [override file](#overrides) is an error.
+The three syntaxes express the same schema, and a layer may mix them. Discovery is by convention: a layer directory that holds `game_data/` has declarations, one that does not has none. The mod manifest does not list them.
+
+Every module is self-contained: it has its own `version` and means the same thing wherever it sits. A target's declaration set is the concatenation of its modules in [module order](#module-order), each module in its declaration order. Two modules of one target that set the same unsigned key are a packing error; signed keys accumulate. A file under `game_data/` that is neither a module nor an override file is an error.
 
 The modules sit outside every `.wad.client` directory. They are not chunks and never pack as chunks. A `.modignore` rule that matches one is a packing error, not a silent drop.
 
@@ -97,120 +102,97 @@ TOML is read as [TOML 1.1](https://toml.io/en/v1.1.0): an inline table may span 
 
 ### Module Order
 
-Module order comes from one of two sources, and the layer states which by the presence of a `modules` key:
+Within one target, module order comes from one of two sources, and the layer states which by the presence of a manifest:
 
-- **By convention.** With no manifest, modules are taken in lexicographic byte order of their paths relative to `game_data/` (the order of `LC_ALL=C sort`). Every `.yaml`, `.toml` and `.json` file under the directory is a module.
-- **By manifest.** A `content/{layer}/game_data.yaml`, `game_data.toml` or `game_data.json` beside the directory whose top level has a `modules` key is the layer's manifest. Its list is the module order, and it is authoritative: a module under `game_data/` that the list does not reach is an error, not a silent drop. The manifest may hold declarations of its own; they come first, ahead of every listed module.
+- **By convention.** With no manifest, the modules in a target's directory are taken in lexicographic byte order of their file names (the order of `LC_ALL=C sort`). A numeric prefix, `10-skin.yaml`, is the usual way to fix it.
+- **By manifest.** A `content/{layer}/game_data.yaml`, `game_data.toml` or `game_data.json` beside the directory is the layer's manifest. Its `modules` key maps each target to its modules in order, and it is authoritative: a module under `game_data/` that the manifest does not reach is an error, not a silent drop. A manifest holds no declarations of its own; it has no target to hold them for.
 
 <Tabs>
   <TabItem label="YAML">
     ```yaml
     version: 1
     modules:
-      - teemo/skin0.yaml
-      - teemo/particles/ # every module under the directory, in byte order
-      - shared.yaml
-
-    bin:
-      data/characters/teemo/teemo.bin:
-        links: [data/characters/teemo/classic.bin] # the mod's own bin
+      data/characters/teemo/skins/skin0.bin:
+        - particles.yaml
+        - skin.yaml
+      data/characters/teemo/teemo.bin: teemo.yaml
     ```
   </TabItem>
   <TabItem label="TOML">
     ```toml
     version = 1
-    modules = [
-      "teemo/skin0.yaml",
-      # every module under the directory, in byte order
-      "teemo/particles/",
-      "shared.yaml",
-    ]
 
-    # the mod's own bin
-    [[bin]]
-    path = "data/characters/teemo/teemo.bin"
-    links = ["data/characters/teemo/classic.bin"]
+    [modules]
+    "data/characters/teemo/skins/skin0.bin" = ["particles.yaml", "skin.yaml"]
+    "data/characters/teemo/teemo.bin" = "teemo.yaml"
     ```
   </TabItem>
   <TabItem label="JSON">
     ```json
     {
       "version": 1,
-      "modules": ["teemo/skin0.yaml", "teemo/particles/", "shared.yaml"],
-      "bin": {
-        "data/characters/teemo/teemo.bin": { "links": ["data/characters/teemo/classic.bin"] }
+      "modules": {
+        "data/characters/teemo/skins/skin0.bin": ["particles.yaml", "skin.yaml"],
+        "data/characters/teemo/teemo.bin": "teemo.yaml"
       }
     }
     ```
   </TabItem>
 </Tabs>
 
-A `modules` entry is a path relative to `game_data/`. A path with a trailing slash names a directory and stands for every module under it, recursively, in byte order. A path names each module at most once; a module reached twice is an error. A `game_data.yaml`, `game_data.toml` or `game_data.json` beside a `game_data/` directory and without a `modules` key is an error, since the layer would have two roots and no rule between them.
+A `modules` key is a chunk path; its value is one module name or a list of them, relative to that target's directory under `game_data/`. A single name may also point at the target's file form, `teemo.yaml` standing for `game_data/data/characters/teemo/teemo.bin.yaml` when no directory exists. A module named twice is an error.
 
 ### Grammar
 
-A module has a `version` and declares targets in one of two shapes, chosen by which top-level keys it carries:
-
-- **One target.** The root carries `path`, and every binding is a root key. The module is that target. This is the common shape, one module per bin.
-- **Several targets.** The root carries `bin`: a mapping from target path to that target's bindings, or a list of targets each carrying `path`. The two are one shape; the reader folds the list into the map. YAML and JSON write the map, TOML writes the list as `[[bin]]`, and every syntax accepts both. A root may carry `path` and `bin` together; the root target comes first.
+A module is a `version` and the bindings of one target. There is no target key: the four binding names and the entry names are the root.
 
 <Tabs>
   <TabItem label="YAML">
     ```yaml
+    # game_data/data/characters/teemo/skins/skin0.bin.yaml
     version: 1
 
     # Jade is the codename of the League Classic game mode; Jade_Teemo is its Teemo.
-    path: data/characters/teemo/skins/skin0.bin
     links: [data/characters/jade_teemo/skins/skin0.bin]
     overrides: [skin0.rito]
 
-    bin:
-      data/characters/jade_teemo/skins/skin0.bin:
-        Characters/Jade_Teemo/Skins/Skin0:
-          skinMeshProperties.selfIllumination: 0.7
+    Characters/Teemo/Skins/Skin0:
+      skinMeshProperties.selfIllumination: 1.0
     ```
   </TabItem>
   <TabItem label="TOML">
     ```toml
+    # game_data/data/characters/teemo/skins/skin0.bin.toml
     version = 1
 
     # Jade is the codename of the League Classic game mode; Jade_Teemo is its Teemo.
-    path = "data/characters/teemo/skins/skin0.bin"
     links = ["data/characters/jade_teemo/skins/skin0.bin"]
     overrides = ["skin0.rito"]
 
-    [[bin]]
-    path = "data/characters/jade_teemo/skins/skin0.bin"
-
-    [bin."Characters/Jade_Teemo/Skins/Skin0"]
-    skinMeshProperties.selfIllumination = 0.7
+    ["Characters/Teemo/Skins/Skin0"]
+    skinMeshProperties.selfIllumination = 1.0
     ```
   </TabItem>
   <TabItem label="JSON">
     ```json
     {
       "version": 1,
-      "path": "data/characters/teemo/skins/skin0.bin",
       "links": ["data/characters/jade_teemo/skins/skin0.bin"],
       "overrides": ["skin0.rito"],
-      "bin": {
-        "data/characters/jade_teemo/skins/skin0.bin": {
-          "Characters/Jade_Teemo/Skins/Skin0": { "skinMeshProperties.selfIllumination": 0.7 }
-        }
-      }
+      "Characters/Teemo/Skins/Skin0": { "skinMeshProperties.selfIllumination": 1.0 }
     }
     ```
   </TabItem>
 </Tabs>
 
-In YAML and JSON an entry is a nested mapping under its target. In TOML a root entry is a `["Entry/Name"]` table, and a target under `bin` is a `[[bin]]` element whose entries are `[bin."Entry/Name"]` sub-tables; a sub-table under an array of tables belongs to the most recent element. Entry names carry slashes and are quoted; property names and map keys are bare unless they carry a dot, a bracket or a sign. Every example on this page is given in all three forms and they are the same edit. Where YAML and JSON write a dotted path, the TOML form writes an inline table per struct; the two nest to one document, as [Block Nesting](#block-nesting) states.
+In YAML and JSON an entry is a root mapping. In TOML an entry is a `["Entry/Name"]` table. Entry names carry slashes and are quoted; property names and map keys are bare unless they carry a dot, a bracket or a sign. Every example on this page is given in all three forms and they are the same edit. Where YAML and JSON write a dotted path, the TOML form writes an inline table per struct; the two nest to one document, as [Block Nesting](#block-nesting) states.
 
-- **`version`** - required, integer, in every module. The schema version of that module. This page describes version 1. A reader that meets a version it does not know refuses the module.
-- **`path`** - the root key of a one-target module, the key of a `bin` map entry, or the `path` of a `bin` list item. A chunk path: forward slashes, no leading `data/` prefix stripped or added, extension as the game has it. Extensionless paths are legal and common (`shared`, `characters/petbunny`). A 16-hex-digit value is a raw xxh64 hash and passes through as one. The same path twice in one module, as root `path`, a `bin` key or a list item's `path`, is an error; the same path in two modules merges.
+- **`version`** - required, integer, in every module and in the manifest. The schema version of that file. This page describes version 1. A reader that meets a version it does not know refuses the file.
+- **Chunk paths** - in a module's position, in a manifest key and in a `links` value - use forward slashes, keep the game's own extension, and add or strip no prefix. Extensionless paths are legal and common (`shared`, `characters/petbunny`). A 16-hex-digit value is a raw xxh64 hash and passes through as one.
 - **Casing** - keys and every declared path or name keep the author's casing. Comparison and hashing use the ASCII-lowercased form, the same rule as [embedded hashtables](/reference/mod-packages/hashtables/#hash-computation).
 - **Backslashes** are an error anywhere a path appears.
 - **Unknown keys** are an error. A module that uses a binding this version does not define is rejected, not ignored. LTK Manager then refuses that layer's declarations, keeps the mod's content, warns the user, and suggests updating the app.
-- **Entries.** At target level, a key that contains a slash or is in hash form names an entry of the target and holds that entry's [edits](#entries). A bare word is a key of this standard, and an unknown one is an error.
+- **Entries.** At the root, a key that contains a slash or is in hash form names an entry of the target and holds that entry's [edits](#entries). A bare word is a key of this standard, and an unknown one is an error.
 - **Hash-form names.** Wherever an entry name or a property-path segment appears, a `0x` followed by 8 hex digits is the FNV-1a 32 hash and passes through. That is the only way to reach a property whose name is not yet known. The escape is this standard's, not the game's: the build resolves it, and it cannot appear in an [override file](#overrides), whose records reach the game as written.
 - **Paths to override files** are relative to the module that names them.
 
@@ -220,7 +202,7 @@ Every binding composes across layers and across mods by the same order, the one 
 
 1. Mods earlier in the enabled list win over mods later in it.
 2. Within a mod, layers with higher priority win over layers with lower priority.
-3. Within a layer, [module order](#module-order), then declaration order within the module.
+3. Within a layer, [module order](#module-order) within the target, then declaration order within the module.
 
 What "win" means is per binding and per operation, stated in each binding's section. Two enabled mods that touch the same key on the same target, or where one adds what the other removes, resolve by this order, and the build reports the conflict so the manager can show it. A mod may ship a target in one layer and declare on it in another; the shipped copy is the base for the declaration.
 
@@ -246,7 +228,7 @@ Every binding is keyed by target and materialised into that target's `PROP` by t
 | ------------ | ------------------------------------------------ | -------------------------------------------- |
 | `links`      | chunk paths to add or remove                     | header linked-file list                      |
 | `overrides`  | override files in the layer                      | records applied over the target's objects    |
-| entries      | entry name at target level, property path, value | per-property replacement records             |
+| entries      | entry name at the root, property path, value     | per-property replacement records             |
 | `objects`    | entry, clone source or class, and property sets  | a new object in the target, or a deletion    |
 
 ### `links`
@@ -256,30 +238,19 @@ Chunk paths added to, or removed from, the target bin's linked-file list. `links
 <Tabs>
   <TabItem label="YAML">
     ```yaml
+    # game_data/data/characters/teemo/skins/skin0.bin.yaml
     version: 1
-    bin:
-      data/characters/teemo/teemo.bin:
-        links: [data/characters/teemo/classic.bin] # the mod's own bin
-
-      data/characters/teemo/skins/skin0.bin:
-        links: [data/characters/jade_teemo/skins/skin0.bin] # League Classic Teemo's VFX definitions
-        -links: [data/characters/teemo/animations/skin0.bin] # classic.bin carries the replacement graph
+    links: [data/characters/jade_teemo/skins/skin0.bin] # League Classic Teemo's VFX definitions
+    -links: [data/characters/teemo/animations/skin0.bin] # the mod's classic.bin carries the replacement graph
     ```
   </TabItem>
   <TabItem label="TOML">
     ```toml
+    # game_data/data/characters/teemo/skins/skin0.bin.toml
     version = 1
-
-    # the mod's own bin
-    [[bin]]
-    path = "data/characters/teemo/teemo.bin"
-    links = ["data/characters/teemo/classic.bin"]
-
-    [[bin]]
-    path = "data/characters/teemo/skins/skin0.bin"
     # League Classic Teemo's VFX definitions
     links = ["data/characters/jade_teemo/skins/skin0.bin"]
-    # classic.bin carries the replacement graph
+    # the mod's classic.bin carries the replacement graph
     -links = ["data/characters/teemo/animations/skin0.bin"]
     ```
   </TabItem>
@@ -287,15 +258,8 @@ Chunk paths added to, or removed from, the target bin's linked-file list. `links
     ```json
     {
       "version": 1,
-      "bin": {
-        "data/characters/teemo/teemo.bin": {
-          "links": ["data/characters/teemo/classic.bin"]
-        },
-        "data/characters/teemo/skins/skin0.bin": {
-          "links": ["data/characters/jade_teemo/skins/skin0.bin"],
-          "-links": ["data/characters/teemo/animations/skin0.bin"]
-        }
-      }
+      "links": ["data/characters/jade_teemo/skins/skin0.bin"],
+      "-links": ["data/characters/teemo/animations/skin0.bin"]
     }
     ```
   </TabItem>
@@ -315,14 +279,12 @@ Override files in the layer whose records the build applies over the target.
   <TabItem label="YAML">
     ```yaml
     version: 1
-    path: data/characters/teemo/skins/skin0.bin
     overrides: [skin0.rito]
     ```
   </TabItem>
   <TabItem label="TOML">
     ```toml
     version = 1
-    path = "data/characters/teemo/skins/skin0.bin"
     overrides = ["skin0.rito"]
     ```
   </TabItem>
@@ -330,7 +292,6 @@ Override files in the layer whose records the build applies over the target.
     ```json
     {
       "version": 1,
-      "path": "data/characters/teemo/skins/skin0.bin",
       "overrides": ["skin0.rito"]
     }
     ```
@@ -346,13 +307,12 @@ Override files in the layer whose records the build applies over the target.
 
 ### Entries
 
-An entry of the target, keyed by its name at target level, holding per-property edits: set a value, replace a container, add to or remove from a list or map. There is no binding keyword; the entry name is the key.
+An entry of the target, keyed by its name at the module root, holding per-property edits: set a value, replace a container, add to or remove from a list or map. There is no binding keyword; the entry name is the key.
 
 <Tabs>
   <TabItem label="YAML">
     ```yaml
     version: 1
-    path: data/characters/teemo/skins/skin0.bin
 
     # Give base Teemo the League Classic look.
     Characters/Teemo/Skins/Skin0:
@@ -375,7 +335,6 @@ An entry of the target, keyed by its name at target level, holding per-property 
   <TabItem label="TOML">
     ```toml
     version = 1
-    path = "data/characters/teemo/skins/skin0.bin"
 
     # Give base Teemo the League Classic look.
     ["Characters/Teemo/Skins/Skin0"]
@@ -408,7 +367,6 @@ An entry of the target, keyed by its name at target level, holding per-property 
     ```json
     {
       "version": 1,
-      "path": "data/characters/teemo/skins/skin0.bin",
       "Characters/Teemo/Skins/Skin0": {
         "skinMeshProperties.texture": "assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex",
         "skinMeshProperties.selfIllumination": 1.0,
@@ -461,7 +419,6 @@ Every key under an entry is one path, and a path can end anywhere a value can si
   <TabItem label="YAML">
     ```yaml
     version: 1
-    path: data/characters/teemo/skins/skin0.bin
 
     Characters/Teemo/Skins/Skin0:
       skinMeshProperties.materialOverride[0].texture: assets/characters/jade_teemo/skins/base/jade_teemo_base_mushroom_tx_cm.tex
@@ -476,7 +433,6 @@ Every key under an entry is one path, and a path can end anywhere a value can si
   <TabItem label="TOML">
     ```toml
     version = 1
-    path = "data/characters/teemo/skins/skin0.bin"
 
     ["Characters/Teemo/Skins/Skin0"]
     "skinMeshProperties.materialOverride[0].texture" = """\
@@ -494,7 +450,6 @@ Every key under an entry is one path, and a path can end anywhere a value can si
     ```json
     {
       "version": 1,
-      "path": "data/characters/teemo/skins/skin0.bin",
       "Characters/Teemo/Skins/Skin0": {
         "skinMeshProperties.materialOverride[0].texture": "assets/characters/jade_teemo/skins/base/jade_teemo_base_mushroom_tx_cm.tex",
         "skinMeshProperties.overrideBoundingBox": [50.0, 180.0, 150.0],
@@ -519,7 +474,6 @@ A mapping written on an `embed` or `pointer` property descends into the struct a
   <TabItem label="YAML">
     ```yaml
     version: 1
-    path: data/characters/teemo/skins/skin0.bin
 
     Characters/Teemo/Skins/Skin0:
       skinMeshProperties:
@@ -540,7 +494,6 @@ A mapping written on an `embed` or `pointer` property descends into the struct a
   <TabItem label="TOML">
     ```toml
     version = 1
-    path = "data/characters/teemo/skins/skin0.bin"
 
     ["Characters/Teemo/Skins/Skin0"]
     iconCircle = "assets/characters/jade_teemo/hud/jade_teemo_circle_301.tex"
@@ -563,7 +516,6 @@ A mapping written on an `embed` or `pointer` property descends into the struct a
     ```json
     {
       "version": 1,
-      "path": "data/characters/teemo/skins/skin0.bin",
       "Characters/Teemo/Skins/Skin0": {
         "skinMeshProperties": {
           "texture": "assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex",
@@ -638,7 +590,6 @@ A pin marks a value with the type name it must have. In YAML it is a local tag i
   <TabItem label="YAML">
     ```yaml
     version: 1
-    path: data/characters/teemo/skins/skin0.bin
 
     Characters/Teemo/Skins/Skin0:
       skinMeshProperties:
@@ -677,7 +628,6 @@ A pin marks a value with the type name it must have. In YAML it is a local tag i
   <TabItem label="TOML">
     ```toml
     version = 1
-    path = "data/characters/teemo/skins/skin0.bin"
 
     ["Characters/Teemo/Skins/Skin0"]
     skinMeshProperties = {
@@ -717,7 +667,6 @@ A pin marks a value with the type name it must have. In YAML it is a local tag i
     ```json
     {
       "version": 1,
-      "path": "data/characters/teemo/skins/skin0.bin",
       "Characters/Teemo/Skins/Skin0": {
         "skinMeshProperties": {
           "selfIllumination": { "f32": 1.0 },
@@ -761,7 +710,6 @@ A new object in the target, cloned from an existing entry or constructed from a 
   <TabItem label="YAML">
     ```yaml
     version: 1
-    path: data/characters/teemo/skins/skin0.bin
 
     objects:
       # A copy of the ult missile that fires twice as often, with a second emitter.
@@ -798,7 +746,6 @@ A new object in the target, cloned from an existing entry or constructed from a 
   <TabItem label="TOML">
     ```toml
     version = 1
-    path = "data/characters/teemo/skins/skin0.bin"
 
     # A copy of the ult missile that fires twice as often, with a second emitter.
     [objects."Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis"]
@@ -836,7 +783,6 @@ A new object in the target, cloned from an existing entry or constructed from a 
     ```json
     {
       "version": 1,
-      "path": "data/characters/teemo/skins/skin0.bin",
       "objects": {
         "Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis": {
           "clone": "Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis",
@@ -893,11 +839,11 @@ The overlay build handles declarations in its two existing passes.
 
 For tools that write projects and packages:
 
-- Declarations in `game_data/` modules per layer, YAML, TOML or JSON, ordered by file name or by a `modules` manifest; every module carries a `version` key.
-- One target per path, as the root `path`, a `bin` key or a `bin` item's `path`; every declared path or name keeps its casing and uses forward slashes.
+- Declarations in `game_data/` modules per layer, YAML, TOML or JSON, each at the chunk path of its target, ordered within a target by file name or by a `modules` manifest; every module carries a `version` key.
+- The module's position is its target; a module carries no target key. Every declared path or name keeps its casing and uses forward slashes.
 - This standard's words are bare keys; an entry name carries a slash or is in hash form; the game's names sit only inside an entry, a `set` or a map value.
 - Never emit a binding, sign or type name this version does not define.
-- Fail packing on the same unsigned key set twice in one layer, on an override file with an unknown extension, on a `.rito` file that is not a `PTCH`, and on an unquoted YAML hash.
+- Fail packing on the same unsigned key set twice for one target in one layer, on a file and a directory for one target, on an override file with an unknown extension, on a `.rito` file that is not a `PTCH`, and on an unquoted YAML hash.
 - Convert `.rito` override files to `.ptch` at pack; store the binary form.
 - Warn on a chunk path in a layer that is in the game index and is not a declared target: it is a whole-file override of a Riot file.
 
@@ -912,11 +858,11 @@ For tools that build overlays:
 
 ## Mod Projects
 
-The declaration modules and override files are part of the layer's content directory and travel with it. The manifest is unchanged. The Creator Workshop edits modules on disk in place, preserving comments and order. A declaration on a target no module holds yet goes to a module named after the target's WAD, `game_data/{wad}.yaml`, created if missing and appended to the layer's `modules` manifest when one exists. The Workshop writes YAML; it edits a TOML or JSON module in place when that is where the target already lives.
+The declaration modules and override files are part of the layer's content directory and travel with it. The manifest is unchanged. The Creator Workshop edits modules on disk in place, preserving comments and order. A declaration on a target no module holds yet goes to `game_data/{chunk path}.yaml`, created if missing and added to the layer's `modules` manifest when one exists. The Workshop writes YAML; it edits a TOML or JSON module in place when that is where the target already lives.
 
 ## Modpkg
 
-A modpkg build reads each layer's modules in module order and stores the merged declarations in that layer's package metadata, in the same logical schema. Override files are stored as `.ptch` chunks of the layer. A project rebuilt from a modpkg recovers one `game_data.yaml` per layer. The module split and the manifest are authoring structure; a build with the keep-modules option stores module names in the metadata so a rebuilt project keeps them, and without it they are the one thing the round trip does not keep.
+A modpkg build reads each layer's modules in module order and stores the merged declarations in that layer's package metadata, in the same logical schema. Override files are stored as `.ptch` chunks of the layer. A project rebuilt from a modpkg recovers one module per target, `game_data/{chunk path}.yaml`. The module split and the manifest are authoring structure; a build with the keep-modules option stores module names in the metadata so a rebuilt project keeps them, and without it they are the one thing the round trip does not keep.
 
 ## Fantome Packaging
 
