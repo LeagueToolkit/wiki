@@ -1,0 +1,696 @@
+---
+title: Game Data Declarations
+description: Standard for declarative game-data edits in mod projects and packages - the per-layer game_data modules, their bindings (links, overrides, properties, objects), coercion, precedence, and how the overlay build materialises them.
+tags:
+  type: reference
+  audience: [tool-developer, mod-creator]
+  subject: [mod-project, bin, overlay]
+  status: planned
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Game data declarations let a mod edit the game's property bins without shipping a copy of each bin it touches. A layer declares, per target bin, what it changes: linked files, override records, property edits, new objects. The overlay build reads the installed game's copy of the target and materialises the edit on top of it at build time. This page is the standard: the declaration modules, each binding's meaning, how containers carry the declarations, and the rules the build follows.
+
+:::caution[Status]
+This is a proposal. It is tracked in [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) (links) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) (PTCH overrides). Nothing on this page is implemented in LTK Manager yet. The [roadmap](#roadmap) names the order the bindings land in.
+:::
+
+## Motivation
+
+A property bin is loaded by the game as a whole file. A mod that wants to change one thing about a bin - hang a companion bin off it, redirect one VFX slot, add one per-map record - has one option today: ship the entire bin with that one change applied. That copy is a full override of a Riot file, and it carries three costs:
+
+- **It breaks on every patch.** The copy freezes every property of every object in the bin at the patch it was made from. When Riot changes any of them, the mod silently reverts that change.
+- **It conflicts with every other mod touching the same bin.** Two mods that each ship Teemo's `skin0.bin` cannot both win, even when their edits are disjoint.
+- **It hides intent.** A diff between the mod's copy and the game's copy is the only record of what the mod meant to change, and it is a binary diff.
+
+The game itself has the mechanisms a mod needs. A bin header carries a list of linked files the loader mounts alongside it. A `PTCH` bin carries property-level overrides the loader applies over a target. None of them is reachable from a mod package without hand-editing binary files, and none of them is composable across mods.
+
+The fix is for the package to carry the edit, not the result: a small, human-readable declaration that names a target bin and states what to change. The build computes the result against whatever the installed game ships.
+
+## Overview
+
+The standard has two parts:
+
+- **Declaration modules** - `.toml` or `.json` files under `game_data/` in each layer (`.yaml` reserved), one `bin` entry per target. Each target holds one or more bindings.
+- **Bindings** - the kinds of edit a target accepts. Each binding has one meaning, one precedence rule across layers and mods, and one materialised form the game loads.
+
+The same declarations appear in three containers:
+
+| Container   | Declaration location                          | Notes                                                        |
+| ----------- | --------------------------------------------- | ------------------------------------------------------------ |
+| Mod project | `content/{layer}/game_data/*.toml`, `*.json`  | The authored form.                                           |
+| `.modpkg`   | Per-layer package metadata                    | The merged set of the layer's modules.                       |
+| `.fantome`  | `Layers.{name}.GameData` in `META/info.json`  | The same merged set, in the LeagueToolkit extension.         |
+
+The mod project is the subject of this standard. A `.modpkg` and a `.fantome` are build outputs of a project.
+
+## Vocabulary
+
+- **Target** - the game bin a declaration edits, named by its WAD chunk path. The build never changes which file the game loads; it changes the contents of that file.
+- **Base** - the bytes the build materialises over: the game's own chunk, or the highest-precedence mod copy of that chunk when one is enabled.
+- **Binding** - one kind of edit on a target: `links`, `overrides`, `properties`, `objects`.
+- **Override** - a `PTCH` bin, a file of property-level records the loader applies over a target. An override is a file in a layer; it is not a layer.
+- **Link** - one entry in a bin header's linked-file list. The loader mounts each linked bin when it loads the bin that lists it.
+- **Layer** - a named, prioritised slice of a mod's content. See [Layers](/making-mods/layers/).
+- **Schema** - the [meta class dump](/reference/metaclasses/overview/) for the installed patch: every class, its properties and their types. LTK Manager holds one per patch.
+
+## Declaration Modules
+
+### Location
+
+A layer's declarations live in modules under `content/{layer}/game_data/`: any number of `.toml` or `.json` files, in any directory structure the author likes. Both express the same schema, and a layer may mix them. `.yaml` and `.yml` are reserved for the same schema in YAML; a version 1 reader rejects them, and the examples on this page show the YAML shape for when they are accepted. Discovery is by convention: a layer directory that holds `game_data/` has declarations, one that does not has none. The manifest does not list the modules.
+
+```
+my-mod/
+|-- mod.config.toml
+|-- content/
+|   |-- base/
+|   |   |-- game_data/
+|   |   |   |-- teemo/
+|   |   |   |   |-- skin0.toml
+|   |   |   |   |-- skin0.rito
+|   |   |   |   |-- particles/
+|   |   |   |   |   |-- r_mis.toml
+|   |   |   |-- shared.toml
+|   |   |-- Teemo.wad.client/
+|   |   |   |-- data/characters/teemo/classic.bin
+|   |-- high-res/
+|   |   |-- game_data.toml
+|   |   |-- Teemo.wad.client/
+|   |   |   |-- ...
+```
+
+A layer with one module can write it as `content/{layer}/game_data.toml` or `game_data.json` instead, with no directory. Both present is an error.
+
+Every module is self-contained: it has its own `version` and its own `bin` entries, and it means the same thing wherever it sits in the directory. The layer's declaration set is the concatenation of its modules in module order, each module in its declaration order. Two modules may declare the same target; their bindings merge in that order. Two modules of one layer that set the same key on the same target are a packing error. A file under `game_data/` that is neither a module nor an [override file](#overrides) is an error.
+
+The modules sit outside every `.wad.client` directory. They are not chunks and never pack as chunks. A `.modignore` rule that matches one is a packing error, not a silent drop.
+
+### Module Order
+
+Module order comes from one of two sources, and the layer states which by the presence of a `modules` key:
+
+- **By convention.** With no manifest, modules are taken in lexicographic byte order of their paths relative to `game_data/` (the order of `LC_ALL=C sort`). Every `.toml` and `.json` file under the directory is a module.
+- **By manifest.** A `content/{layer}/game_data.toml` or `game_data.json` beside the directory whose top level has a `modules` key is the layer's manifest. Its list is the module order, and it is authoritative: a module under `game_data/` that the list does not reach is an error, not a silent drop. The manifest may hold `bin` entries of its own; they come first, ahead of every listed module.
+
+<Tabs>
+  <TabItem label="TOML">
+    ```toml
+    version = 1
+    modules = [
+      "teemo/skin0.toml",
+      "teemo/particles/", # every module under the directory, in byte order
+      "shared.toml",
+    ]
+
+    [[bin]]
+    path  = "data/characters/teemo/teemo.bin"
+    links = ["data/characters/teemo/classic.bin"] # the mod's own bin
+    ```
+  </TabItem>
+  <TabItem label="JSON">
+    ```json
+    {
+      "version": 1,
+      "modules": ["teemo/skin0.toml", "teemo/particles/", "shared.toml"],
+      "bin": [
+        { "path": "data/characters/teemo/teemo.bin", "links": ["data/characters/teemo/classic.bin"] }
+      ]
+    }
+    ```
+  </TabItem>
+  <TabItem label="YAML">
+    ```yaml
+    version: 1
+    modules:
+      - teemo/skin0.toml
+      - teemo/particles/ # every module under the directory, in byte order
+      - shared.toml
+
+    bin:
+      - path: data/characters/teemo/teemo.bin
+        links: [data/characters/teemo/classic.bin] # the mod's own bin
+    ```
+  </TabItem>
+</Tabs>
+
+A `modules` entry is a path relative to `game_data/`. A path with a trailing slash names a directory and stands for every module under it, recursively, in byte order. A path names each module at most once; a module reached twice is an error. A `game_data.toml` or `game_data.json` beside a `game_data/` directory and without a `modules` key is an error, since the layer would have two roots and no rule between them.
+
+### Grammar
+
+A module is a `version` and a `bin` array. Each `bin` entry is one target; `path` names it once, and every binding on that target is a key of the same entry. In TOML an entry is a `[[bin]]` table and a binding with entries of its own is a sub-table; in JSON and YAML the same shape is nested objects.
+
+<Tabs>
+  <TabItem label="TOML">
+    ```toml
+    version = 1
+
+    # Jade is the codename of the League Classic game mode; Jade_Teemo is its Teemo.
+    [[bin]]
+    path      = "data/characters/teemo/skins/skin0.bin"
+    links     = ["data/characters/jade_teemo/skins/skin0.bin"]
+    overrides = ["skin0.rito"]
+
+    [[bin]]
+    path = "data/characters/jade_teemo/skins/skin0.bin"
+
+    [bin.properties."Characters/Jade_Teemo/Skins/Skin0"]
+    "skinMeshProperties.selfIllumination" = 0.7
+    ```
+  </TabItem>
+  <TabItem label="JSON">
+    ```json
+    {
+      "version": 1,
+      "bin": [
+        {
+          "path": "data/characters/teemo/skins/skin0.bin",
+          "links": ["data/characters/jade_teemo/skins/skin0.bin"],
+          "overrides": ["skin0.rito"]
+        },
+        {
+          "path": "data/characters/jade_teemo/skins/skin0.bin",
+          "properties": {
+            "Characters/Jade_Teemo/Skins/Skin0": { "skinMeshProperties.selfIllumination": 0.7 }
+          }
+        }
+      ]
+    }
+    ```
+  </TabItem>
+  <TabItem label="YAML">
+    ```yaml
+    version: 1
+
+    # Jade is the codename of the League Classic game mode; Jade_Teemo is its Teemo.
+    bin:
+      - path: data/characters/teemo/skins/skin0.bin
+        links: [data/characters/jade_teemo/skins/skin0.bin]
+        overrides: [skin0.rito]
+
+      - path: data/characters/jade_teemo/skins/skin0.bin
+        properties:
+          Characters/Jade_Teemo/Skins/Skin0:
+            skinMeshProperties.selfIllumination: 0.7
+    ```
+  </TabItem>
+</Tabs>
+
+A TOML sub-table such as `[bin.properties.<entry>]` attaches to the `[[bin]]` that precedes it. Entry names carry slashes and are quoted; property names and map keys are bare. Every example on this page is given in all three forms; they are the same document.
+
+- **`version`** - required, integer, in every module. The schema version of that module. This page describes version 1. A reader that meets a version it does not know refuses the module.
+- **`path`** - required on every `bin` entry. A chunk path: forward slashes, no leading `data/` prefix stripped or added, extension as the game has it. Extensionless paths are legal and common (`shared`, `characters/petbunny`). A 16-hex-digit value is a raw xxh64 hash and passes through as one. Two `bin` entries with the same path in one module are an error; the same path in two modules merges.
+- **Casing** - keys and every declared path or name keep the author's casing. Comparison and hashing use the ASCII-lowercased form, the same rule as [embedded hashtables](/reference/mod-packages/hashtables/#hash-computation).
+- **Backslashes** are an error anywhere a path appears.
+- **Unknown keys** are an error. A module that uses a binding this version does not define is rejected, not ignored. LTK Manager then refuses that layer's declarations, keeps the mod's content, warns the user, and suggests updating the app.
+- **Hash-form names.** Wherever an entry name or a property-path segment appears, a `0x` followed by 8 hex digits is the FNV-1a 32 hash and passes through. That is the only way to reach a property whose name is not yet known. The escape is this standard's, not the game's: the build resolves it, and it cannot appear in an [override file](#overrides), whose records reach the game as written.
+- **Paths to override files** are relative to the module that names them.
+
+### Precedence
+
+Every binding composes across layers and across mods by the same order, the one string overrides use:
+
+1. Mods earlier in the enabled list win over mods later in it.
+2. Within a mod, layers with higher priority win over layers with lower priority.
+3. Within a layer, [module order](#module-order), then declaration order within the module.
+
+What "win" means is per binding and per operation, stated in each binding's section. Two enabled mods that touch the same key on the same target, or where one adds what the other removes, resolve by this order, and the build reports the conflict so the manager can show it. A mod may ship a target in one layer and declare on it in another; the shipped copy is the base for the declaration.
+
+### Operations
+
+A binding's value is either a plain value or an operation table. A plain value is the shortcut for the binding's default operation.
+
+| Written               | Meaning                                                                 |
+| --------------------- | ----------------------------------------------------------------------- |
+| `key = value`         | Set: the value replaces what the base has.                              |
+| `key = [ ... ]`       | On `links`: add. On a list property: set.                               |
+| `key = { add = ... }` | Add elements to a list, entries to a map, or paths to the link list.    |
+| `key = { remove = ... }` | Remove elements, entries, paths, or a whole object.                  |
+
+`add` and `remove` may appear together in one table. A removal names what to remove: a path for `links`, a key for a map, and for a list either a value or an index, by the [element type](#list-removal).
+
+## Bindings
+
+Every binding is keyed by target and materialised into that target's `PROP` by the build. The game never sees a `PTCH` emitted by this standard; a mod's override file is an input to the build, and the output is one plain `PROP` per target.
+
+| Binding      | Payload                                          | Materialised as                              |
+| ------------ | ------------------------------------------------ | -------------------------------------------- |
+| `links`      | chunk paths to add or remove                     | header linked-file list                      |
+| `overrides`  | override files in the layer                      | records applied over the target's objects    |
+| `properties` | entry, property path, value or operation          | per-property replacement records             |
+| `objects`    | entry, clone source or class, and property sets   | a new object in the target, or a deletion   |
+
+### `links`
+
+Chunk paths added to, or removed from, the target bin's linked-file list.
+
+<Tabs>
+  <TabItem label="TOML">
+    ```toml
+    [[bin]]
+    path  = "data/characters/teemo/teemo.bin"
+    links = ["data/characters/teemo/classic.bin"] # the mod's own bin
+
+    [[bin]]
+    path = "data/characters/teemo/skins/skin0.bin"
+
+    [bin.links]
+    add    = ["data/characters/jade_teemo/skins/skin0.bin"] # League Classic Teemo's VFX definitions
+    remove = ["data/characters/teemo/animations/skin0.bin"] # classic.bin carries the replacement graph
+    ```
+  </TabItem>
+  <TabItem label="JSON">
+    ```json
+    {
+      "bin": [
+        {
+          "path": "data/characters/teemo/teemo.bin",
+          "links": ["data/characters/teemo/classic.bin"]
+        },
+        {
+          "path": "data/characters/teemo/skins/skin0.bin",
+          "links": {
+            "add": ["data/characters/jade_teemo/skins/skin0.bin"],
+            "remove": ["data/characters/teemo/animations/skin0.bin"]
+          }
+        }
+      ]
+    }
+    ```
+  </TabItem>
+  <TabItem label="YAML">
+    ```yaml
+    bin:
+      - path: data/characters/teemo/teemo.bin
+        links: [data/characters/teemo/classic.bin] # the mod's own bin
+
+      - path: data/characters/teemo/skins/skin0.bin
+        links:
+          add: [data/characters/jade_teemo/skins/skin0.bin] # League Classic Teemo's VFX definitions
+          remove: [data/characters/teemo/animations/skin0.bin] # classic.bin carries the replacement graph
+    ```
+  </TabItem>
+</Tabs>
+
+- A link is a chunk path, written without `.bin` appended by tooling and hashed the way the game hashes it: ASCII-lowercase, then xxh64 with seed 0.
+- The materialised list is the base's list, less the removals, followed by the additions in precedence order, de-duplicated on the lowercased path. The game keeps declaration order and drops a link whose chunk does not exist with no diagnostic; the build reports that case instead.
+- A link is expected to be a chunk in some enabled layer or in the game index. Either miss is a build-time report.
+- A removal that names a path the base does not list is a report.
+- A `PTCH` bin declares no links. A target that resolves to a `PTCH` is an error.
+
+### `overrides`
+
+Override files in the layer whose records the build applies over the target.
+
+<Tabs>
+  <TabItem label="TOML">
+    ```toml
+    [[bin]]
+    path      = "data/characters/teemo/skins/skin0.bin"
+    overrides = ["skin0.rito"]
+    ```
+  </TabItem>
+  <TabItem label="JSON">
+    ```json
+    {
+      "bin": [
+        { "path": "data/characters/teemo/skins/skin0.bin", "overrides": ["skin0.rito"] }
+      ]
+    }
+    ```
+  </TabItem>
+  <TabItem label="YAML">
+    ```yaml
+    bin:
+      - path: data/characters/teemo/skins/skin0.bin
+        overrides: [skin0.rito]
+    ```
+  </TabItem>
+</Tabs>
+
+- A path is relative to the module. Two file forms are accepted, by extension: `.ptch`, a `PTCH` bin as the game defines it, and `.rito`, [ritobin text](/reference/file-formats/ritobin/) whose type is `PTCH`. Any other extension is a packing error. A `.rito` file whose type is not `PTCH` is a packing error.
+- The record language, matching rules and limits are those of [PTCH property patches](https://github.com/LeagueToolkit/league-toolkit/blob/main/docs/design/ptch-property-patches.md). Records are applied as authored; nothing is coerced. An override is the binding for an edit that must be exactly what its author wrote.
+- Records from every enabled declaration on one target are joined in precedence order. Two records on the same property resolve by that order and are reported.
+- Every record is checked against the base before it is applied: the entry exists, the property exists on its class, the value's type matches. A record that fails the check is reported and skipped; the build does not fail.
+- The joined records are applied and the result is written as a `PROP`. A `PTCH` cannot target a `PTCH`, and the build never emits one.
+- Packing converts a `.rito` file to `.ptch`; a package stores the binary form only.
+
+### `properties`
+
+A per-property edit on one entry of the target: set a value, replace a container, add to or remove from a list or map.
+
+<Tabs>
+  <TabItem label="TOML">
+    ```toml
+    [[bin]]
+    path = "data/characters/teemo/skins/skin0.bin"
+
+    # Give base Teemo the League Classic look.
+    [bin.properties."Characters/Teemo/Skins/Skin0"]
+    "skinMeshProperties.texture"          = "assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex"
+    "skinMeshProperties.selfIllumination" = 1.0
+    iconCircle                            = "assets/characters/jade_teemo/hud/jade_teemo_circle_301.tex"
+    iconAvatar                            = "assets/characters/jade_teemo/hud/jade_teemo_circle_0.tex" # absent from the base; the schema types it
+    "skinAudioProperties.tagEventList"    = { add = ["Jade_Teemo"] }
+
+    # Point the ult at League Classic's missile, add its pickup effect, mute the firefly light.
+    [bin.properties."Characters/Teemo/Skins/Skin0/Resources".resourceMap]
+    remove = ["Teemo_R_Firefly_GroundLight"]
+
+    [bin.properties."Characters/Teemo/Skins/Skin0/Resources".resourceMap.add]
+    Teemo_R_Mis    = "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis"
+    Teemo_R_Pickup = "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Pickup"
+    "0x6ecc5fac"   = "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_E_Poison" # an uncracked key, by hash
+    Teemo_R_Debuff = "" # a null link: present, resolves to nothing
+    ```
+  </TabItem>
+  <TabItem label="JSON">
+    ```json
+    {
+      "bin": [
+        {
+          "path": "data/characters/teemo/skins/skin0.bin",
+          "properties": {
+            "Characters/Teemo/Skins/Skin0": {
+              "skinMeshProperties.texture": "assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex",
+              "skinMeshProperties.selfIllumination": 1.0,
+              "iconCircle": "assets/characters/jade_teemo/hud/jade_teemo_circle_301.tex",
+              "iconAvatar": "assets/characters/jade_teemo/hud/jade_teemo_circle_0.tex",
+              "skinAudioProperties.tagEventList": { "add": ["Jade_Teemo"] }
+            },
+            "Characters/Teemo/Skins/Skin0/Resources": {
+              "resourceMap": {
+                "remove": ["Teemo_R_Firefly_GroundLight"],
+                "add": {
+                  "Teemo_R_Mis": "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis",
+                  "Teemo_R_Pickup": "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Pickup",
+                  "0x6ecc5fac": "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_E_Poison",
+                  "Teemo_R_Debuff": ""
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+    ```
+  </TabItem>
+  <TabItem label="YAML">
+    ```yaml
+    bin:
+      - path: data/characters/teemo/skins/skin0.bin
+        properties:
+          # Give base Teemo the League Classic look.
+          Characters/Teemo/Skins/Skin0:
+            skinMeshProperties.texture: assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex
+            skinMeshProperties.selfIllumination: 1.0
+            iconCircle: assets/characters/jade_teemo/hud/jade_teemo_circle_301.tex
+            iconAvatar: assets/characters/jade_teemo/hud/jade_teemo_circle_0.tex # absent from the base; the schema types it
+            skinAudioProperties.tagEventList:
+              add: [Jade_Teemo]
+
+          # Point the ult at League Classic's missile, add its pickup effect, mute the firefly light.
+          Characters/Teemo/Skins/Skin0/Resources:
+            resourceMap:
+              remove: [Teemo_R_Firefly_GroundLight]
+              add:
+                Teemo_R_Mis: Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis
+                Teemo_R_Pickup: Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Pickup
+                "0x6ecc5fac": Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_E_Poison # an uncracked key, by hash
+                Teemo_R_Debuff: "" # a null link: present, resolves to nothing
+    ```
+  </TabItem>
+</Tabs>
+
+- A property key is a [property path](#property-paths) in the game's own language, so one edit can reach a nested field, a list element or a map entry directly.
+- A value is written as a plain TOML value. The build reads the property's type from the [schema](#vocabulary) and coerces the value to it; see [Coercion](#coercion). The declaration never states a type the schema already knows.
+- A type tag is optional: `"skinMeshProperties.selfIllumination" = { f32 = 1.0 }`. A tagged value pins the type, and a base or schema whose type disagrees is a report and the edit is skipped. An untagged value adapts to whatever type the property has on the day the overlay is built.
+- `add` on a list is materialised as a whole-list replacement holding the base's elements, less removals, followed by the additions, each coerced to the element type. The game cannot grow a list through an index; a replacement is the only shape that appends. `add` on a map adds or replaces by key and is materialised as a whole-map replacement. An empty-string value on a map of links writes a null link, which the game treats as a present entry with no target.
+- Every edit is checked against the base the way an `overrides` record is, and reported on the same terms. A value that does not coerce is a report on the edit, and the edit is skipped.
+
+#### Property Paths
+
+A property key is Riot's own property path, the language the game's `PropertyPathIterator` walks and `PTCH` records name their target with. `ltk_meta::path::PropertyPath` implements it and is normative; the [PTCH design](https://github.com/LeagueToolkit/league-toolkit/blob/main/docs/design/ptch-property-patches.md#s8.1) carries the full grammar.
+
+```text
+path       = segment *( "." segment )
+segment    = name [ subscript ]
+name       = 1*name-char        ; anything but . [ ] { } ( ) and control characters
+subscript  = "[" index "]" / "{" key "}"
+index      = decimal / "0x" hex / "0" octal
+key        = json-number / json-string / "true" / "false"
+```
+
+- A `name` selects the property whose hash is FNV-1a 32 of the ASCII-lowercased name. Casing is cosmetic. A `0x` 8-hex name is this standard's [hash-form escape](#grammar).
+- `[index]` selects an element of a `list` or `list2`. On an `option` only `[0]` can succeed.
+- `{key}` selects a `map` entry. The key text is JSON: `{5}`, `{"weapon"}`, `{true}`. A string is hashed to a `hash` or `file` key kind; a number is the raw key value.
+- Between segments a `pointer` is dereferenced (a null pointer stops with a report), an `embed` is descended inline, and a `link` is a leaf: the path never follows a link into another object.
+- One subscript per segment. The format has no nested containers, so `A[1][2]` is not a path.
+
+Every key in a `properties` table is one path, and a path can end anywhere a value can sit:
+
+<Tabs>
+  <TabItem label="TOML">
+    ```toml
+    [[bin]]
+    path = "data/characters/teemo/skins/skin0.bin"
+
+    [bin.properties."Characters/Teemo/Skins/Skin0"]
+    "skinMeshProperties.materialOverride[0].texture" = "assets/characters/jade_teemo/skins/base/jade_teemo_base_mushroom_tx_cm.tex"
+    "skinMeshProperties.overrideBoundingBox"         = [50.0, 180.0, 150.0]
+    "healthBarData.unitHealthBarStyle"               = 12
+    "skinAudioProperties.bankUnits[0].events"        = { add = ["Play_sfx_Teemo_R_Pickup"] }
+
+    [bin.properties."Characters/Teemo/Skins/Skin0/Resources"]
+    "resourceMap{\"Teemo_R_Mis\"}" = "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis"
+    ```
+  </TabItem>
+  <TabItem label="JSON">
+    ```json
+    {
+      "bin": [
+        {
+          "path": "data/characters/teemo/skins/skin0.bin",
+          "properties": {
+            "Characters/Teemo/Skins/Skin0": {
+              "skinMeshProperties.materialOverride[0].texture": "assets/characters/jade_teemo/skins/base/jade_teemo_base_mushroom_tx_cm.tex",
+              "skinMeshProperties.overrideBoundingBox": [50.0, 180.0, 150.0],
+              "healthBarData.unitHealthBarStyle": 12,
+              "skinAudioProperties.bankUnits[0].events": { "add": ["Play_sfx_Teemo_R_Pickup"] }
+            },
+            "Characters/Teemo/Skins/Skin0/Resources": {
+              "resourceMap{\"Teemo_R_Mis\"}": "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis"
+            }
+          }
+        }
+      ]
+    }
+    ```
+  </TabItem>
+  <TabItem label="YAML">
+    ```yaml
+    bin:
+      - path: data/characters/teemo/skins/skin0.bin
+        properties:
+          Characters/Teemo/Skins/Skin0:
+            skinMeshProperties.materialOverride[0].texture: assets/characters/jade_teemo/skins/base/jade_teemo_base_mushroom_tx_cm.tex
+            skinMeshProperties.overrideBoundingBox: [50.0, 180.0, 150.0]
+            healthBarData.unitHealthBarStyle: 12
+            skinAudioProperties.bankUnits[0].events:
+              add: [Play_sfx_Teemo_R_Pickup]
+
+          Characters/Teemo/Skins/Skin0/Resources:
+            resourceMap{"Teemo_R_Mis"}: Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis
+    ```
+  </TabItem>
+</Tabs>
+
+A path that ends on a container is where an [operation table](#operations) applies, and the two spellings meet: `resourceMap = { add = { Teemo_R_Mis = "..." } }` and `"resourceMap{\"Teemo_R_Mis\"}" = "..."` set the same entry. A path that ends inside a container element (`Elements[3].Size`) edits that element in place; a set on `Elements[3]` replaces it whole. An index or key that the base does not have is a report; `add` is the only way to grow a container.
+
+#### List Removal
+
+`remove` on a list addresses elements by the list's element type:
+
+- **By value** for scalar-like elements: numbers, booleans, strings, `hash`, `link`, `file`. The value is coerced, then matched. A value the base does not hold is a report.
+- **By index** for `embed` and `pointer` elements, which have no natural value. An index out of range of the base's list is a report.
+
+#### Coercion
+
+The property's type is the target; the TOML value's kind is the source. The type comes from the schema for the object's class; a build with no schema for the installed patch falls back to the type the base bin serialises, reports the fallback, and reports a property the base omits as untypable. The rules are the same wherever a value appears: a property, a list element, a map key or value, a field of an embedded object. Type names are [ritobin](/reference/file-formats/ritobin/)'s: `file` is the [bin format](/reference/file-formats/bin/)'s `WadChunkLink`, `link` its `ObjectLink`, `list` and `list2` its `Container` and `UnorderedContainer`, `pointer` its `Struct`, `embed` its `Embedded`, `option` its `Optional`, `flag` its `BitBool`, `rgba` its `Color`.
+
+| TOML value | Coerces to                                       | Rule                                                                                                                                             |
+| ---------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| integer    | `i8` to `i64`, `u8` to `u64`, `flag`             | In range for the target width and sign; out of range is a report, never a wrap. A `flag` accepts `0` and `1`.                                    |
+| integer    | `f32`                                            | Exact when representable; a loss of precision is a report.                                                                                       |
+| float      | `f32`                                            | Rounded to single precision. A float never coerces to an integer type, even with a zero fraction.                                                |
+| boolean    | `bool`, `flag`                                   | As is.                                                                                                                                           |
+| string     | `string`                                         | As is.                                                                                                                                           |
+| string     | `hash`, `link`                                   | FNV-1a 32 of the ASCII-lowercased string. A `0x` followed by 8 hex digits is a hash and passes through.                                          |
+| string     | `file`                                           | xxh64 of the ASCII-lowercased path. A `0x` followed by 16 hex digits is a hash and passes through.                                               |
+| array      | `list`, `list2`                                  | Each element coerced to the element type.                                                                                                        |
+| array      | `option`                                         | Zero or one element.                                                                                                                             |
+| array      | `vec2`, `vec3`, `vec4`, `rgba`, `mtx44`          | Exactly 2, 3, 4, 4 or 16 numbers. An `rgba` takes four integers from 0 to 255; a colour is never coerced from a string.                          |
+| table      | `map`                                            | Each key coerced to the key type, each value to the value type.                                                                                  |
+| table      | `embed`, `pointer`                               | Each key is a property name on the value's class, coerced to that property's type. The class is the base value's, or is named by a `class` key when the base value is null. |
+
+Two things an untagged value never does:
+
+- **Fail on a retype.** A property that Riot retypes between patches, `string` to `file` say, keeps working: the string coerces to whichever type the schema has on the day the overlay is built. That is the point of coercing at build time instead of tagging at authoring time.
+- **Silently narrow.** Any coercion that loses information is a report and skips the edit.
+
+A tagged value is a table with exactly one key that names a type. An operation table is a table whose keys are all operation names (`add`, `remove`). A property, map key or embedded field that is itself named like a type or an operation is written inside a tagged `embed` or `map` form, which disambiguates it.
+
+### `objects`
+
+A new object in the target, cloned from an existing entry or constructed from a class, with property sets applied; or the deletion of an object.
+
+<Tabs>
+  <TabItem label="TOML">
+    ```toml
+    [[bin]]
+    path = "data/characters/teemo/skins/skin0.bin"
+
+    # A copy of the ult missile that fires twice as often.
+    [bin.objects."Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis"]
+    clone = "Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis"
+
+    [bin.objects."Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis".set]
+    particleName                                    = "Teemo_Classic_R_Mis"
+    "complexEmitterDefinitionData[0].rate.constantValue" = 2.0
+
+    # A second resolver, constructed from the schema, holding the mod's own effects.
+    [bin.objects."Characters/Teemo/Skins/Skin0/ClassicResources"]
+    class = "ResourceResolver"
+
+    [bin.objects."Characters/Teemo/Skins/Skin0/ClassicResources".set.resourceMap]
+    Teemo_R_Mis = "Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis"
+
+    # The stock missile definition, once nothing resolves to it.
+    [bin.objects."Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis"]
+    remove = true
+    ```
+  </TabItem>
+  <TabItem label="JSON">
+    ```json
+    {
+      "bin": [
+        {
+          "path": "data/characters/teemo/skins/skin0.bin",
+          "objects": {
+            "Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis": {
+              "clone": "Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis",
+              "set": {
+                "particleName": "Teemo_Classic_R_Mis",
+                "complexEmitterDefinitionData[0].rate.constantValue": 2.0
+              }
+            },
+            "Characters/Teemo/Skins/Skin0/ClassicResources": {
+              "class": "ResourceResolver",
+              "set": {
+                "resourceMap": {
+                  "Teemo_R_Mis": "Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis"
+                }
+              }
+            },
+            "Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis": { "remove": true }
+          }
+        }
+      ]
+    }
+    ```
+  </TabItem>
+  <TabItem label="YAML">
+    ```yaml
+    bin:
+      - path: data/characters/teemo/skins/skin0.bin
+        objects:
+          # A copy of the ult missile that fires twice as often.
+          Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis:
+            clone: Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis
+            set:
+              particleName: Teemo_Classic_R_Mis
+              complexEmitterDefinitionData[0].rate.constantValue: 2.0
+
+          # A second resolver, constructed from the schema, holding the mod's own effects.
+          Characters/Teemo/Skins/Skin0/ClassicResources:
+            class: ResourceResolver
+            set:
+              resourceMap:
+                Teemo_R_Mis: Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis
+
+          # The stock missile definition, once nothing resolves to it.
+          Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis:
+            remove: true
+    ```
+  </TabItem>
+</Tabs>
+
+- `clone` names an entry in the base. The build copies it, applies `set`, and rewrites the copy's own-path property where its class carries one.
+- `class` constructs a default object of that class from the schema; `set` fills it. A class the schema does not know is a report. `clone` and `class` are exclusive.
+- `set` values follow [Coercion](#coercion) and the [operations](#operations), against the cloned or constructed object.
+- `remove = true` deletes the object. The client's override format carries a deletion record, and the build materialises the removal by omitting the object from the written `PROP`.
+- An entry name the base already holds under `clone` or `class` is a report; the edit for an existing object is `properties`.
+
+## Build Semantics
+
+The overlay build handles declarations in its two existing passes.
+
+**Pass 1 - plan.** Every enabled mod's active layers fold into one plan per target chunk: link additions and removals, the ordered list of override files, and the property and object edits, all in [precedence](#precedence) order. Each target becomes one synthetic entry in the override set with a fingerprint over its whole plan as its content hash, so a change to any declaration invalidates exactly that target. The declared links join the build's linked-bin pre-flight, which reports links nothing mounts. Cross-mod conflicts are detected here and reported.
+
+**Pass 2 - materialise.** For each target the build resolves the base: the highest-precedence enabled mod copy of the chunk when one exists, else the game's chunk. It refuses a `PTCH` base and a version-1 base (the game loads a base at version 2 or 3 only), and reports either. It then applies the plan - links, override records, property edits, object edits - with `ltk_meta`, checking every record against the base and the schema, and writes one `PROP`. Objects the plan does not touch copy byte for byte.
+
+**Reports.** The game reports nothing on this path: a missing link, a stale override, a mistyped property and a dangling resolver value all fail silently at load. The build is the one place these are caught, and every one lands in the build report next to the existing linked-bin findings. A report never fails the build. LTK Manager shows the report per mod as warnings and never blocks the profile on one.
+
+## Rules at a Glance
+
+For tools that write projects and packages:
+
+- Declarations in `game_data/` modules per layer, TOML or JSON, ordered by file name or by a `modules` manifest; every module carries a `version` key.
+- One `bin` entry per target with a `path`; every declared path or name keeps its casing and uses forward slashes.
+- Never emit a binding or operation this version does not define.
+- Fail packing on the same key set twice in one layer, on an override file with an unknown extension, and on a `.rito` file that is not a `PTCH`.
+- Convert `.rito` override files to `.ptch` at pack; store the binary form.
+- Warn on a chunk path in a layer that is in the game index and is not a declared target: it is a whole-file override of a Riot file.
+
+For tools that build overlays:
+
+- Compose by precedence: mod order, then layer priority, then module order, then declaration order. Report every cross-mod conflict.
+- Hash lowercased: xxh64 for chunk paths and `file` values, FNV-1a 32 for entry names, `hash` and `link` values, and map keys of those types.
+- Type from the schema, then the base; coerce untagged values; pin tagged ones.
+- Materialise every target as a `PROP` over the installed base; never emit a `PTCH`.
+- Check every edit against the base; report and skip, never fail.
+
+## Mod Projects
+
+The declaration modules and override files are part of the layer's content directory and travel with it. The manifest is unchanged. The Creator Workshop edits modules on disk in place, preserving comments and order. A declaration on a target no module holds yet goes to a module named after the target's WAD, `game_data/{wad}.toml`, created if missing and appended to the layer's `modules` manifest when one exists. The Workshop writes TOML; it edits a JSON module in place when that is where the target already lives.
+
+## Modpkg
+
+A modpkg build reads each layer's modules in module order and stores the merged declarations in that layer's package metadata, in the same logical schema. Override files are stored as `.ptch` chunks of the layer. A project rebuilt from a modpkg recovers one `game_data.toml` per layer, in TOML. The module split and the manifest are authoring structure; a build with the keep-modules option stores module names in the metadata so a rebuilt project keeps them, and without it they are the one thing the round trip does not keep.
+
+## Fantome Packaging
+
+Declarations join the [LeagueToolkit extension](/reference/mod-packages/fantome/#the-leaguetoolkit-extension) of `info.json` as `GameData` under each `Layers.{name}`, beside `StringOverrides`, carrying the layer's merged set in the same logical schema. Override files live under `META/game_data/`, with paths relative to the archive root. Fantome keeps only the base layer's content, as it does for every other per-layer feature.
+
+## Roadmap
+
+1. **`links` and `overrides`.** The module loader, the modpkg and fantome fields, the plan entry, and pass 2 on `ltk_meta`. Delivers [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191).
+2. **`properties`.** Coercion against the schema, list and map operations, reports.
+3. **`objects`.** Clone, construct, delete.
+
+## Open Questions
+
+- **Same-target conflict granularity in the report.** Whether the manager shows a conflict per target or per key. Per key is more useful and more noise.
+- **Editor rewriting.** Round-trip-safe TOML editing that preserves comments and order is a real requirement on the Workshop; the crate that does it is not chosen.
+
+## Related Pages
+
+- [Mod Projects](/making-mods/mod-projects/) - the project layout and manifest the modules live in
+- [Layers](/making-mods/layers/) - priority and the layer content directory
+- [String Overrides](/making-mods/string-overrides/) - the per-layer precedent for precedence and storage
+- [Embedded Hashtables](/reference/mod-packages/hashtables/) - the naming standard the same hash rules come from
+- [Metaclasses](/reference/metaclasses/overview/) - the schema the build types against
+- [Ritobin](/reference/file-formats/ritobin/) - the text form override files and type names come from
+- [Fantome Package](/reference/mod-packages/fantome/) - the archive layout and the extension the declarations join
+- [PTCH property patches](https://github.com/LeagueToolkit/league-toolkit/blob/main/docs/design/ptch-property-patches.md) - the record language override files use

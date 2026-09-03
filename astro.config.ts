@@ -182,6 +182,7 @@ export default defineConfig({
               items: [
                 { label: 'Fantome', slug: 'reference/mod-packages/fantome' },
                 { label: 'Embedded Hashtables', slug: 'reference/mod-packages/hashtables' },
+                { label: 'Game Data Declarations', slug: 'reference/mod-packages/game-data' },
               ],
             },
             {
