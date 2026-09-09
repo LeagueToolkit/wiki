@@ -128,6 +128,7 @@ export default defineConfig({
                 { label: 'Overview', slug: 'tools/ltk-manager/overview' },
                 { label: 'Features', slug: 'tools/ltk-manager/features' },
                 { label: 'Configuration', slug: 'tools/ltk-manager/configuration' },
+                { label: 'Privacy', slug: 'manager/privacy' },
               ],
             },
             {
