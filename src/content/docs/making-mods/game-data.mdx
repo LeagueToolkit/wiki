@@ -1,0 +1,296 @@
+---
+title: Authoring Game Data Declarations
+description: Add and remove BIN dependencies with layer manifests, ordered modules, and reusable source files.
+tags:
+  type: guide
+  audience: [mod-creator]
+  subject: [mod-project, bin, layers]
+  status: wip
+---
+
+import { FileTree, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Game data declarations describe edits to a game's [BIN file](/reference/file-formats/bin/).
+You write them in a layer manifest. The overlay builder applies them to the target BIN while
+building your mod's overlay.
+
+This guide covers **links**: the dependency paths in a BIN's header. You can add a companion
+BIN to that list or remove an existing dependency. The target's objects and properties stay intact.
+
+:::caution[Tool support]
+These examples require a packer and overlay builder with the declaration support in
+[league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225).
+Support in a particular LTK Manager release depends on its bundled engine. This guide describes
+hand-authored project files; it does not require a declaration editor in the Workshop.
+
+The supported bindings are `links`, `+links`, and `-links`. Property edits, `overrides`, `objects`,
+and type pins belong to the broader [proposal](/reference/mod-packages/game-data/). The link
+engine rejects those bindings.
+:::
+
+## Add your first link
+
+Start with an existing [mod project](/making-mods/mod-projects/) and a companion BIN you want
+the game to load. This example uses `mods/teemo-example/particles.bin` as your custom BIN's
+game path. Replace it with the path of your own content.
+
+Place the companion BIN in the layer's WAD content and create `game_data.yaml` at the layer root:
+
+{/* prettier-ignore */}
+<FileTree>
+- my-mod/
+  - mod.config.json
+  - content/
+    - base/
+      - game_data.yaml
+      - Teemo.wad.client/
+        - mods/
+          - teemo-example/
+            - particles.bin
+</FileTree>
+
+`content/base/game_data.yaml`:
+
+```yaml
+version: 1
+modules:
+  - target: data/characters/teemo/skins/skin0.bin
+    links:
+      - mods/teemo-example/particles.bin
+```
+
+| Part         | Meaning                                                                 |
+| ------------ | ----------------------------------------------------------------------- |
+| `version: 1` | The declaration format version, independent of the League patch number. |
+| `modules`    | An ordered list of edits in this layer.                                 |
+| `target`     | The game chunk to edit.                                                 |
+| `links`      | Dependency paths to add to that target.                                 |
+
+The target must exist in the game or enabled mod content. You do not need a copy of
+`skin0.bin` in this project for a link edit. The companion `particles.bin` must exist at the
+declared path in content available to the game.
+
+Adding a link does not create the companion BIN, copy its objects into the target, or redirect
+a particle effect to an object inside it. Those are separate content changes.
+
+## Choose a target
+
+`target` is one string, containing either a game path or a raw WAD chunk hash:
+
+| Example value                           | Interpretation                                                                 |
+| --------------------------------------- | ------------------------------------------------------------------------------ |
+| `data/characters/teemo/skins/skin0.bin` | A literal game path.                                                           |
+| `shared`                                | An extensionless game path.                                                    |
+| `'0123456789abcdef'`                    | A raw hash: exactly 16 hexadecimal digits. This example hash is a placeholder. |
+
+Use the chunk path inside the WAD. Leave out `content/base/`, the WAD directory name, and any
+absolute filesystem prefix. Preserve the actual extension, including its absence. Use forward
+slashes, including on Windows.
+
+Raw hashes have no `0x` prefix or `.bin` suffix. A string with either is treated as a path.
+Always quote hashes in YAML, especially values containing only digits. A literal path consisting
+of exactly 16 hexadecimal characters is reserved for hash notation.
+
+Path lookup ignores ASCII letter case. Other characters remain literal: separators, whitespace,
+and suffixes are not cleaned up. The object forms `target: { path: ... }` and
+`target: { hash: ... }` are invalid in this engine.
+
+Link values are game paths, not raw hashes or local source filenames. Each link is a nonempty
+string of at most 65,535 UTF-8 bytes.
+
+## Add and remove dependencies
+
+Use `links` or its alias `+links` for additions. Use `-links` for removals. This alternative
+manifest removes an example old dependency and adds its replacement:
+
+```yaml
+version: 1
+modules:
+  - target: data/characters/teemo/skins/skin0.bin
+    '-links':
+      - mods/teemo-example/old-particles.bin
+    '+links':
+      - mods/teemo-example/particles.bin
+```
+
+`links` adds to the existing list; it does not replace the list. Matching ignores ASCII letter
+case. Additions preserve the written spelling and list order, with duplicate paths omitted.
+A removal with no matching dependency produces a diagnostic and leaves the other edits active.
+
+Within one step, removals run before additions, regardless of key order. Removing and adding the
+same path leaves that path present. A step can contain `links` or `+links`, but not both aliases.
+
+## Organize edits into modules and steps
+
+A **module** selects one target and contains one of these forms:
+
+- Direct bindings, such as the `links` list in the first example.
+- A `steps` list of ordered binding groups.
+- A `source` filename containing the bindings or steps.
+
+Keep one form per module. There is no `inline` wrapper.
+
+Use `steps` when the order between groups matters. In this example, the second step removes the
+link added by the first. The final list has no `temporary.bin` dependency:
+
+```yaml
+version: 1
+modules:
+  - target: data/characters/teemo/skins/skin0.bin
+    steps:
+      - links:
+          - mods/teemo-example/temporary.bin
+      - '-links':
+          - mods/teemo-example/temporary.bin
+```
+
+You can also repeat a target in separate modules. Modules run in array order, and each module
+reads the preceding module's result. Add another module with a different `target` to edit another BIN.
+
+## Reuse a source file
+
+A source file holds an edit independently of its target. For example:
+
+{/* prettier-ignore */}
+<FileTree>
+- content/base/
+  - game_data.yaml
+  - declarations/
+    - particle-links.yaml
+</FileTree>
+
+`content/base/game_data.yaml`:
+
+```yaml
+version: 1
+modules:
+  - target: data/characters/teemo/skins/skin0.bin
+    source: declarations/particle-links.yaml
+```
+
+`content/base/declarations/particle-links.yaml`:
+
+```yaml
+version: 1
+links:
+  - mods/teemo-example/particles.bin
+```
+
+Keep `target` in the manifest. The source has its own `version: 1` and direct bindings or
+`steps`; it has no `modules` wrapper. A source cannot select a target or include another source.
+
+The `source` path is relative to the layer root, here `content/base/`. It uses forward slashes
+and must stay within that layer, including through symlinks. A source may use YAML, TOML, or
+JSON independently of the manifest's format.
+
+To reuse the edit for another target, add another module referencing the same source. Assigning
+the same source to the same target twice is an error. To customize a source's result, add a
+separate module for that target immediately below the source module.
+
+The manifest and referenced sources must exist and must not be excluded by `.modignore`.
+An unreferenced source file contributes no declarations.
+
+## Choose a manifest format
+
+Each layer accepts exactly one manifest: `game_data.yaml`, `game_data.yml`, `game_data.json`, or
+`game_data.toml`. Choose one of these alternatives; do not place multiple formats in the same layer.
+
+<Tabs>
+  <TabItem label="YAML">
+
+    `content/base/game_data.yaml`:
+
+    ```yaml
+    version: 1
+    modules:
+      - target: data/characters/teemo/skins/skin0.bin
+        links:
+          - mods/teemo-example/particles.bin
+    ```
+
+  </TabItem>
+  <TabItem label="JSON">
+
+    `content/base/game_data.json`:
+
+    ```json
+    {
+      "version": 1,
+      "modules": [
+        {
+          "target": "data/characters/teemo/skins/skin0.bin",
+          "links": ["mods/teemo-example/particles.bin"]
+        }
+      ]
+    }
+    ```
+
+  </TabItem>
+  <TabItem label="TOML">
+
+    `content/base/game_data.toml`:
+
+    ```toml
+    version = 1
+
+    [[modules]]
+    target = "data/characters/teemo/skins/skin0.bin"
+    links = ["mods/teemo-example/particles.bin"]
+    ```
+
+  </TabItem>
+</Tabs>
+
+Keep one `version` and one `modules` list in a manifest. Unknown fields, duplicate keys,
+unsupported versions, and mixed module forms are errors.
+
+## Layers, ordering, and packaging
+
+Each layer owns its manifest. Only enabled layers contribute declarations. You do not list
+declaration filenames in `mod.config.json` or `mod.config.toml`.
+
+The overlay builder selects the highest-precedence enabled mod copy of the target as its base,
+or the game's copy when no mod supplies one. It applies declarations in this order:
+
+1. Mods from lowest to highest precedence.
+2. Layers from lowest to highest priority, with layer name as the tie-breaker.
+3. Modules in manifest order.
+4. Steps in their listed order.
+
+Source filenames do not control order. A higher-precedence removal can remove a lower-precedence
+addition. A whole-file mod copy also supplies the starting objects and dependencies for all
+declarations targeting that BIN.
+
+[Packing](/making-mods/packaging/) validates the manifests and expands source files into package
+metadata. These files are build inputs and are excluded from game content. Invalid declarations
+fail packing. Game-dependent checks, such as target existence, happen during the overlay build.
+
+`.modpkg` carries declarations per layer. `.fantome` carries base-layer declarations in the
+LeagueToolkit extension; a consumer must support that extension to apply them. Fantome packing
+omits non-base layers. Extraction reconstructs a `game_data.json` manifest with inline steps;
+source filenames, comments, and formatting are not reconstructed.
+
+## Check your result
+
+Build the overlay with the intended mods and layers enabled, then inspect its diagnostics.
+A successful pack verifies the declaration files, not the availability of every game target or
+dependency. The target must be a valid `PROP` BIN at version 2 or 3; `PTCH` files and version 1
+BINs are unsupported bases.
+
+| Problem                     | What to check                                                                                                                                                                                  |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Multiple manifests          | Keep one `game_data.*` manifest at the layer root.                                                                                                                                             |
+| Declarations rejected       | Check the reported file, supported keys, `version`, and module body form. An invalid module rejects that layer's declarations. Ordinary mod content remains available during overlay building. |
+| Missing or ignored source   | Match the layer-relative filename and check `.modignore`.                                                                                                                                      |
+| Duplicate source assignment | Keep only one assignment of a given source to a given target, including aliases of either path.                                                                                                |
+| Target skipped              | Check its game path or 16-digit hash, enabled content, and BIN format. A missing, invalid, or blocked target receives no declaration edits.                                                    |
+| Link removal is absent      | The dependency is not present at that step. Check the path and preceding edits.                                                                                                                |
+| Linked BIN is missing       | Supply the companion BIN at the declared game path in enabled content.                                                                                                                         |
+| No edits appear             | Check the layer is enabled, the manifest is at its root, and both packing and overlay tools support declarations.                                                                              |
+
+## Related pages
+
+- [Mod Projects](/making-mods/mod-projects/) - project layout and content paths.
+- [Layers](/making-mods/layers/) - optional content and priorities.
+- [BIN Files](/reference/file-formats/bin/) - property bins and linked files.
+- [Game Data Declarations proposal](/reference/mod-packages/game-data/) - the broader declaration design.

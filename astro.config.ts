@@ -107,6 +107,7 @@ export default defineConfig({
             { label: 'Migrating to Projects', slug: 'making-mods/migrating' },
             { label: 'Layers', slug: 'making-mods/layers' },
             { label: 'String Overrides', slug: 'making-mods/string-overrides' },
+            { label: 'Game Data Declarations', slug: 'making-mods/game-data' },
             { label: 'Packaging', slug: 'making-mods/packaging' },
             {
               label: 'From the Command Line',
