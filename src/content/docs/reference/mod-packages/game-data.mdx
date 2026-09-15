@@ -1,6 +1,6 @@
 ---
 title: Game Data Declarations
-description: Standard for declarative game-data edits in mod projects and packages - layer manifests with direct edits or source files, their bindings (links, overrides, entries, objects), signed keys, type pins, coercion, precedence, and how the overlay build materialises them.
+description: Standard for declarative game-data edits in mod projects and packages - layer manifests with direct edits or source files, their bindings (links, modes, overrides, entries, objects), entry-name targets, signed keys, type pins, coercion, precedence, and how the overlay build routes and materialises them.
 tags:
   type: reference
   audience: [tool-developer, mod-creator]
@@ -10,7 +10,7 @@ tags:
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Game data declarations let a mod edit the game's property bins without shipping a copy of each bin it touches. A layer declares, per target bin, what it changes: linked files, override records, property edits, new objects. The overlay build reads the installed game's copy of the target and materialises the edit on top of it at build time. This page is the standard: the declaration modules, each binding's meaning, how containers carry the declarations, and the rules the build follows.
+Game data declarations let a mod edit the game's property bins without shipping a copy of each bin it touches. A layer declares, per target bin, what it changes: linked files, mode-gated companion bins, override records, property edits, new objects. The overlay build reads the installed game's copy of the target and materialises the edit on top of it at build time. This page is the standard: the declaration modules, each binding's meaning, how containers carry the declarations, and the rules the build follows.
 
 :::caution[Status]
 This is a proposal. It is tracked in [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) (links) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) (PTCH overrides). Nothing on this page is implemented in LTK Manager yet. The [roadmap](#roadmap) names the order the bindings land in.
@@ -177,6 +177,33 @@ With the source file from the previous recipe, the first item sets the value to 
 
 To edit another game file, add another item with that file's `target.path`. Keep related work together and order modules by their intended application order. Alphabetical source filenames do not control execution.
 
+### Load a Companion Bin in One Mode Only
+
+Use `modes` when a companion bin belongs to one game mode and must not stay loaded in the others. This recipe ships an ARAM-only announcer bin and asks the game to load it in ARAM alone:
+
+```
+my-mod/
+|-- mod.config.toml
+|-- content/
+|   |-- base/
+|   |   |-- game_data.yaml
+|   |   |-- Map12.wad.client/
+|   |   |   |-- mods/aram-announcer/announcer.bin
+```
+
+```yaml
+# content/base/game_data.yaml
+version: 1
+
+modules:
+  - modes: [Map12/ARAM]
+    load: [mods/aram-announcer/announcer.bin]
+```
+
+A `modes` module has no `target`. `Map12/ARAM` names the mode entry `Maps/Shipping/Map12/Modes/ARAM` in the map's own bin, and the build derives the target from it. In ARAM the companion bin loads at map load and is released at map unload. In every other mode it is never requested. The entries inside `announcer.bin` are named under `Mods/aram-announcer/`, so they collide with nothing Riot ships.
+
+Do not also list the same bin under `links` on a bin that every game loads. That permanent reference keeps it resident and defeats the unload. See [`modes`](#modes) for the selectors, the lowering and the stopgap the link-only engine supports.
+
 ### Use Steps When One Edit Needs Another
 
 Most small edits fit in a normal body. Use `steps` when an edit needs an object or state produced by an earlier edit.
@@ -224,6 +251,8 @@ This recipe adds two entries to the selected target bin. It requires the origina
 | A target cannot be found              | Check the game chunk path. Preserve its extension, including no extension for a path such as `shared`.       |
 | An entry or property cannot be found  | Inspect the selected bin and its schema. File paths, entry names and property names are different addresses. |
 | A declared link cannot be resolved    | Check that the companion bin exists at the declared game path and is included in the active content.         |
+| A mode selector is reported as unknown | Modes rotate. Check the mode roster of the installed patch; a selector with no mode entry is skipped.        |
+| A `load` path is rejected             | The game appends `.bin` to every mode-list value. A `load` path must end in `.bin`.                          |
 | A `.rito` input is rejected           | `overrides` accepts ritobin text of type `PTCH`. An ordinary `PROP` dump is not a patch input.               |
 
 ## Motivation
@@ -234,7 +263,7 @@ A property bin is loaded by the game as a whole file. A mod that wants to change
 - **It conflicts with every other mod touching the same bin.** Two mods that each ship Teemo's `skin0.bin` cannot both win, even when their edits are disjoint.
 - **It hides intent.** A diff between the mod's copy and the game's copy is the only record of what the mod meant to change, and it is a binary diff.
 
-The game itself has the mechanisms a mod needs. A bin header carries a list of linked files the loader mounts alongside it. A `PTCH` bin carries property-level overrides the loader applies over a target. None of them is reachable from a mod package without hand-editing binary files, and none of them is composable across mods.
+The game itself has the mechanisms a mod needs. A bin header carries a list of linked files the loader mounts alongside it. Each mode entry of a map carries a list of extra bins the loader reads when that mode starts and releases when it ends. A `PTCH` bin carries property-level overrides the loader applies over a target. None of them is reachable from a mod package without hand-editing binary files, and none of them is composable across mods.
 
 The fix is for the package to carry the edit, not the result: a small, human-readable declaration that names a target bin and states what to change. The build computes the result against whatever the installed game ships.
 
@@ -257,20 +286,23 @@ The mod project is the subject of this standard. A `.modpkg` and a `.fantome` ar
 
 ## Vocabulary
 
-- **Target** - the game bin a declaration edits, selected by an explicit `target.path` or `target.hash` in the layer manifest. The build changes that bin's contents. File placement has no target meaning.
+- **Target** - the game bin a declaration edits, selected by an explicit `target.path`, `target.hash` or `target.entry` in the layer manifest, or derived from a `modes` selector. The build changes that bin's contents. File placement has no target meaning.
+- **Holder** - a chunk that contains a named entry. The game index knows every holder of an entry and every WAD that ships a chunk.
 - **Module** - one application of a body to a target, at a position in the manifest's `modules` array.
 - **Source** - an external file supplying a module body. The manifest owns its target and application order.
 - **Batch** - a set of bindings evaluated in fixed phases. A compact body is one batch; a `steps` array orders multiple batches.
 - **Base** - the bytes the build materialises over: the game's own chunk, or the highest-precedence mod copy of that chunk when one is enabled.
-- **Binding** - one kind of edit on a target: `links`, `overrides`, entries, `objects`.
+- **Binding** - one kind of edit on a target: `links`, `modes`, `overrides`, entries, `objects`.
 - **Override** - a `PTCH` bin, a file of property-level records the loader applies over a target. An override is a file in a layer; it is not a layer.
 - **Link** - one entry in a bin header's linked-file list. The loader mounts each linked bin when it loads the bin that lists it.
+- **Companion bin** - a bin a mod authors under its own namespace, `mods/<modid>/...`, reached through `links` or a mode entry. It has no Riot twin.
+- **Mode entry** - the game's per-map, per-mode root object, named `Maps/Shipping/Map<N>/Modes/<MODE>` in the map's own bin. Its extra-bin list is the only data-driven load point that is scoped to a mode.
 - **Signed key** - a key with a leading `+` or `-`. The sign is the operation: add to, or remove from, the container the key names. An unsigned key sets.
 - **Type pin** - a value marked with a type name: a YAML tag, `!f32 1.0`, or in TOML and JSON a one-key mapping, `{f32: 1.0}`. The pin fixes the type the edit expects.
 - **Layer** - a named, prioritised slice of a mod's content. See [Layers](/making-mods/layers/).
 - **Schema** - the [meta class dump](/reference/metaclasses/overview/) for the installed patch: every class, its properties and their types. LTK Manager holds one per patch.
 
-Two vocabularies meet in a module and a reader always knows which it is holding. **This standard's words** - `version`, `modules`, `target`, `path`, `hash`, `source`, `steps`, `links`, `overrides`, `objects`, `clone`, `class`, `set`, `remove`, the sign prefixes and the type names - are bare words. **The game's words** - entry names, property paths, map keys - appear only as keys of an entry, a `set` or a map-valued table, and an entry name at the root always carries a slash or is in hash form. Every one of the 359,477 entry names in the community `binentries` list carries a slash; a slash-less entry is written in hash form. Inside an entry no key of this standard appears except `+`, `-` and a type name in a pin.
+Two vocabularies meet in a module and a reader always knows which it is holding. **This standard's words** - `version`, `modules`, `target`, `path`, `hash`, `entry`, `source`, `steps`, `links`, `modes`, `load`, `overrides`, `objects`, `clone`, `class`, `set`, `remove`, the sign prefixes and the type names - are bare words. **The game's words** - entry names, property paths, map keys - appear only as keys of an entry, a `set` or a map-valued table, and an entry name at the root always carries a slash or is in hash form. Every one of the 359,477 entry names in the community `binentries` list carries a slash; a slash-less entry is written in hash form. Inside an entry no key of this standard appears except `+`, `-` and a type name in a pin.
 
 ## Declaration Modules
 
@@ -304,7 +336,7 @@ YAML is read as YAML 1.2 with the core schema: `0x6ecc5fac` is an integer, `on` 
 
 ### Module Order
 
-The manifest contains `version: 1` and an ordered `modules` array. Each item has one `target` and exactly one body form: compact bindings directly beside `target`, an ordered `steps` array, or a `source`. There is no `inline` key. A source item cannot also contain local bindings or steps. Compact bindings and steps are mutually exclusive.
+The manifest contains `version: 1` and an ordered `modules` array. Each item has one `target` and exactly one body form: compact bindings directly beside `target`, an ordered `steps` array, or a `source`. There is no `inline` key. A source item cannot also contain local bindings or steps. Compact bindings and steps are mutually exclusive. A [`modes`](#modes) item is the one item without a `target`: it carries `modes` and `load` and nothing else, and the build derives its target.
 
 <Tabs>
   <TabItem label="YAML">
@@ -471,7 +503,8 @@ A manifest item contains `target` and one body form. An external source file con
 In an external compact body, an entry is a root mapping in YAML and JSON, or a `["Entry/Name"]` table in TOML. In a direct body, the entry belongs to its `modules` item. Entry names carry slashes and are quoted in TOML; property names and map keys are bare unless they carry a dot, a bracket or a sign. Binding examples below use external bodies; the same bindings are valid in direct bodies. Examples in format tabs describe the same edit. Where YAML and JSON write a dotted path, the TOML form writes an inline table per struct; the two nest to one document, as [Block Nesting](#block-nesting) states.
 
 - **`version`** - required integer in the manifest and each external source file. Direct bodies inherit the manifest version. This page describes version 1. A reader refuses an unsupported version.
-- **Targets** - exactly one of `target.path` or `target.hash`. A path is a literal game chunk path, with forward slashes and the game's own extension; extensionless paths such as `shared` are legal. A hash is a quoted string of exactly 16 hexadecimal digits without `0x`, normalised to lowercase. For example, `target: { hash: "5a791d818ae738a6" }` selects the chunk `shared` by hash. A hexadecimal-looking `path` remains a literal path.
+- **Targets** - exactly one of `target.path`, `target.hash` or `target.entry`. A path is a literal game chunk path, with forward slashes and the game's own extension; extensionless paths such as `shared` are legal. A hash is a quoted string of exactly 16 hexadecimal digits without `0x`, normalised to lowercase. For example, `target: { hash: "5a791d818ae738a6" }` selects the chunk `shared` by hash. A hexadecimal-looking `path` remains a literal path. An entry is an entry name; the build resolves it to its holder chunks through the game index, as [Entry Targets](#entry-targets) states.
+- **Mode selectors** - `Map<N>/<MODE>`, or `Map<N>/*` for every mode entry of one map. A bare `*` is an error. See [`modes`](#modes).
 - **Dependency links** - literal game paths, including extensionless paths. They never accept a hash selector or interpret hexadecimal-looking text as a numeric hash. File-storage conventions, including `.ltk` suffix removal, do not apply to game lookup strings.
 - **Casing** - keys and every declared path or name keep the author's casing. Comparison and hashing use the ASCII-lowercased form, the same rule as [embedded hashtables](/reference/mod-packages/hashtables/#hash-computation).
 - **Backslashes** are an error anywhere a path appears.
@@ -479,6 +512,27 @@ In an external compact body, an entry is a root mapping in YAML and JSON, or a `
 - **Entries.** In a binding body, a key that contains a slash or is in hash form names an entry of the target and holds that entry's [edits](#entries). A bare word is a key of this standard, and an unknown one is an error.
 - **Hash-form names.** Wherever an entry name or a property-path segment appears, a `0x` followed by 8 hex digits is the FNV-1a 32 hash and passes through. That is the only way to reach a property whose name is not yet known. The escape is this standard's, not the game's: the build resolves it, and it cannot appear in an [override file](#overrides), whose records reach the game as written.
 - **Paths to override files** are relative to the external source file containing them, or the layer directory for a direct body. See [Source Files](#source-files).
+
+### Entry Targets
+
+`target.entry` names an entry instead of a chunk. The build resolves the name to its holder chunks and their WADs for the installed patch, through the game index. Entry-name targeting is sugar over chunk targeting: the plan holds one synthetic override per holder chunk, and the rest of the build is unchanged.
+
+```yaml
+# content/base/game_data.yaml
+version: 1
+
+modules:
+  - target:
+      entry: Characters/Teemo/Skins/Skin0
+    'Characters/Teemo/Skins/Skin0':
+      skinMeshProperties.selfIllumination: 1.0
+```
+
+- The name is matched by FNV-1a 32 of its ASCII-lowercased form. The manifest keeps the author's casing; a report shows the casing the index attests.
+- **Several holders.** The index reports every chunk holding the entry. The build edits every holder. When the entry is one the client looks up in a single container it loaded itself - a skin properties entry, a per-skin `Resources` entry, a character record - the build edits that container alone. A serialized link into an entry with several holders resolves to the first loaded copy, in load order; editing one copy of such an entry is a race, not an override. The report names the holders edited and the holders left alone.
+- **A name with no holder** is a report and the module is skipped.
+- **New entries** a mod adds under [`objects`](#objects) carry the `Mods/<modid>/` prefix. The build checks the name against the index before packing. A name the index holds is a packing error unless the declaration says the override is intended.
+- The index gives the entry's class. Types come from the [schema](#vocabulary) for the installed patch, with the base bin as the reported fallback, as [Coercion](#coercion) states.
 
 ### Precedence
 
@@ -502,17 +556,18 @@ The operation is the sign on the key. A value is always the literal the operatio
 | `+key: value` | Add: elements to a list, entries to a map, paths to the link list. The value is a list or a mapping of what to add. |
 | `-key: value` | Remove: elements, entries or paths. The value is a list of what to remove.                                          |
 
-A sign is legal on a key whose target is a list, a map or `links`; a sign on a scalar property is a report and the edit is skipped. On one key within one batch the set applies first, then the removals, then the additions. A removal names what to remove: a path for `links`, a key for a map, and for a list either a value or an index, by the [element type](#list-removal). An object is deleted with `remove: true` under [`objects`](#objects); no sign applies to an entry name.
+A sign is legal on a key whose target is a list, a map or `links`; a sign on a scalar property is a report and the edit is skipped. `+` on a list or map property the base omits creates the container holding the additions, with the element type taken from the schema; `-` on an absent container is a report. On one key within one batch the set applies first, then the removals, then the additions. A removal names what to remove: a path for `links`, a key for a map, and for a list either a value or an index, by the [element type](#list-removal). An object is deleted with `remove: true` under [`objects`](#objects); no sign applies to an entry name.
 
 In YAML both signs are plain scalars and need no quotes. In TOML a signed key is quoted whenever the path carries a dot or a bracket, and a `-key` on a plain name may stay bare. In JSON every key is quoted.
 
 ## Bindings
 
-Every binding belongs to a module application and is materialised into its explicit target's `PROP` by the build. The game never sees a `PTCH` emitted by this standard; a mod's override file is an input to the build, and the output is one plain `PROP` per target.
+Every binding belongs to a module application and is materialised into its target's `PROP` by the build. The target is explicit, or derived from a `modes` selector. The game never sees a `PTCH` emitted by this standard; a mod's override file is an input to the build, and the output is one plain `PROP` per target.
 
 | Binding     | Payload                                         | Materialised as                           |
 | ----------- | ----------------------------------------------- | ----------------------------------------- |
 | `links`     | chunk paths to add or remove                    | header linked-file list                   |
+| `modes`     | mode selectors and companion bins to load       | an append on each mode entry's extra-bin list |
 | `overrides` | override files in the layer                     | records applied over the target's objects |
 | entries     | entry name at the root, property path, value    | per-property replacement records          |
 | `objects`   | entry, clone source or class, and property sets | a new object in the target, or a deletion |
@@ -556,6 +611,101 @@ Chunk paths added to, or removed from, the target bin's linked-file list. `links
 - A link is expected to be a chunk in some enabled layer or in the game index. Either miss is a build-time report.
 - A removal that names a path the base does not list is a report.
 - A `PTCH` bin declares no links. A target that resolves to a `PTCH` is an error.
+- A link loads unconditionally with its parent and is never a scope. The linked list is recursive, and every linked bin is loaded as a base file, never as a patch.
+- A serialized link resolves after load by a sweep of every loaded bin, first hit in load order. The linked list does not scope that sweep. An entry name that collides with a Riot name is a race, not an override; a mod's own entries live under `Mods/<modid>/`.
+- The code-driven lookups - skin properties, the per-skin `Resources` entry, the character record chain - search only the bin the client loaded itself. An entry meant for one of those lookups has to be in that bin.
+
+### `modes`
+
+Companion bins that load with one or more game modes and are released with them. The binding lowers to an append on the extra-bin list of each selected mode entry.
+
+<Tabs>
+  <TabItem label="YAML">
+    ```yaml
+    # content/base/game_data.yaml
+    version: 1
+
+    modules:
+      - modes:
+          - Map12/ARAM
+          - Map12/KIWI
+        load:
+          - mods/example/aram-announcer.bin
+    ```
+
+  </TabItem>
+  <TabItem label="TOML">
+    ```toml
+    # content/base/game_data.toml
+    version = 1
+
+    [[modules]]
+    modes = ["Map12/ARAM", "Map12/KIWI"]
+    load = ["mods/example/aram-announcer.bin"]
+    ```
+
+  </TabItem>
+  <TabItem label="JSON">
+    ```json
+    {
+      "version": 1,
+      "modules": [
+        {
+          "modes": ["Map12/ARAM", "Map12/KIWI"],
+          "load": ["mods/example/aram-announcer.bin"]
+        }
+      ]
+    }
+    ```
+  </TabItem>
+</Tabs>
+
+- **The gate.** Each mode entry, `Maps/Shipping/Map<N>/Modes/<MODE>` in `data/maps/shipping/map<N>/map<N>.bin`, carries `AdditionalPropertyDataPaths`, a list of strings. When that mode is the live mode, the client appends `.bin` to each value and loads the result through the bin cache, in list order; on unload it releases the same paths. The gate is whichever map and mode the server placed the game in. It fires in custom games too. Ranked, draft, Clash and customs on Summoner's Rift all run `Maps/Shipping/Map11/Modes/CLASSIC`.
+- **`modes`** is a list of `Map<N>/<MODE>` selectors, matched case-insensitively against the mode entries the game index holds for the installed patch. `Map<N>/*` selects every mode entry of that map. A bare `*` is an error: a mod that wants every mode uses `links` on a permanent anchor. A selector with no mode entry in the installed game is a report, and the selector is skipped: modes rotate, and the index decides what exists for an install.
+- **`load`** is a list of literal chunk paths, written the way `links` values are, extension included. The client appends `.bin` to every value unconditionally. An extensionless chunk is unreachable through this gate. A `load` path that does not end in `.bin` is a packing error. Each path is expected to be a chunk in some enabled layer once the overlay is in place; a miss is the same build-time report a missing link is.
+- **Lowering.** One module becomes one entry edit per selected mode entry, on the derived target `data/maps/shipping/map<N>/map<N>.bin`. The value is the `load` path with `.bin` stripped:
+
+  ```yaml
+  - target:
+      path: data/maps/shipping/map12/map12.bin
+    Maps/Shipping/Map12/Modes/ARAM:
+      +AdditionalPropertyDataPaths:
+        - mods/example/aram-announcer
+  ```
+
+  The target is derived, never authored: a Riot repath of the map bin is caught by the index, not by the mod. A mode entry that ships without the list gets it created, by the [`+` on an absent container](#operations) rule.
+- **Order.** The materialised list is Riot's values first, then the appended values in precedence order, de-duplicated on the lowercased form. The client loads them in that order. Two mods appending to the same mode entry compose.
+- **Not a permanent anchor.** A companion bin declared under `load` and under a `links` anchor that every game loads is flagged: the permanent reference keeps it resident and defeats the unload.
+- **Not a queue.** Queue-level gating is outside this standard; see [Outside the Standard](#outside-the-standard).
+- **Roadmap.** The lowering is an entry edit, so `modes` lands with entries. It adds no record shape: a list append, and a list create for the mode entries that ship without the list.
+
+Whole-file overrides and materialised targets in champion and core WADs apply in every mode regardless: nothing in the file layer is mode-aware. A user-level mode filter in LTK Manager is a build input that intersects every module's `modes` list. Toggling it changes only the map bins. One overlay serves every mode.
+
+#### Mode Scoping With Links Only
+
+The link-only engine in [league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225) can approximate a mode gate by linking a companion bin from a mode-specific data bin the mode already loads. The mapping on the 16.16 client, inverted from the shipped mode entries:
+
+| Link target                                                   | Loaded by                                                  |
+| ------------------------------------------------------------- | ---------------------------------------------------------- |
+| `maps/modespecificdata/classic.bin`                           | Map11 CLASSIC, PRACTICETOOL, ONEFORALL; Map453 BASELINESR  |
+| `maps/modespecificdata/urf.bin`                               | Map11 URF, SNOWURF                                         |
+| `maps/modespecificdata/swiftplay.bin`                         | Map11 SWIFTPLAY                                            |
+| `maps/modespecificdata/ultbook.bin`                           | Map11 ULTBOOK; Map12 ARAM                                  |
+| `maps/modespecificdata/ultbook_bt.bin`                        | Map11 ULTBOOK                                              |
+| `maps/modespecificdata/ruby.bin`                              | Map11 RUBY, RUBY_TRIAL_1, RUBY_TRIAL_2, RUBY_TRIAL_3       |
+| `maps/modespecificdata/aram.bin`                              | Map12 ARAM, KIWI, KIWI_JADE                                |
+| `maps/modespecificdata/firstblood.bin`                        | Map12 FIRSTBLOOD                                           |
+| `maps/modespecificdata/kiwi.bin`, `kiwi_jade.bin`             | Map12 KIWI, KIWI_JADE respectively                         |
+| `maps/modespecificdata/cherry.bin`                            | Map30 CHERRY                                               |
+| `maps/modespecificdata/jade.bin`                              | Map453 JADE                                                |
+| `maps/modespecificdata/wasd.bin`, `classic/wasd.bin`          | nearly every mode; never a gate                            |
+
+This is a stopgap, not the design:
+
+- It scopes to every mode that loads bin X, not to one mode. ARAM alone is unreachable: `aram.bin` is also loaded by KIWI and KIWI_JADE, and `ultbook.bin` is loaded by ARAM.
+- Several of these bins ship in more than one map WAD. `classic.bin` is in Map11 and Map453, `wasd.bin` in four. The edit fans out to every holder.
+- Whether a linked bin is released with its parent on mode unload is unverified. Assume the companion bin may stay resident for the process.
+- The table describes one patch. The game index decides what exists for an install.
 
 ### `overrides`
 
@@ -1129,7 +1279,30 @@ The overlay build handles declarations in its two existing passes.
 
 **Pass 2 - materialise.** For each target the build resolves the base: the highest-precedence enabled mod copy of the chunk when one exists, else the game's chunk. It refuses a `PTCH` base and a version-1 base (the game loads a base at version 2 or 3 only), and reports either. It applies modules and steps in [execution order](#steps), with `ltk_meta`, against the evolving target state. Each batch applies its override files before its declared edits. Checks use the state at that point and the installed schema. The build writes one `PROP` per target. Objects the plan does not touch copy byte for byte.
 
-**Reports.** The game reports nothing on this path: a missing link, a stale override, a mistyped property and a dangling resolver value all fail silently at load. The build is the one place these are caught, and every one lands in the build report next to the existing linked-bin findings. A report never fails the build. LTK Manager shows the report per mod as warnings and never blocks the profile on one.
+**Routing.** A materialised target is a replacement of a Riot chunk. It routes exactly like a whole-file override: to every game WAD holding the chunk, compressed once from the same bytes so every copy has the same checksum. The client walks the mounted WADs in mount order and returns the first WAD holding a path hash; at the end of every mount it looks up each new chunk in the other mounted WADs, and a same-hash chunk whose compressed checksum differs aborts the process with the install-corrupt fatal. A target held by one WAD, such as `data/maps/shipping/map11/map11.bin`, needs no fan-out. A target held by several, such as `maps/modespecificdata/classic.bin`, fans out to each. The index knows which. There is no shared always-mounted WAD for targets: the always-mounted set is hardcoded in the client, and a copy placed anywhere but beside its twins dies at mount.
+
+**Companion bins.** A companion bin has no Riot twin. The consistency check never sees it, and any WAD mounted when the referencing bin parses can hold it. Default placement is the WAD directory the mod put the file under. A builder may instead route every companion bin of every enabled mod into one overlay copy of a core WAD, which turns two mods shipping the same companion path with different bytes into a build-time conflict instead of a mount-time fatal, and makes placement deterministic. That is a builder policy, not a manifest concept. The candidate is the smallest always-mounted, non-localized, ungated WAD, `Scripts.wad.client`; `ShaderCache.dx11.wad.client` is mounted only under one renderer and is unsuitable. A companion bin is never placed only in a localized WAD, and `Bootstrap.windows.wad` carries nothing but content linked from `Bootstrap.bin`, which parses before any other WAD mounts.
+
+**Reports.** The game reports nothing on this path. The build is the one place these are caught, and every one lands in the build report next to the existing linked-bin findings. A report never fails the build. LTK Manager shows the report per mod as warnings and never blocks the profile on one.
+
+| Failure                                            | What the client does                                     | What the user sees                    |
+| -------------------------------------------------- | -------------------------------------------------------- | ------------------------------------- |
+| linked chunk missing                               | dropped, load continues                                  | nothing                               |
+| property type differs from the registered type     | property skipped, load reports success                   | nothing                               |
+| link target never resolves                         | field left null                                          | nothing, until a null dereference     |
+| bin parses to zero entries                         | destroyed, not cached, re-parsed on every request        | nothing                               |
+| mode-list chunk missing                            | not read; the same acquire path drops a missing link     | nothing                               |
+| entry name collides with a Riot name               | first hit in load order wins                             | intermittent                          |
+
+Every check below is a report line, report-and-skip, never a build failure:
+
+- every `links` and `load` path exists in the mounted set once the overlay is in place;
+- every targeted entry exists in the resolved holder, with the class the schema expects;
+- every edited property exists on that class with the expected type; list-valued properties first: a stale list edit does not no-op, it empties the list;
+- every mode selector resolves to a shipped mode entry;
+- every mod-added entry name is absent from the game index, or the override is declared;
+- every companion path sits under the mod's namespace;
+- a companion bin declared under both `load` and a permanent `links` anchor is flagged.
 
 ## Rules at a Glance
 
@@ -1141,7 +1314,7 @@ For tools that write projects and packages:
 - Classify manifests, referenced sources and override inputs as build resources before collecting game content. Reject ignored required inputs. Every declared path or name keeps its casing and uses forward slashes.
 - This standard's words are bare keys; an entry name carries a slash or is in hash form; the game's names sit only inside an entry, a `set` or a map value.
 - Never emit a binding, sign or type name this version does not define.
-- Fail packing on multiple manifests, mixed body forms, missing or invalid sources, duplicate canonical target/source assignments, duplicate mapping keys, invalid selectors, conflicting file roles, an unknown override extension, a `.rito` input that is not a `PTCH`, or an unquoted YAML hash.
+- Fail packing on multiple manifests, mixed body forms, missing or invalid sources, duplicate canonical target/source assignments, duplicate mapping keys, invalid selectors, a bare `*` mode selector, a `load` path without `.bin`, a mod-added entry name the index holds, conflicting file roles, an unknown override extension, a `.rito` input that is not a `PTCH`, or an unquoted YAML hash.
 - Preserve ordered modules and steps in package metadata. Source formatting is optional; execution boundaries are required.
 - Convert `.rito` override files to `.ptch` at pack; store the binary form.
 - Warn on a chunk path in a layer that is in the game index and is not a declared target: it is a whole-file override of a Riot file.
@@ -1152,8 +1325,19 @@ For tools that build overlays:
 - Hash lowercased: xxh64 for chunk paths and `file` values, FNV-1a 32 for entry names, `hash` and `link` values, and map keys of those types.
 - Type from the schema, then the base; coerce unpinned values; check pinned ones. A YAML tag is a pin; a one-key mapping is a pin except on a struct, where it descends.
 - Apply per key: set, then removals, then additions.
+- Resolve `target.entry` and `modes` selectors through the game index; one synthetic override per holder chunk.
+- Route every materialised target to every WAD holding the chunk, with identical compressed bytes. Never place a target in a WAD that does not ship it.
 - Materialise every target as a `PROP` over the installed base; never emit a `PTCH`.
 - Check every edit against the target state at that point; report and skip, never fail.
+- Never use a link as a scope; it loads unconditionally with its parent.
+- Never gate on `maps/modespecificdata/wasd.bin` or `classic/wasd.bin`; nearly every mode loads them.
+- Never rely on mount order, a backslash-spelled dependency or any other cache-key trick to shadow or namespace a chunk. Mount-order shadowing of a differing chunk is the install-corrupt fatal.
+- Never ship a companion bin that names a Riot chunk path or `file` hash directly. Riot names belong in the binding the build materialises against the installed patch.
+
+## Outside the Standard
+
+- **Queues.** The game process receives the queue from the platform beside the game mode and map id, and no bin load point keys on it. Ranked Solo, Ranked Flex, Normal Draft, Clash and custom games all run `Maps/Shipping/Map11/Modes/CLASSIC`. The manifest carries no `queues` key. "Not in ranked" is a launch-time decision for LTK Manager, which knows the queue from the client's gameflow session before the game process starts and chooses which profile to serve.
+- **Gameplay.** The mode gate is client-only. Anything gameplay-relevant is server-authoritative. Every mod on this path is about what the local client loads.
 
 ## Mod Projects
 
@@ -1178,13 +1362,19 @@ Fantome keeps only the base layer's content, as it does for every other per-laye
 ## Roadmap
 
 1. **`links` and `overrides`.** The module loader, the modpkg and fantome fields, the plan entry, and pass 2 on `ltk_meta`. Delivers [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191).
-2. **Entries.** Coercion against the schema, signed keys, block nesting, type pins, reports.
-3. **`objects`.** Clone, construct, delete.
+2. **Entries.** Coercion against the schema, signed keys, block nesting, type pins, reports. `modes` lands here: it lowers to a list append on the mode entry. `target.entry` lands here: it resolves through the game index and needs no new record shape.
+3. **`objects`.** Clone, construct, delete, and the index check on mod-added entry names.
 
 ## Open Questions
 
 - **Same-target conflict granularity in the report.** Whether the manager shows a conflict per target or per key. Per key is more useful and more noise.
 - **Editor rewriting.** Round-trip-safe YAML editing that preserves comments and order is a real requirement on the Workshop; the crate that does it is not chosen.
+- **Shared companion WAD.** Whether LTK Manager routes companion bins into one core WAD copy by default, or keeps the declared placement. The engine works either way.
+- **Unverified client behaviour on the mode gate.** None of these changes a rule above. Each is observed in a real game before a release relies on it, and there is no log line for any of them.
+  - A `load` path that does not exist: expected to load normally. A fatal or a hang would make the pre-flight a hard requirement.
+  - Link visibility into a companion bin loaded through the gate: the mode's own objects resolve their serialized links when the map bin parses, before the mode list loads. A Riot object is expected not to reach an entry in the companion bin. The other direction, and runtime by-name lookups such as character records and resource resolvers, are expected to work.
+  - Timing against champion bins: the mode list loads at map load, before champion WADs mount. Entries in a companion bin are expected to be visible to champion and skin bins parsed later.
+  - Release on mode unload: the companion bin's objects are expected to be gone in the next game of a different mode.
 
 ## Related Pages
 
@@ -1196,3 +1386,4 @@ Fantome keeps only the base layer's content, as it does for every other per-laye
 - [Ritobin](/reference/file-formats/ritobin/) - the text form override files and type names come from
 - [Fantome Package](/reference/mod-packages/fantome/) - the archive layout and the extension the declarations join
 - [PTCH property patches](https://github.com/LeagueToolkit/league-toolkit/blob/main/docs/design/ptch-property-patches.md) - the record language override files use
+- [Engine constraints](https://github.com/LeagueToolkit/league-mod/blob/main/docs/research/game-data-engine-constraints.md) - the traced client behaviour the routing, `modes` and report rules rest on
