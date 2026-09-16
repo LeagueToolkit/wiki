@@ -13,7 +13,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 Game data declarations let a mod edit the game's property bins without shipping a copy of each bin it touches. A layer declares, per target bin, what it changes: linked files, mode-gated companion bins, override records, property edits, new objects. The overlay build reads the installed game's copy of the target and materialises the edit on top of it at build time. This page is the standard: the declaration modules, each binding's meaning, how containers carry the declarations, and the rules the build follows.
 
 :::caution[Status]
-This is a proposal. It is tracked in [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) (links) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) (PTCH overrides). The link engine in [league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225) implements `target`, `links`, `+links`, `-links`, `steps` and `source`. [league-mod#228](https://github.com/LeagueToolkit/league-mod/issues/228) implements the `entries` selector through the game index, with link bindings inside entry bodies. Every other binding on this page is unimplemented. The [roadmap](#roadmap) names the order the bindings land in.
+This is a proposal. It is tracked in [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) (links) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) (PTCH overrides). The link engine in [league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225) implements `target`, `links`, `+links`, `-links`, `edits` and `source`. [league-mod#228](https://github.com/LeagueToolkit/league-mod/issues/228) implements the `entries` selector through the game index, with link bindings inside entry bodies. [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) implements `overrides` for `.ptch` files; a `.rito` override file is refused with an error naming the extension until [league-mod#240](https://github.com/LeagueToolkit/league-mod/issues/240) lands. Every other binding on this page is unimplemented. The [roadmap](#roadmap) names the order the bindings land in.
 :::
 
 :::note[Link declaration authoring]
@@ -198,9 +198,9 @@ A `modes` module has no `target`. `Map12/ARAM` names the mode entry `Maps/Shippi
 
 Do not also list the same bin under `links` on a bin that every game loads. That permanent reference keeps it resident and defeats the unload. See [`modes`](#modes) for the selectors, the lowering and the stopgap the link-only engine supports.
 
-### Use Steps When One Edit Needs Another
+### Order Edits When One Needs Another
 
-Most small edits fit in a normal body. Use `steps` when an edit needs an object or state produced by an earlier edit.
+Most small edits fit in a normal body. Use `edits` when one edit needs an object or state produced by an earlier one.
 
 For example, this source body creates a custom copy of a particle object, then clones that new copy. Use it as an alternative `teemo-skin0.patch.yaml` with the source manifest above:
 
@@ -208,7 +208,7 @@ For example, this source body creates a custom copy of a particle object, then c
 # content/base/teemo-skin0.patch.yaml
 version: 1
 
-steps:
+edits:
   - objects:
       'Mods/TeemoClassic/Particles/R_Missile':
         clone: Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis
@@ -222,14 +222,14 @@ steps:
           particleName: Teemo_Classic_R_Mis_Extra
 ```
 
-The second clone needs the object created by the first step. Two clones in one `objects` mapping read the same starting state; rearranging their keys does not express this dependency. Separate steps do.
+The second clone needs the object created by the first edit. Two clones in one `objects` mapping read the same starting state; rearranging their keys does not express this dependency. Separate edits do.
 
-This recipe adds two entries to the selected target bin. It requires the original clone entry to exist there and the new names to be unused. It does not redirect any resource slot to the new entries; adding an object alone does not make the game use it. See [Objects](#objects) for construction and [Steps](#steps) for evaluation order.
+This recipe adds two entries to the selected target bin. It requires the original clone entry to exist there and the new names to be unused. It does not redirect any resource slot to the new entries; adding an object alone does not make the game use it. See [Objects](#objects) for construction and [Edits](#edits) for evaluation order.
 
 ### Formatting Habits and Common Mistakes
 
 - Use **YAML** for hand-written declarations. It supports comments and readable nested blocks. TOML and JSON are equally valid; keep one manifest format per layer.
-- Indent by **two spaces** at each level and use spaces rather than tabs. Keep `source`, `links`, entry names or `steps` aligned with `target` inside their module item.
+- Indent by **two spaces** at each level and use spaces rather than tabs. Keep `source`, `links`, entry names or `edits` aligned with `target` inside their module item.
 - Put one setting or list item on each line for longer edits. Use a blank line between modules. Bracketed lists work well for short vectors such as `[50.0, 180.0, 150.0]`.
 - Keep related fields in one entry block. Use nested blocks for groups of struct fields and dotted paths for isolated fields. Avoid duplicate keys and overlapping spellings of the same edit.
 - Quote **hashes** and keys with path punctuation. Examples: `'0xd2343ed1'`, `'skinAudioProperties.bankUnits[0].events'`. Prefer a readable game path as the `target` when you know it; a raw chunk hash is the same string field, spelled as exactly 16 hexadecimal digits and always quoted. See the [target grammar](#grammar).
@@ -240,7 +240,7 @@ This recipe adds two entries to the selected target bin. It requires the origina
 | If you see this problem               | Check this first                                                                                             |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | Your source file contributes no edits | Confirm that the layer has a manifest and that a module references the exact source filename.                |
-| YAML reports a duplicate key          | Combine fields under one entry block, or use separate modules or steps for ordered writes.                   |
+| YAML reports a duplicate key          | Combine fields under one entry block, or use separate modules or edits for ordered writes.                   |
 | A source item is rejected             | Keep only the selector and `source` in that item. Put customisation in the next item.                        |
 | A target is rejected as an object     | `target` is one string. Write `target: data/.../skin0.bin` or a quoted 16-digit hash, never `path:` or `hash:`. |
 | A target cannot be found              | Check the game chunk path. Preserve its extension, including no extension for a path such as `shared`.       |
@@ -289,7 +289,7 @@ The mod project is the subject of this standard. A `.modpkg` and a `.fantome` ar
 - **Module** - one application of a body to a target, at a position in the manifest's `modules` array.
 - **Selector** - the key of a module that picks its target: `target`, `entries` or `modes`. A module has exactly one.
 - **Source** - an external file supplying a module body. The manifest owns its target and application order.
-- **Batch** - a set of bindings evaluated in fixed phases. A compact body is one batch; a `steps` array orders multiple batches.
+- **Batch** - a set of bindings evaluated in fixed phases. A compact body is one batch; an `edits` array orders multiple batches.
 - **Base** - the bytes the build materialises over: the game's own chunk, or the highest-precedence mod copy of that chunk when one is enabled.
 - **Binding** - one kind of edit on a target: `links`, `modes`, `overrides`, entries, `objects`.
 - **Override** - a `PTCH` bin, a file of property-level records the loader applies over a target. An override is a file in a layer; it is not a layer.
@@ -301,7 +301,7 @@ The mod project is the subject of this standard. A `.modpkg` and a `.fantome` ar
 - **Layer** - a named, prioritised slice of a mod's content. See [Layers](/making-mods/layers/).
 - **Schema** - the [meta class dump](/reference/metaclasses/overview/) for the installed patch: every class, its properties and their types. LTK Manager holds one per patch.
 
-Two vocabularies meet in a module and a reader always knows which it is holding. **This standard's words** - `version`, `modules`, `target`, `entries`, `source`, `steps`, `links`, `modes`, `load`, `overrides`, `objects`, `clone`, `class`, `set`, `remove`, the sign prefixes and the type names - are bare words. **The game's words** - entry names, property paths, map keys - appear only as keys of an entry, a `set` or a map-valued table, and an entry name at the root always carries a slash or is in hash form. Every one of the 359,477 entry names in the community `binentries` list carries a slash; a slash-less entry at the binding root is written in hash form. Keys inside an `entries` mapping accept any nonempty name. Inside an entry, this standard defines sign prefixes and type pins. The link engine also accepts `links`, `+links` and `-links` inside an `entries` body as an extension of the standard.
+Two vocabularies meet in a module and a reader always knows which it is holding. **This standard's words** - `version`, `modules`, `target`, `entries`, `source`, `edits`, `links`, `modes`, `load`, `overrides`, `objects`, `clone`, `class`, `set`, `remove`, the sign prefixes and the type names - are bare words. **The game's words** - entry names, property paths, map keys - appear only as keys of an entry, a `set` or a map-valued table, and an entry name at the root always carries a slash or is in hash form. Every one of the 359,477 entry names in the community `binentries` list carries a slash; a slash-less entry at the binding root is written in hash form. Keys inside an `entries` mapping accept any nonempty name. Inside an entry, this standard defines sign prefixes and type pins. The link engine also accepts `links`, `+links` and `-links` inside an `entries` body as an extension of the standard.
 
 ## Declaration Modules
 
@@ -335,7 +335,7 @@ YAML is read as YAML 1.2 with the core schema: `0x6ecc5fac` is an integer, `on` 
 
 ### Module Order
 
-The manifest contains `version: 1` and an ordered `modules` array. Each item has one selector and exactly one body form. The selector is `target`, a chunk string; `entries`, a mapping of entry names to entry bodies, each name resolved to its declaring chunks; or `modes`, a list of mode selectors whose body is `load` and nothing else. A `target` body contains compact bindings directly beside the selector, an ordered `steps` array, or a `source`. An `entries` item contains only its mapping and is one batch. A `modes` item contains only its selectors and `load`. There is no `inline` key. A source item cannot also contain local bindings or steps. Compact bindings and steps are mutually exclusive.
+The manifest contains `version: 1` and an ordered `modules` array. Each item has one selector and exactly one body form. The selector is `target`, a chunk string; `entries`, a mapping of entry names to entry bodies, each name resolved to its declaring chunks; or `modes`, a list of mode selectors whose body is `load` and nothing else. A `target` body contains compact bindings directly beside the selector, an ordered `edits` array, or a `source`. An `entries` item contains only its mapping and is one batch. A `modes` item contains only its selectors and `load`. There is no `inline` key. A source item cannot also contain local bindings or edits. Compact bindings and edits are mutually exclusive.
 
 <Tabs>
   <TabItem label="YAML">
@@ -400,7 +400,7 @@ Modules apply in array order across the layer. A source expands at its item's po
 
 ### Source Files
 
-`source` names one YAML, TOML or JSON file (`.yml` accepted), relative to the layer directory, with its actual filename. There is no implicit `.bin` suffix or name rewriting. The referenced file contains its own supported `version` and either compact bindings or `steps`. It cannot contain `target`, `modules` or another `source`; recursive includes are outside version 1. Direct bodies use the manifest version.
+`source` names one YAML, TOML or JSON file (`.yml` accepted), relative to the layer directory, with its actual filename. There is no implicit `.bin` suffix or name rewriting. The referenced file contains its own supported `version` and either compact bindings or `edits`. It cannot contain `target`, `modules` or another `source`; recursive includes are outside version 1. Direct bodies use the manifest version.
 
 ```yaml
 # content/base/shared.patch.yaml
@@ -430,15 +430,15 @@ Paths in `overrides` are relative to the external source file containing them, o
 
 Missing sources, unsupported versions, invalid bodies and mixed body forms are packing errors. Diagnostics identify the manifest reference and the source location where applicable. Packing expands sources into ordered declarations; overlay builds from packages do not reopen authoring files.
 
-### Steps
+### Edits
 
-A compact body is one batch. A `steps` body is an array of batches, each reading the result of the preceding batch. The array can appear directly beside `target` or in a referenced source file:
+A compact body is one batch. An `edits` body is an array of batches, each reading the result of the preceding batch. The array can appear directly beside `target` or in a referenced source file:
 
 ```yaml
 # content/base/teemo-skin0.patch.yaml
 version: 1
 
-steps:
+edits:
   - overrides:
       - teemo-skin0.rito
 
@@ -446,9 +446,9 @@ steps:
       skinMeshProperties.selfIllumination: 1.0
 ```
 
-Within a batch, the phases are override files in listed order, object creation, entry edits, object removal and dependency-list edits. Object sets belong to their construction. Clones read the state at the start of the object-creation phase; cloning an object created in that phase requires a later step. A compact body and each step contain at least one binding; a `steps` array is nonempty. An empty `modules` array is valid and declares no edits.
+Within a batch, the phases are override files in listed order, object creation, entry edits, object removal and dependency-list edits. Object sets belong to their construction. Clones read the state at the start of the object-creation phase; cloning an object created in that phase requires a later edit. A compact body and each edit contain at least one binding; an `edits` array is nonempty. An empty `modules` array is valid and declares no edits.
 
-Independent entry edits have no order. For the same container, set runs before removal, then addition. Competing ancestor/descendant writes, duplicate semantic sets, and indexed edits overlapping structural list changes require separate steps. A parser must reject duplicate YAML or JSON keys before discarding them. Canonical duplicates that require schema information are build-validation failures. A later step or module may deliberately set the same property.
+Independent entry edits have no order. For the same container, set runs before removal, then addition. Competing ancestor/descendant writes, duplicate semantic sets, and indexed edits overlapping structural list changes require separate edits. A parser must reject duplicate YAML or JSON keys before discarding them. Canonical duplicates that require schema information are build-validation failures. A later edit or module may deliberately set the same property.
 
 ### Grammar
 
@@ -563,7 +563,7 @@ In an external compact body, an entry is a root mapping in YAML and JSON, or a `
 </Tabs>
 
 - An `entries` item contains only its mapping and is one batch. Each entry applies to every declaring chunk.
-- An entry body accepts `links`, `+links` and `-links` as the link engine's extension of this standard. These bindings edit each declaring chunk's dependency list. `overrides`, `objects`, `steps` and `source` belong to a `target` item. No entry body contains `steps` or `source`.
+- An entry body accepts `links`, `+links` and `-links` as the link engine's extension of this standard. These bindings edit each declaring chunk's dependency list. `overrides`, `objects`, `edits` and `source` belong to a `target` item. No entry body contains `edits` or `source`.
 - Entries apply in authored mapping order, including entries that resolve to the same chunk. Packing and extraction preserve that order. Two edits to one entry that need separate batches are two module items.
 
 - An entry key is a nonempty object name or an object hash. An object hash uses lowercase `0x` and exactly 8 hexadecimal digits, with digits in either case. Quote it in YAML. Object names match by FNV-1a 32 of their ASCII-lowercased form. The manifest and reports keep the author's spelling.
@@ -580,7 +580,7 @@ Every binding composes across layers and across mods by the same order, the one 
 
 1. Mods earlier in the enabled list win over mods later in it.
 2. Within a mod, layers with higher priority win over layers with lower priority.
-3. Within a layer, [module array order](#module-order), then [step array order](#steps). Later applications read and may replace the results of earlier applications.
+3. Within a layer, [module array order](#module-order), then [edit array order](#edits). Later applications read and may replace the results of earlier applications.
 
 Evaluation runs from lower to higher precedence: mods later in the enabled list first, then layers in ascending priority. The `entries` selector preserves authored mapping order. Property-key order within a binding body has no execution meaning.
 
@@ -614,7 +614,7 @@ Every binding belongs to a module application and is materialised into its targe
 
 ### `links`
 
-Chunk paths added to, or removed from, the target bin's linked-file list. `links` adds, `+links` is its alias, and `-links` removes. A step holds one of the two addition spellings, not both. There is no set: replacing a game bin's whole link list is never what a mod means.
+Chunk paths added to, or removed from, the target bin's linked-file list. `links` adds, `+links` is its alias, and `-links` removes. An edit holds one of the two addition spellings, not both. There is no set: replacing a game bin's whole link list is never what a mod means.
 
 <Tabs>
   <TabItem label="YAML">
@@ -773,9 +773,9 @@ Override files in the layer whose records the build applies over the target.
   </TabItem>
 </Tabs>
 
-- A path is relative to the external source file containing it, or the layer directory for a direct body. Two file forms are accepted, by extension: `.ptch`, a `PTCH` bin as the game defines it, and `.rito`, [ritobin text](/reference/file-formats/ritobin/) whose type is `PTCH`. Any other extension is a packing error. A `.rito` file whose type is not `PTCH` is a packing error.
+- A path is relative to the external source file containing it, or the layer directory for a direct body. Two file forms are accepted, by extension: `.ptch`, a `PTCH` bin as the game defines it, and `.rito`, [ritobin text](/reference/file-formats/ritobin/) whose type is `PTCH`. Any other extension is a packing error. A `.rito` file whose type is not `PTCH` is a packing error. The implemented engine accepts `.ptch` only and refuses a `.rito` path with an error naming the extension ([league-mod#240](https://github.com/LeagueToolkit/league-mod/issues/240)).
 - The record language, matching rules and limits are those of [PTCH property patches](https://github.com/LeagueToolkit/league-toolkit/blob/main/docs/design/ptch-property-patches.md). Records are applied as authored; nothing is coerced. An override is the binding for an edit that must be exactly what its author wrote.
-- Override files execute at their batch's override phase, in listed order. A later batch reads their result. Joining records across module or step boundaries must not erase those dependencies. Cross-mod writes to the same property are reported.
+- Override files execute at their batch's override phase, in listed order. A later batch reads their result. Joining records across module or edit boundaries must not erase those dependencies. Cross-mod writes to the same property are reported.
 - Every record is checked against the target state at that point before it is applied: the entry exists, the property exists on its class, the value's type matches. A record that fails the check is reported and skipped; the build does not fail.
 - The records are applied in order and the result is written as a `PROP`. A `PTCH` cannot target a `PTCH`, and the build never emits one.
 - Packing converts a `.rito` file to `.ptch`; a package stores the binary form only.
@@ -1314,9 +1314,9 @@ A new object in the target, cloned from an existing entry or constructed from a 
 
 The overlay build handles declarations in its two existing passes.
 
-**Pass 1 - plan.** The providers expose each layer's compiled, ordered modules. The plan retains module and step boundaries, explicit targets and diagnostic origins. It does not flatten repeated writes into merged maps. Each target becomes one synthetic entry in the override set. Its fingerprint covers ordered operations and override-resource bytes, alongside the base, schema and build inputs required by the cache. Declared links feed pre-flight, and final materialised dependencies are checked against mounted content. Cross-mod conflicts are reported.
+**Pass 1 - plan.** The providers expose each layer's compiled, ordered modules. The plan retains module and edit boundaries, explicit targets and diagnostic origins. It does not flatten repeated writes into merged maps. Each target becomes one synthetic entry in the override set. Its fingerprint covers ordered operations and override-resource bytes, alongside the base, schema and build inputs required by the cache. Declared links feed pre-flight, and final materialised dependencies are checked against mounted content. Cross-mod conflicts are reported.
 
-**Pass 2 - materialise.** For each target the build resolves the base: the highest-precedence enabled mod copy of the chunk when one exists, else the game's chunk. It refuses a `PTCH` base and a version-1 base (the game loads a base at version 2 or 3 only), and reports either. It applies modules and steps in [execution order](#steps), with `ltk_meta`, against the evolving target state. Each batch applies its override files before its declared edits. Checks use the state at that point and the installed schema. The build writes one `PROP` per target. Objects the plan does not touch copy byte for byte.
+**Pass 2 - materialise.** For each target the build resolves the base: the highest-precedence enabled mod copy of the chunk when one exists, else the game's chunk. It refuses a `PTCH` base and a version-1 base (the game loads a base at version 2 or 3 only), and reports either. It applies modules and edits in [execution order](#edits), with `ltk_meta`, against the evolving target state. Each batch applies its override files before its declared edits. Checks use the state at that point and the installed schema. The build writes one `PROP` per target. Objects the plan does not touch copy byte for byte.
 
 **Routing.** A materialised target is a replacement of a Riot chunk. It routes exactly like a whole-file override: to every game WAD holding the chunk, compressed once from the same bytes so every copy has the same checksum. The client walks the mounted WADs in mount order and returns the first WAD holding a path hash; at the end of every mount it looks up each new chunk in the other mounted WADs, and a same-hash chunk whose compressed checksum differs aborts the process with the install-corrupt fatal. A target held by one WAD, such as `data/maps/shipping/map11/map11.bin`, needs no fan-out. A target held by several, such as `maps/modespecificdata/classic.bin`, fans out to each. The index knows which. There is no shared always-mounted WAD for targets: the always-mounted set is hardcoded in the client, and a copy placed anywhere but beside its twins dies at mount.
 
@@ -1333,6 +1333,9 @@ The link engine reports these kinds:
 | `EntryUnresolved` | No game bin declares the entry. Its edits are skipped. |
 | `EntryFanOut` | Several game bins declare the entry. Every declaring chunk receives the edits. Informational. |
 | `IndexUnavailable` | The object index cannot load or build. Every `entries` item is skipped and the build continues. |
+| `OverrideUnreadable` | The mod content does not supply an override file. The file is skipped and the edit continues. |
+| `OverrideInvalid` | An override file does not read as a `PTCH`. The file is skipped and the edit continues. |
+| `OverrideRecordSkipped` | One override record did not apply. The report carries the record index, object, property path and a reason code. The remaining records continue. |
 | `LinkRemovalUnmatched` | A `-links` path is absent at that edit. The edit continues. |
 
 An entry-resolution report carries the authored entry name as `target`. Reports about a specific chunk also carry its WAD chunk hash in `chunk`, beside `origin`. Module-level reports have no chunk.
@@ -1361,19 +1364,19 @@ Every check below is a report line, report-and-skip, never a build failure:
 For tools that write projects and packages:
 
 - One layer manifest, `game_data.yaml`, `.yml`, `.toml` or `.json`, with an ordered `modules` array. No manifest means no declarations.
-- Each item has one selector: `target`, `entries` or `modes`. A `target` is one string, hash or path, with direct bindings, `steps` or `source`. An `entries` item contains only its mapping, as one batch. A `modes` item takes `load`. There is no `inline` wrapper. Targets never come from file placement.
+- Each item has one selector: `target`, `entries` or `modes`. A `target` is one string, hash or path, with direct bindings, `edits` or `source`. An `entries` item contains only its mapping, as one batch. A `modes` item takes `load`. There is no `inline` wrapper. Targets never come from file placement.
 - `version` belongs to the manifest and each external source file. Sources cannot include another source or redeclare a target.
 - Classify manifests, referenced sources and override inputs as build resources before collecting game content. Reject ignored required inputs. Every declared path or name keeps its casing and uses forward slashes.
 - This standard's words are bare keys. A bare root entry binding carries a slash or uses hash form. An `entries` mapping accepts any nonempty entry name. The game's property names sit inside an entry, a `set` or a map value.
 - Never emit a binding, sign or type name this version does not define.
 - Fail packing on multiple manifests, mixed body forms, missing or invalid sources, duplicate canonical target/source assignments, duplicate mapping keys, invalid selectors, a bare `*` mode selector, a `load` path without `.bin`, a mod-added entry name the index holds, conflicting file roles, an unknown override extension, a `.rito` input that is not a `PTCH`, or an unquoted YAML hash.
-- Preserve module, step and `entries` mapping order in package metadata. Source formatting is optional. Execution boundaries are required.
+- Preserve module, edit and `entries` mapping order in package metadata. Source formatting is optional. Execution boundaries are required.
 - Convert `.rito` override files to `.ptch` at pack; store the binary form.
 - Warn on a chunk path in a layer that is in the game index and is not a declared target: it is a whole-file override of a Riot file.
 
 For tools that build overlays:
 
-- Compose by precedence: mod order, layer priority, module array order, then step array order. Each batch reads the result of preceding batches. Report every cross-mod conflict.
+- Compose by precedence: mod order, layer priority, module array order, then edit array order. Each batch reads the result of preceding batches. Report every cross-mod conflict.
 - Hash lowercased: xxh64 for chunk paths and `file` values, FNV-1a 32 for entry names, `hash` and `link` values, and map keys of those types.
 - Type from the schema, then the base; coerce unpinned values; check pinned ones. A YAML tag is a pin; a one-key mapping is a pin except on a struct, where it descends.
 - Apply per key: set, then removals, then additions.
@@ -1399,7 +1402,7 @@ The Creator Workshop adds direct module items to the layer manifest by default, 
 
 ## Modpkg
 
-Packing expands the layer manifest and source files into ordered declarations in per-layer metadata. The declarations preserve selectors, module and step boundaries, and references to compiled `.ptch` resources. Those resources are package build inputs, excluded from game-content enumeration. The overlay builder does not reopen authored YAML, TOML or JSON files.
+Packing expands the layer manifest and source files into ordered declarations in per-layer metadata. The declarations preserve selectors, module and edit boundaries, and references to compiled `.ptch` resources. Those resources are package build inputs, excluded from game-content enumeration. The overlay builder does not reopen authored YAML, TOML or JSON files.
 
 Filesystem and package providers expose the same declarations. Each module carries its declaration location as `origin`: the manifest, the source file if any, and the module index. That field is provenance for diagnostics; it is not the authoring `source` directive. Packed declarations never combine `source` with a body.
 

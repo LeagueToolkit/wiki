@@ -25,9 +25,11 @@ hand-authored project files; it does not require a declaration editor in the Wor
 The `entries` selector requires the game-index support in
 [league-mod#228](https://github.com/LeagueToolkit/league-mod/issues/228).
 
-The supported bindings are `links`, `+links`, and `-links`. Property edits, `overrides`, `objects`,
-and type pins belong to the broader [proposal](/reference/mod-packages/game-data/). The link
-engine rejects those bindings.
+The supported bindings are `links`, `+links`, `-links`, and `overrides` with `.ptch` files
+([league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191)). A `.rito` override
+file is refused with an error naming the extension. Property edits, `objects`, and type pins
+belong to the broader [proposal](/reference/mod-packages/game-data/). The engine rejects those
+bindings.
 :::
 
 ## Add your first link
@@ -124,7 +126,7 @@ An entry key is a nonempty object name or an object hash: lowercase `0x` followe
 The manifest and reports keep your spelling.
 
 Each `entries` item is one batch. It contains only the entry mapping, with no `target`,
-`steps`, or `source`. Entry bodies have no `steps` or `source` either. Entries apply in
+`edits`, or `source`. Entry bodies have no `edits` or `source` either. Entries apply in
 mapping order. Use separate module items for repeated edits to one entry.
 
 Several declaring chunks produce an informational `EntryFanOut` report. The build edits every
@@ -151,29 +153,29 @@ modules:
 case. Additions preserve the written spelling and list order, with duplicate paths omitted.
 A removal with no matching dependency produces a diagnostic and leaves the other edits active.
 
-Within one step, removals run before additions, regardless of key order. Removing and adding the
-same path leaves that path present. A step can contain `links` or `+links`, but not both aliases.
+Within one edit, removals run before additions, regardless of key order. Removing and adding the
+same path leaves that path present. An edit can contain `links` or `+links`, but not both aliases.
 
-## Organize edits into modules and steps
+## Organize edits into modules and edit lists
 
 A **module** selects a chunk with `target` or named entries with `entries`.
 A `target` module contains one of these forms:
 
 - Direct bindings, such as the `links` list in the first example.
-- A `steps` list of ordered binding groups.
-- A `source` filename containing the bindings or steps.
+- An `edits` list of ordered binding groups.
+- A `source` filename containing the bindings or edits.
 
 Keep one form per `target` module. An `entries` module contains only its entry mapping.
 There is no `inline` wrapper.
 
-Use `steps` when the order between groups matters. In this example, the second step removes the
+Use `edits` when the order between groups matters. In this example, the second edit removes the
 link added by the first. The final list has no `temporary.bin` dependency:
 
 ```yaml
 version: 1
 modules:
   - target: data/characters/teemo/skins/skin0.bin
-    steps:
+    edits:
       - links:
           - mods/teemo-example/temporary.bin
       - '-links':
@@ -213,7 +215,7 @@ links:
 ```
 
 Keep `target` in the manifest. The source has its own `version: 1` and direct bindings or
-`steps`; it has no `modules` wrapper. A source cannot select a target or include another source.
+`edits`; it has no `modules` wrapper. A source cannot select a target or include another source.
 
 The `source` path is relative to the layer root, here `content/base/`. It uses forward slashes
 and must stay within that layer, including through symlinks. A source may use YAML, TOML, or
@@ -291,7 +293,7 @@ or the game's copy when no mod supplies one. It applies declarations in this ord
 1. Mods from lowest to highest precedence.
 2. Layers from lowest to highest priority, with layer name as the tie-breaker.
 3. Modules in manifest order.
-4. Steps in their listed order.
+4. Edits in their listed order.
 
 Source filenames do not control order. A higher-precedence removal can remove a lower-precedence
 addition. A whole-file mod copy also supplies the starting objects and dependencies for all
@@ -303,7 +305,7 @@ fail packing. Game-dependent checks, such as target existence, happen during the
 
 `.modpkg` carries declarations per layer. `.fantome` carries base-layer declarations in the
 LeagueToolkit extension; a consumer must support that extension to apply them. Fantome packing
-omits non-base layers. Extraction reconstructs a `game_data.json` manifest with inline steps for
+omits non-base layers. Extraction reconstructs a `game_data.json` manifest with inline edits for
 `target` modules and compact entry bodies for `entries` modules. Entry mapping order survives
 packing and extraction. Source filenames, comments, and formatting are not reconstructed.
 
@@ -324,7 +326,7 @@ BINs are unsupported bases.
 | `EntryUnresolved`            | Check the entry name or `0x` plus 8-digit object hash against the installed game. No game BIN declares it. |
 | `EntryFanOut`                | Informational: several chunks declare the entry, and the build edits every one. Check the reported chunks. |
 | `IndexUnavailable`           | Check the object-index error in the build log. The build skips every `entries` item and continues. |
-| Link removal is absent      | The dependency is not present at that step. Check the path and preceding edits.                                                                                                                |
+| Link removal is absent      | The dependency is not present at that edit. Check the path and preceding edits.                                                                                                                |
 | Linked BIN is missing       | Supply the companion BIN at the declared game path in enabled content.                                                                                                                         |
 | No edits appear             | Check the layer is enabled, the manifest is at its root, and both packing and overlay tools support declarations.                                                                              |
 
