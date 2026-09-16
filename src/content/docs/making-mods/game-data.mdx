@@ -1,6 +1,6 @@
 ---
 title: Authoring Game Data Declarations
-description: Add and remove BIN dependencies with layer manifests, ordered modules, and reusable source files.
+description: Edit entry properties and BIN dependencies with layer manifests, ordered modules, and reusable source files.
 tags:
   type: guide
   audience: [mod-creator]
@@ -14,8 +14,10 @@ Game data declarations describe edits to a game's [BIN file](/reference/file-for
 You write them in a layer manifest. The overlay builder applies them to the target BIN while
 building your mod's overlay.
 
-This guide covers **links**: the dependency paths in a BIN's header. You can add a companion
-BIN to that list or remove an existing dependency. The target's objects and properties stay intact.
+This guide covers **links**, the dependency paths in a BIN's header, and **property edits**,
+values you set, add, or remove on an entry of the BIN. You can add a companion BIN to the
+dependency list, remove an existing dependency, and change the properties of an entry the BIN
+declares. Objects and properties you do not name stay intact.
 
 :::caution[Tool support]
 These examples require a packer and overlay builder with the declaration support in
@@ -25,11 +27,14 @@ hand-authored project files; it does not require a declaration editor in the Wor
 The `entries` selector requires the game-index support in
 [league-mod#228](https://github.com/LeagueToolkit/league-mod/issues/228).
 
-The supported bindings are `links`, `+links`, `-links`, and `overrides` with `.ptch` files
-([league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191)). A `.rito` override
-file is refused with an error naming the extension. Property edits, `objects`, and type pins
-belong to the broader [proposal](/reference/mod-packages/game-data/). The engine rejects those
-bindings.
+The supported bindings are `links`, `+links`, `-links`, `overrides` with `.ptch` files
+([league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191)), and entry bodies of
+property edits under an entry name ([league-mod#243](https://github.com/LeagueToolkit/league-mod/issues/243),
+[league-mod#244](https://github.com/LeagueToolkit/league-mod/issues/244)): signed keys, block
+nesting, and type pins as the [reference](/reference/mod-packages/game-data/#entries) describes
+them. A `.rito` override file is refused with an error naming the extension. `objects` and
+`modes` belong to the broader [proposal](/reference/mod-packages/game-data/); the engine rejects
+those bindings.
 :::
 
 ## Add your first link
@@ -116,9 +121,9 @@ modules:
           - mods/teemo-example/particles.bin
 ```
 
-The link applies to the dependency list of every declaring chunk. It does not edit the entry's
-properties. Entry bodies accept `links`, `+links`, and `-links` as the link engine's extension
-of the standard.
+The link applies to the dependency list of every declaring chunk. An entry body holds
+[property edits](#edit-an-entrys-properties) beside `links`, `+links`, and `-links`; the link
+keys are the link engine's extension of the standard.
 
 An entry key is a nonempty object name or an object hash: lowercase `0x` followed by exactly
 8 hexadecimal digits. The digits accept either case. Quote hashes in YAML, for example
@@ -155,6 +160,73 @@ A removal with no matching dependency produces a diagnostic and leaves the other
 
 Within one edit, removals run before additions, regardless of key order. Removing and adding the
 same path leaves that path present. An edit can contain `links` or `+links`, but not both aliases.
+
+## Edit an entry's properties
+
+An entry name under `target` opens an entry body. Each key in the body is a property path, with
+an optional sign in front; each value is what the property becomes. This example gives base
+Teemo one texture from a companion skin, a lighting value, one tag more and one tag less, and a
+replaced particle:
+
+```yaml
+version: 1
+modules:
+  - target: data/characters/teemo/skins/skin0.bin
+    'Characters/Teemo/Skins/Skin0':
+      skinMeshProperties.selfIllumination: 1.0
+      skinMeshProperties.texture: assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex
+      skinAudioProperties:
+        '+tagEventList': [Jade_Teemo]
+        '-tagEventList': [Teemo]
+    'Characters/Teemo/Skins/Skin0/Resources':
+      '-resourceMap': [Teemo_R_Firefly_GroundLight]
+      '+resourceMap':
+        Teemo_R_Mis: Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis
+```
+
+| Part                                  | Meaning                                                                                |
+| ------------------------------------- | -------------------------------------------------------------------------------------- |
+| `'Characters/Teemo/Skins/Skin0'`      | The entry to edit. An entry name at the module root carries a slash or is a `0x` hash. |
+| `skinMeshProperties.selfIllumination` | A dotted path into a struct field. The value replaces what the base has.               |
+| `skinAudioProperties:` with a block   | The same struct as a block. Each key inside is a path relative to the struct.          |
+| `'+tagEventList'`                     | Add these elements to the list. On a map, add or replace these keys.                   |
+| `'-tagEventList'`, `'-resourceMap'`   | Remove these elements from the list, or these keys from the map.                       |
+
+Write values as plain YAML: `1.0` is a number, `true` is a boolean, a game path is a string.
+The build reads the property's type from the installed patch's schema and converts the value to
+it: a string on a `hash` or `link` property is hashed, on a `file` property it is hashed as a
+path, a number list on a `vec3` property is a vector. Where the schema says nothing about a
+property, the type is the one the base BIN holds, and the build reports the fallback as
+informational. A property the base omits and the schema does not know is skipped.
+
+A sign belongs on a list or map property. On a plain value it is a report, and the edit is
+skipped. `-` on a list matches elements by value, or by index when the elements are structs;
+on a map it matches by key. A removal that matches nothing is a report. Within one key the set
+applies first, then the removals, then the additions; a report on any of the three skips that
+key and the remaining keys continue.
+
+The dotted spelling and the block spelling are the same edit. A block on a struct merges
+field by field, and a field the block does not name keeps its base value. Choose one spelling
+for a field within a module; both spellings together are two writes to the same property.
+
+A **type pin** fixes the type a value must have. In YAML it is a tag in front of the value,
+`selfIllumination: !f32 1.0`; in TOML and JSON it is a one-key mapping, `{ f32 = 1.0 }`. A pin
+whose type disagrees with the property's is a report, and the edit is skipped. A `pointer` pin
+builds a struct where the base has a null pointer: `!pointer { class: SomeClass, set: { field: 1 } }`.
+The [reference](/reference/mod-packages/game-data/#type-pins) lists the type names and the full
+conversion table.
+
+The same body works under `entries`, where the build edits the entry in every declaring chunk:
+
+```yaml
+version: 1
+modules:
+  - entries:
+      'Characters/Teemo/Skins/Skin0':
+        skinMeshProperties.selfIllumination: 1.0
+        links:
+          - mods/teemo-example/particles.bin
+```
 
 ## Organize edits into modules and edit lists
 
@@ -316,19 +388,21 @@ A successful pack verifies the declaration files, not the availability of every 
 dependency. The target must be a valid `PROP` BIN at version 2 or 3; `PTCH` files and version 1
 BINs are unsupported bases.
 
-| Problem                     | What to check                                                                                                                                                                                  |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Multiple manifests          | Keep one `game_data.*` manifest at the layer root.                                                                                                                                             |
-| Declarations rejected       | Check the reported file, supported keys, `version`, and module body form. An invalid module rejects that layer's declarations. Ordinary mod content remains available during overlay building. |
-| Missing or ignored source   | Match the layer-relative filename and check `.modignore`.                                                                                                                                      |
-| Duplicate source assignment | Keep only one assignment of a given source to a given target, including aliases of either path.                                                                                                |
-| Target skipped              | Check its game path or 16-digit hash, enabled content, and BIN format. A missing, invalid, or blocked target receives no declaration edits.                                                    |
-| `EntryUnresolved`            | Check the entry name or `0x` plus 8-digit object hash against the installed game. No game BIN declares it. |
-| `EntryFanOut`                | Informational: several chunks declare the entry, and the build edits every one. Check the reported chunks. |
-| `IndexUnavailable`           | Check the object-index error in the build log. The build skips every `entries` item and continues. |
-| Link removal is absent      | The dependency is not present at that edit. Check the path and preceding edits.                                                                                                                |
-| Linked BIN is missing       | Supply the companion BIN at the declared game path in enabled content.                                                                                                                         |
-| No edits appear             | Check the layer is enabled, the manifest is at its root, and both packing and overlay tools support declarations.                                                                              |
+| Problem                     | What to check                                                                                                                                                                                                                                                                                            |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Multiple manifests          | Keep one `game_data.*` manifest at the layer root.                                                                                                                                                                                                                                                       |
+| Declarations rejected       | Check the reported file, supported keys, `version`, and module body form. An invalid module rejects that layer's declarations. Ordinary mod content remains available during overlay building.                                                                                                           |
+| Missing or ignored source   | Match the layer-relative filename and check `.modignore`.                                                                                                                                                                                                                                                |
+| Duplicate source assignment | Keep only one assignment of a given source to a given target, including aliases of either path.                                                                                                                                                                                                          |
+| Target skipped              | Check its game path or 16-digit hash, enabled content, and BIN format. A missing, invalid, or blocked target receives no declaration edits.                                                                                                                                                              |
+| `EntryUnresolved`           | Check the entry name or `0x` plus 8-digit object hash against the installed game. No game BIN declares it.                                                                                                                                                                                               |
+| `EntryFanOut`               | Informational: several chunks declare the entry, and the build edits every one. Check the reported chunks.                                                                                                                                                                                               |
+| `IndexUnavailable`          | Check the object-index error in the build log. The build skips every `entries` item and continues.                                                                                                                                                                                                       |
+| `PropertyEditSkipped`       | One property key did not apply. The report names the entry, the signed key, and a reason code: a missing property, a sign on a plain value, a value that does not convert, a pin that disagrees with the type, or a removal that matches nothing. Check the key against the entry's class in the schema. |
+| `SchemaFallback`            | Informational: the schema says nothing about the property, and the build typed it from the base BIN.                                                                                                                                                                                                     |
+| Link removal is absent      | The dependency is not present at that edit. Check the path and preceding edits.                                                                                                                                                                                                                          |
+| Linked BIN is missing       | Supply the companion BIN at the declared game path in enabled content.                                                                                                                                                                                                                                   |
+| No edits appear             | Check the layer is enabled, the manifest is at its root, and both packing and overlay tools support declarations.                                                                                                                                                                                        |
 
 ## Related pages
 
