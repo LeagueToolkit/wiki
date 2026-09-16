@@ -13,7 +13,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 Game data declarations let a mod edit the game's property bins without shipping a copy of each bin it touches. A layer declares, per target bin, what it changes: linked files, mode-gated companion bins, override records, property edits, new objects. The overlay build reads the installed game's copy of the target and materialises the edit on top of it at build time. This page is the standard: the declaration modules, each binding's meaning, how containers carry the declarations, and the rules the build follows.
 
 :::caution[Status]
-This is a proposal. It is tracked in [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) (links) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) (PTCH overrides). The link engine in [league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225) implements `target`, `links`, `+links`, `-links`, `steps` and `source`. Every other binding on this page is unimplemented. The [roadmap](#roadmap) names the order the bindings land in.
+This is a proposal. It is tracked in [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) (links) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) (PTCH overrides). The link engine in [league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225) implements `target`, `links`, `+links`, `-links`, `steps` and `source`. [league-mod#228](https://github.com/LeagueToolkit/league-mod/issues/228) implements the `entries` selector through the game index, with link bindings inside entry bodies. Every other binding on this page is unimplemented. The [roadmap](#roadmap) names the order the bindings land in.
 :::
 
 :::note[Link declaration authoring]
@@ -245,6 +245,9 @@ This recipe adds two entries to the selected target bin. It requires the origina
 | A target is rejected as an object     | `target` is one string. Write `target: data/.../skin0.bin` or a quoted 16-digit hash, never `path:` or `hash:`. |
 | A target cannot be found              | Check the game chunk path. Preserve its extension, including no extension for a path such as `shared`.       |
 | An entry or property cannot be found  | Inspect the selected bin and its schema. File paths, entry names and property names are different addresses. |
+| `EntryUnresolved` | Check the entry name or object hash against the installed game. No game bin declares it. |
+| `EntryFanOut` | Informational: every declaring chunk receives the edits. Check the reported chunks. |
+| `IndexUnavailable` | Check the object-index error in the build log. The build skips every `entries` item and continues. |
 | A declared link cannot be resolved    | Check that the companion bin exists at the declared game path and is included in the active content.         |
 | A mode selector is reported as unknown | Modes rotate. Check the mode roster of the installed patch; a selector with no mode entry is skipped.        |
 | A `load` path is rejected             | The game appends `.bin` to every mode-list value. A `load` path must end in `.bin`.                          |
@@ -282,7 +285,7 @@ The mod project is the subject of this standard. A `.modpkg` and a `.fantome` ar
 ## Vocabulary
 
 - **Target** - the game chunk a declaration edits: one string, a chunk hash of exactly 16 hexadecimal digits or a literal game path. A module names it as `target`, resolves it from the entry names under `entries`, or derives it from a `modes` selector. The build changes that bin's contents. File placement has no target meaning.
-- **Holder** - a chunk that contains a named entry. The game index knows every holder of an entry and every WAD that ships a chunk.
+- **Declaring chunk** - a game bin chunk that contains an entry. The object index records every declaring chunk of an entry. A holder is a WAD archive that ships a chunk.
 - **Module** - one application of a body to a target, at a position in the manifest's `modules` array.
 - **Selector** - the key of a module that picks its target: `target`, `entries` or `modes`. A module has exactly one.
 - **Source** - an external file supplying a module body. The manifest owns its target and application order.
@@ -298,7 +301,7 @@ The mod project is the subject of this standard. A `.modpkg` and a `.fantome` ar
 - **Layer** - a named, prioritised slice of a mod's content. See [Layers](/making-mods/layers/).
 - **Schema** - the [meta class dump](/reference/metaclasses/overview/) for the installed patch: every class, its properties and their types. LTK Manager holds one per patch.
 
-Two vocabularies meet in a module and a reader always knows which it is holding. **This standard's words** - `version`, `modules`, `target`, `entries`, `source`, `steps`, `links`, `modes`, `load`, `overrides`, `objects`, `clone`, `class`, `set`, `remove`, the sign prefixes and the type names - are bare words. **The game's words** - entry names, property paths, map keys - appear only as keys of an entry, a `set` or a map-valued table, and an entry name at the root always carries a slash or is in hash form. Every one of the 359,477 entry names in the community `binentries` list carries a slash; a slash-less entry is written in hash form. Inside an entry no key of this standard appears except `+`, `-` and a type name in a pin.
+Two vocabularies meet in a module and a reader always knows which it is holding. **This standard's words** - `version`, `modules`, `target`, `entries`, `source`, `steps`, `links`, `modes`, `load`, `overrides`, `objects`, `clone`, `class`, `set`, `remove`, the sign prefixes and the type names - are bare words. **The game's words** - entry names, property paths, map keys - appear only as keys of an entry, a `set` or a map-valued table, and an entry name at the root always carries a slash or is in hash form. Every one of the 359,477 entry names in the community `binentries` list carries a slash; a slash-less entry at the binding root is written in hash form. Keys inside an `entries` mapping accept any nonempty name. Inside an entry, this standard defines sign prefixes and type pins. The link engine also accepts `links`, `+links` and `-links` inside an `entries` body as an extension of the standard.
 
 ## Declaration Modules
 
@@ -332,7 +335,7 @@ YAML is read as YAML 1.2 with the core schema: `0x6ecc5fac` is an integer, `on` 
 
 ### Module Order
 
-The manifest contains `version: 1` and an ordered `modules` array. Each item has one selector and exactly one body form. The selector is `target`, a chunk string; `entries`, a mapping of entry names to entry bodies, each name resolved to its holder chunks; or `modes`, a list of mode selectors whose body is `load` and nothing else. The body form is compact bindings directly beside the selector, an ordered `steps` array, or a `source`. There is no `inline` key. A source item cannot also contain local bindings or steps. Compact bindings and steps are mutually exclusive.
+The manifest contains `version: 1` and an ordered `modules` array. Each item has one selector and exactly one body form. The selector is `target`, a chunk string; `entries`, a mapping of entry names to entry bodies, each name resolved to its declaring chunks; or `modes`, a list of mode selectors whose body is `load` and nothing else. A `target` body contains compact bindings directly beside the selector, an ordered `steps` array, or a `source`. An `entries` item contains only its mapping and is one batch. A `modes` item contains only its selectors and `load`. There is no `inline` key. A source item cannot also contain local bindings or steps. Compact bindings and steps are mutually exclusive.
 
 <Tabs>
   <TabItem label="YAML">
@@ -496,7 +499,7 @@ In an external compact body, an entry is a root mapping in YAML and JSON, or a `
 
 - **`version`** - required integer in the manifest and each external source file. Direct bodies inherit the manifest version. This page describes version 1. A reader refuses an unsupported version.
 - **`target`** - one nonempty string. Exactly 16 ASCII hexadecimal characters, without `0x`, are a chunk hash; every other spelling is a literal game chunk path, with forward slashes and the game's own extension. Extensionless paths such as `shared` are legal. `target: '5a791d818ae738a6'` selects the chunk `shared` by hash. A hash-shaped spelling is reserved and cannot name a literal path. A string with a `0x` prefix or a `.bin` suffix is a path. Objects and non-string values are errors. A numeric-looking YAML target is quoted.
-- **`entries`** - a mapping of entry names to entry bodies. The build resolves each name to its holder chunks through the game index, as [Entry Targets](#entry-targets) states.
+- **`entries`** - a mapping of entry names to entry bodies. The build resolves each name to its declaring chunks through the game index, as [Entry Targets](#entry-targets) states.
 - **Mode selectors** - `Map<N>/<MODE>`, or `Map<N>/*` for every mode entry of one map. A bare `*` is an error. See [`modes`](#modes).
 - **Dependency links** - literal game paths, including extensionless paths. They never accept a hash selector or interpret hexadecimal-looking text as a numeric hash. File-storage conventions, including `.ltk` suffix removal, do not apply to game lookup strings.
 - **Casing** - keys and every declared path or name keep the author's casing. Comparison and hashing use the ASCII-lowercased form, the same rule as [embedded hashtables](/reference/mod-packages/hashtables/#hash-computation).
@@ -508,7 +511,7 @@ In an external compact body, an entry is a root mapping in YAML and JSON, or a `
 
 ### Entry Targets
 
-`entries` names entries instead of a chunk. Each key is an entry name; its value is that entry's [edits](#entries), the same body an entry holds under a `target` module. The build resolves each name to its holder chunks and their WADs for the installed patch, through the game index. Entry-name targeting is sugar over chunk targeting: the plan holds one synthetic override per holder chunk, and the rest of the build is unchanged.
+`entries` names entries instead of a chunk. Each key is an entry name; its value is that entry's [edits](#entries), the same body an entry holds under a `target` module. The build resolves each name to its declaring chunks and their WADs for the installed patch, through the game index. Entry-name targeting is sugar over chunk targeting: the plan holds one synthetic override per declaring chunk, and the rest of the build is unchanged.
 
 <Tabs>
   <TabItem label="YAML">
@@ -559,12 +562,15 @@ In an external compact body, an entry is a root mapping in YAML and JSON, or a `
   </TabItem>
 </Tabs>
 
-- An `entries` item carries the mapping and nothing else. The entries of one item may live in different chunks; the build groups them by holder. `links`, `overrides`, `objects`, `steps` and `source` belong to a `target` item, whose chunk is known.
-- Independent entries in one mapping have no order, as under a `target` item. Two edits to one entry that need an order are two items.
+- An `entries` item contains only its mapping and is one batch. Each entry applies to every declaring chunk.
+- An entry body accepts `links`, `+links` and `-links` as the link engine's extension of this standard. These bindings edit each declaring chunk's dependency list. `overrides`, `objects`, `steps` and `source` belong to a `target` item. No entry body contains `steps` or `source`.
+- Entries apply in authored mapping order, including entries that resolve to the same chunk. Packing and extraction preserve that order. Two edits to one entry that need separate batches are two module items.
 
-- The name is matched by FNV-1a 32 of its ASCII-lowercased form. The manifest keeps the author's casing; a report shows the casing the index attests.
-- **Several holders.** The index reports every chunk holding the entry. The build edits every holder. When the entry is one the client looks up in a single container it loaded itself - a skin properties entry, a per-skin `Resources` entry, a character record - the build edits that container alone. A serialized link into an entry with several holders resolves to the first loaded copy, in load order; editing one copy of such an entry is a race, not an override. The report names the holders edited and the holders left alone.
-- **A name with no holder** is a report and that entry's edits are skipped.
+- An entry key is a nonempty object name or an object hash. An object hash uses lowercase `0x` and exactly 8 hexadecimal digits, with digits in either case. Quote it in YAML. Object names match by FNV-1a 32 of their ASCII-lowercased form. The manifest and reports keep the author's spelling.
+- **Several declaring chunks.** The build edits every declaring chunk. An informational `EntryFanOut` report names those chunks. A serialized link resolves to the first loaded copy of an entry.
+- **Single-container entries** _(unimplemented)_. For an entry the client looks up in one loaded container, the build edits that container alone. Examples include skin properties, per-skin `Resources` and character records. The report names the chunks left alone.
+- **A name with no declaring chunk** produces `EntryUnresolved`. The build skips that entry's edits.
+- **An unavailable object index** produces `IndexUnavailable` on every `entries` item. The build skips those items and continues.
 - **New entries** a mod adds under [`objects`](#objects) carry the `Mods/<modid>/` prefix. The build checks the name against the index before packing. A name the index holds is a packing error unless the declaration says the override is intended.
 - The index gives the entry's class. Types come from the [schema](#vocabulary) for the installed patch, with the base bin as the reported fallback, as [Coercion](#coercion) states.
 
@@ -576,7 +582,7 @@ Every binding composes across layers and across mods by the same order, the one 
 2. Within a mod, layers with higher priority win over layers with lower priority.
 3. Within a layer, [module array order](#module-order), then [step array order](#steps). Later applications read and may replace the results of earlier applications.
 
-Evaluation runs from lower to higher precedence: mods later in the enabled list first, then layers in ascending priority. Mapping-key order has no execution meaning.
+Evaluation runs from lower to higher precedence: mods later in the enabled list first, then layers in ascending priority. The `entries` selector preserves authored mapping order. Property-key order within a binding body has no execution meaning.
 
 What "win" means is per binding and per operation, stated in each binding's section. Two enabled mods that touch the same key on the same target, or where one adds what the other removes, resolve by this order, and the build reports the conflict so the manager can show it. A mod may ship a target in one layer and declare on it in another; the shipped copy is the base for the declaration.
 
@@ -1316,7 +1322,20 @@ The overlay build handles declarations in its two existing passes.
 
 **Companion bins.** A companion bin has no Riot twin. The consistency check never sees it, and any WAD mounted when the referencing bin parses can hold it. Default placement is the WAD directory the mod put the file under. A builder may instead route every companion bin of every enabled mod into one overlay copy of a core WAD, which turns two mods shipping the same companion path with different bytes into a build-time conflict instead of a mount-time fatal, and makes placement deterministic. That is a builder policy, not a manifest concept. The candidate is the smallest always-mounted, non-localized, ungated WAD, `Scripts.wad.client`; `ShaderCache.dx11.wad.client` is mounted only under one renderer and is unsuitable. A companion bin is never placed only in a localized WAD, and `Bootstrap.windows.wad` carries nothing but content linked from `Bootstrap.bin`, which parses before any other WAD mounts.
 
-**Reports.** The game reports nothing on this path. The build is the one place these are caught, and every one lands in the build report next to the existing linked-bin findings. A report never fails the build. LTK Manager shows the report per mod as warnings and never blocks the profile on one.
+**Reports.** The game reports nothing on this path. The build is the one place these are caught, and every one lands in the build report next to the existing linked-bin findings. A report never fails the build. LTK Manager shows reports per mod. `EntryFanOut` is informational. A report does not block the profile.
+
+The link engine reports these kinds:
+
+| Kind | Meaning |
+| ---- | ------- |
+| `DeclarationsRejected` | A layer's declarations are invalid or unreadable. The build skips them and retains ordinary content. |
+| `TargetSkipped` | A target has no base, is blocked, or is not a valid `PROP` version 2 or 3. Its edits are skipped. |
+| `EntryUnresolved` | No game bin declares the entry. Its edits are skipped. |
+| `EntryFanOut` | Several game bins declare the entry. Every declaring chunk receives the edits. Informational. |
+| `IndexUnavailable` | The object index cannot load or build. Every `entries` item is skipped and the build continues. |
+| `LinkRemovalUnmatched` | A `-links` path is absent at that edit. The edit continues. |
+
+An entry-resolution report carries the authored entry name as `target`. Reports about a specific chunk also carry its WAD chunk hash in `chunk`, beside `origin`. Module-level reports have no chunk.
 
 | Failure                                            | What the client does                                     | What the user sees                    |
 | -------------------------------------------------- | -------------------------------------------------------- | ------------------------------------- |
@@ -1330,7 +1349,7 @@ The overlay build handles declarations in its two existing passes.
 Every check below is a report line, report-and-skip, never a build failure:
 
 - every `links` and `load` path exists in the mounted set once the overlay is in place;
-- every targeted entry exists in the resolved holder, with the class the schema expects;
+- every targeted entry exists in the resolved declaring chunk, with the class the schema expects;
 - every edited property exists on that class with the expected type; list-valued properties first: a stale list edit does not no-op, it empties the list;
 - every mode selector resolves to a shipped mode entry;
 - every mod-added entry name is absent from the game index, or the override is declared;
@@ -1342,13 +1361,13 @@ Every check below is a report line, report-and-skip, never a build failure:
 For tools that write projects and packages:
 
 - One layer manifest, `game_data.yaml`, `.yml`, `.toml` or `.json`, with an ordered `modules` array. No manifest means no declarations.
-- Each item has one selector, `target`, `entries` or `modes`, and direct bindings, `steps`, or `source`, with no `inline` wrapper. A `target` is one string, hash or path. Targets never come from file placement.
+- Each item has one selector: `target`, `entries` or `modes`. A `target` is one string, hash or path, with direct bindings, `steps` or `source`. An `entries` item contains only its mapping, as one batch. A `modes` item takes `load`. There is no `inline` wrapper. Targets never come from file placement.
 - `version` belongs to the manifest and each external source file. Sources cannot include another source or redeclare a target.
 - Classify manifests, referenced sources and override inputs as build resources before collecting game content. Reject ignored required inputs. Every declared path or name keeps its casing and uses forward slashes.
-- This standard's words are bare keys; an entry name carries a slash or is in hash form; the game's names sit only inside an entry, a `set` or a map value.
+- This standard's words are bare keys. A bare root entry binding carries a slash or uses hash form. An `entries` mapping accepts any nonempty entry name. The game's property names sit inside an entry, a `set` or a map value.
 - Never emit a binding, sign or type name this version does not define.
 - Fail packing on multiple manifests, mixed body forms, missing or invalid sources, duplicate canonical target/source assignments, duplicate mapping keys, invalid selectors, a bare `*` mode selector, a `load` path without `.bin`, a mod-added entry name the index holds, conflicting file roles, an unknown override extension, a `.rito` input that is not a `PTCH`, or an unquoted YAML hash.
-- Preserve ordered modules and steps in package metadata. Source formatting is optional; execution boundaries are required.
+- Preserve module, step and `entries` mapping order in package metadata. Source formatting is optional. Execution boundaries are required.
 - Convert `.rito` override files to `.ptch` at pack; store the binary form.
 - Warn on a chunk path in a layer that is in the game index and is not a declared target: it is a whole-file override of a Riot file.
 
@@ -1358,7 +1377,7 @@ For tools that build overlays:
 - Hash lowercased: xxh64 for chunk paths and `file` values, FNV-1a 32 for entry names, `hash` and `link` values, and map keys of those types.
 - Type from the schema, then the base; coerce unpinned values; check pinned ones. A YAML tag is a pin; a one-key mapping is a pin except on a struct, where it descends.
 - Apply per key: set, then removals, then additions.
-- Resolve `entries` and `modes` selectors through the game index; one synthetic override per holder chunk.
+- Resolve `entries` and `modes` selectors through the game index; one synthetic override per declaring chunk.
 - Route every materialised target to every WAD holding the chunk, with identical compressed bytes. Never place a target in a WAD that does not ship it.
 - Materialise every target as a `PROP` over the installed base; never emit a `PTCH`.
 - Check every edit against the target state at that point; report and skip, never fail.
@@ -1395,7 +1414,7 @@ Fantome keeps only the base layer's content, as it does for every other per-laye
 ## Roadmap
 
 1. **`links` and `overrides`.** The module loader, the modpkg and fantome fields, the plan entry, and pass 2 on `ltk_meta`. Delivers [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191).
-2. **Entries.** Coercion against the schema, signed keys, block nesting, type pins, reports. `modes` lands here: it lowers to a list append on the mode entry. `entries` lands here: it resolves through the game index and needs no new record shape.
+2. **Entries.** Coercion against the schema, signed keys, block nesting, type pins, reports. `modes` lands here: it lowers to a list append on the mode entry.
 3. **`objects`.** Clone, construct, delete, and the index check on mod-added entry names.
 
 ## Open Questions

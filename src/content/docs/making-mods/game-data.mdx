@@ -22,6 +22,8 @@ These examples require a packer and overlay builder with the declaration support
 [league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225).
 Support in a particular LTK Manager release depends on its bundled engine. This guide describes
 hand-authored project files; it does not require a declaration editor in the Workshop.
+The `entries` selector requires the game-index support in
+[league-mod#228](https://github.com/LeagueToolkit/league-mod/issues/228).
 
 The supported bindings are `links`, `+links`, and `-links`. Property edits, `overrides`, `objects`,
 and type pins belong to the broader [proposal](/reference/mod-packages/game-data/). The link
@@ -98,6 +100,38 @@ and suffixes are not cleaned up. The object forms `target: { path: ... }` and
 Link values are game paths, not raw hashes or local source filenames. Each link is a nonempty
 string of at most 65,535 UTF-8 bytes.
 
+### Select by entry name
+
+Use `entries` to select a BIN through an entry it declares. The game index resolves the name
+to every **declaring chunk**: a game BIN that contains that entry.
+
+```yaml
+version: 1
+modules:
+  - entries:
+      'Characters/Teemo/Skins/Skin0':
+        links:
+          - mods/teemo-example/particles.bin
+```
+
+The link applies to the dependency list of every declaring chunk. It does not edit the entry's
+properties. Entry bodies accept `links`, `+links`, and `-links` as the link engine's extension
+of the standard.
+
+An entry key is a nonempty object name or an object hash: lowercase `0x` followed by exactly
+8 hexadecimal digits. The digits accept either case. Quote hashes in YAML, for example
+`'0xd2343ed1'`. Object names match by FNV-1a 32 of their ASCII-lowercased spelling.
+The manifest and reports keep your spelling.
+
+Each `entries` item is one batch. It contains only the entry mapping, with no `target`,
+`steps`, or `source`. Entry bodies have no `steps` or `source` either. Entries apply in
+mapping order. Use separate module items for repeated edits to one entry.
+
+Several declaring chunks produce an informational `EntryFanOut` report. The build edits every
+one. A missing entry produces `EntryUnresolved` and skips that entry's edits. An unavailable
+object index produces `IndexUnavailable` for each `entries` item and skips those items.
+The build continues in each case.
+
 ## Add and remove dependencies
 
 Use `links` or its alias `+links` for additions. Use `-links` for removals. This alternative
@@ -122,13 +156,15 @@ same path leaves that path present. A step can contain `links` or `+links`, but 
 
 ## Organize edits into modules and steps
 
-A **module** selects one target and contains one of these forms:
+A **module** selects a chunk with `target` or named entries with `entries`.
+A `target` module contains one of these forms:
 
 - Direct bindings, such as the `links` list in the first example.
 - A `steps` list of ordered binding groups.
 - A `source` filename containing the bindings or steps.
 
-Keep one form per module. There is no `inline` wrapper.
+Keep one form per `target` module. An `entries` module contains only its entry mapping.
+There is no `inline` wrapper.
 
 Use `steps` when the order between groups matters. In this example, the second step removes the
 link added by the first. The final list has no `temporary.bin` dependency:
@@ -267,8 +303,9 @@ fail packing. Game-dependent checks, such as target existence, happen during the
 
 `.modpkg` carries declarations per layer. `.fantome` carries base-layer declarations in the
 LeagueToolkit extension; a consumer must support that extension to apply them. Fantome packing
-omits non-base layers. Extraction reconstructs a `game_data.json` manifest with inline steps;
-source filenames, comments, and formatting are not reconstructed.
+omits non-base layers. Extraction reconstructs a `game_data.json` manifest with inline steps for
+`target` modules and compact entry bodies for `entries` modules. Entry mapping order survives
+packing and extraction. Source filenames, comments, and formatting are not reconstructed.
 
 ## Check your result
 
@@ -284,6 +321,9 @@ BINs are unsupported bases.
 | Missing or ignored source   | Match the layer-relative filename and check `.modignore`.                                                                                                                                      |
 | Duplicate source assignment | Keep only one assignment of a given source to a given target, including aliases of either path.                                                                                                |
 | Target skipped              | Check its game path or 16-digit hash, enabled content, and BIN format. A missing, invalid, or blocked target receives no declaration edits.                                                    |
+| `EntryUnresolved`            | Check the entry name or `0x` plus 8-digit object hash against the installed game. No game BIN declares it. |
+| `EntryFanOut`                | Informational: several chunks declare the entry, and the build edits every one. Check the reported chunks. |
+| `IndexUnavailable`           | Check the object-index error in the build log. The build skips every `entries` item and continues. |
 | Link removal is absent      | The dependency is not present at that step. Check the path and preceding edits.                                                                                                                |
 | Linked BIN is missing       | Supply the companion BIN at the declared game path in enabled content.                                                                                                                         |
 | No edits appear             | Check the layer is enabled, the manifest is at its root, and both packing and overlay tools support declarations.                                                                              |
