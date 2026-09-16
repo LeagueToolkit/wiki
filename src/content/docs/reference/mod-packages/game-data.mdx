@@ -13,13 +13,12 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 Game data declarations let a mod edit the game's property bins without shipping a copy of each bin it touches. A layer declares, per target bin, what it changes: linked files, mode-gated companion bins, override records, property edits, new objects. The overlay build reads the installed game's copy of the target and materialises the edit on top of it at build time. This page is the standard: the declaration modules, each binding's meaning, how containers carry the declarations, and the rules the build follows.
 
 :::caution[Status]
-This is a proposal. It is tracked in [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) (links) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) (PTCH overrides). Nothing on this page is implemented in LTK Manager yet. The [roadmap](#roadmap) names the order the bindings land in.
+This is a proposal. It is tracked in [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) (links) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) (PTCH overrides). The link engine in [league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225) implements `target`, `links`, `+links`, `-links`, `steps` and `source`. Every other binding on this page is unimplemented. The [roadmap](#roadmap) names the order the bindings land in.
 :::
 
 :::note[Link declaration authoring]
-The [authoring guide](/making-mods/game-data/) covers the link-only engine in
-[league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225), including its scalar
-`target` syntax and tool requirements. The examples below describe the broader proposal.
+The [authoring guide](/making-mods/game-data/) covers the link engine and its tool
+requirements. The examples below describe the broader proposal.
 :::
 
 ## Getting Started
@@ -47,8 +46,7 @@ This example sets Teemo's skin mesh `selfIllumination` property to `1.0`:
 version: 1
 
 modules:
-  - target:
-      path: data/characters/teemo/skins/skin0.bin
+  - target: data/characters/teemo/skins/skin0.bin
 
     'Characters/Teemo/Skins/Skin0':
       skinMeshProperties:
@@ -61,7 +59,7 @@ Read it from the outside in:
 | -------------------------------- | ------------------------------------------------------------------------------------ |
 | `version: 1`                     | The declaration format version. This is separate from the game's patch number.       |
 | `modules:`                       | Your list of edits to game files. Each `- target:` starts one module.                |
-| `target.path`                    | The game file you want to edit, without a project directory or WAD directory prefix. |
+| `target`                         | The game file you want to edit, without a project directory or WAD directory prefix. |
 | `'Characters/Teemo/Skins/Skin0'` | The entry inside that file. Copy entry names from the bin you inspect.               |
 | `skinMeshProperties`             | A property on that entry containing more fields.                                     |
 | `selfIllumination: 1.0`          | The field and its replacement value.                                                 |
@@ -88,8 +86,7 @@ For this recipe, your mod must already supply a bin at `mods/teemo-classic/parti
 version: 1
 
 modules:
-  - target:
-      path: data/characters/teemo/skins/skin0.bin
+  - target: data/characters/teemo/skins/skin0.bin
 
     links:
       - mods/teemo-classic/particles.bin
@@ -109,7 +106,7 @@ For containers, the sign on the property describes your intent:
 | `+resourceMap: { Teemo_R_Mis: Mods/TeemoClassic/Particles/R_Missile }` | Add or replace this map entry, preserving other keys.                  |
 | `-resourceMap: [Teemo_R_Mis]`                                          | Remove this key from the map. Use this only when removal is intended.  |
 | `resourceMap: { Teemo_R_Mis: Mods/TeemoClassic/Particles/R_Missile }`  | Replace the entire map with this one entry.                            |
-| `links: [mods/teemo-classic/particles.bin]`                            | Add a dependency. Bare `links` is the exception to the usual set rule. |
+| `links: [mods/teemo-classic/particles.bin]`                            | Add a dependency. Bare `links` is the exception to the usual set rule; `+links` means the same. |
 
 A `+` or `-` belongs to a container operation. For a scalar field such as `selfIllumination`, use the ordinary unsigned key. See [Operations](#operations) for the full rules and [List Removal](#list-removal) before removing list elements.
 
@@ -130,8 +127,7 @@ The manifest selects the game file and names your source file:
 version: 1
 
 modules:
-  - target:
-      path: data/characters/teemo/skins/skin0.bin
+  - target: data/characters/teemo/skins/skin0.bin
     source: teemo-skin0.patch.yaml
 ```
 
@@ -148,7 +144,7 @@ version: 1
 
 This makes the same edit as the first recipe. Keep `target` in the manifest and give the source file its own `version`. Its body starts with the bindings or entry names; there is no `inline` wrapper.
 
-`source: teemo-skin0.patch.yaml` means the file beside the manifest, relative to `content/base/`. It is neither a game path nor a property-bin entry name. The `.patch` part is a naming choice; the exact filename in `source` is what matters. No source folder is required. Renaming the source file requires updating the reference, and leaves `target.path` unchanged.
+`source: teemo-skin0.patch.yaml` means the file beside the manifest, relative to `content/base/`. It is neither a game path nor a property-bin entry name. The `.patch` part is a naming choice; the exact filename in `source` is what matters. No source folder is required. Renaming the source file requires updating the reference, and leaves `target` unchanged.
 
 Use a source file for a coherent group of edits you want to work on together. Keep a one-field edit directly in the manifest when another file would add no useful organisation. Referenced files must be present and must not be excluded by `.modignore`.
 
@@ -161,12 +157,10 @@ Use two items in the same `modules` list. The source item comes first:
 version: 1
 
 modules:
-  - target:
-      path: data/characters/teemo/skins/skin0.bin
+  - target: data/characters/teemo/skins/skin0.bin
     source: teemo-skin0.patch.yaml
 
-  - target:
-      path: data/characters/teemo/skins/skin0.bin
+  - target: data/characters/teemo/skins/skin0.bin
 
     'Characters/Teemo/Skins/Skin0':
       skinMeshProperties:
@@ -175,7 +169,7 @@ modules:
 
 With the source file from the previous recipe, the first item sets the value to `1.0`; the second changes it to `0.5`. This is the result within this layer before any higher-precedence contribution. Repeating the target in separate items is valid. Putting `source` and local property edits in the same item is an error.
 
-To edit another game file, add another item with that file's `target.path`. Keep related work together and order modules by their intended application order. Alphabetical source filenames do not control execution.
+To edit another game file, add another item with that file's `target`. Keep related work together and order modules by their intended application order. Alphabetical source filenames do not control execution.
 
 ### Load a Companion Bin in One Mode Only
 
@@ -238,16 +232,17 @@ This recipe adds two entries to the selected target bin. It requires the origina
 - Indent by **two spaces** at each level and use spaces rather than tabs. Keep `source`, `links`, entry names or `steps` aligned with `target` inside their module item.
 - Put one setting or list item on each line for longer edits. Use a blank line between modules. Bracketed lists work well for short vectors such as `[50.0, 180.0, 150.0]`.
 - Keep related fields in one entry block. Use nested blocks for groups of struct fields and dotted paths for isolated fields. Avoid duplicate keys and overlapping spellings of the same edit.
-- Quote **hashes** and keys with path punctuation. Examples: `'0xd2343ed1'`, `'skinAudioProperties.bankUnits[0].events'`. Prefer readable `target.path` values when you know the game path; a raw target hash belongs in `target.hash` and uses the separate [target grammar](#grammar).
+- Quote **hashes** and keys with path punctuation. Examples: `'0xd2343ed1'`, `'skinAudioProperties.bankUnits[0].events'`. Prefer a readable game path as the `target` when you know it; a raw chunk hash is the same string field, spelled as exactly 16 hexadecimal digits and always quoted. See the [target grammar](#grammar).
 - Keep values in their intended YAML form: `1.0` is a number, `true` is a boolean, and `'1.0'` is a string. Leave ordinary numbers and booleans unquoted. Let the schema determine types for routine edits; use [type pins](#type-pins) when you deliberately want a type check.
-- Use **forward slashes** in paths, including on Windows. `target.path` is a game lookup path; `source` is a local filename. Do not put `X:\\...`, `content/base/` or a WAD directory prefix into a target.
+- Use **forward slashes** in paths, including on Windows. `target` is a game lookup path; `source` is a local filename. Do not put `X:\\...`, `content/base/` or a WAD directory prefix into a target.
 - Use comments to explain intent, such as `# Preserve the other resource slots.` Comments need no separate declaration key.
 
 | If you see this problem               | Check this first                                                                                             |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | Your source file contributes no edits | Confirm that the layer has a manifest and that a module references the exact source filename.                |
 | YAML reports a duplicate key          | Combine fields under one entry block, or use separate modules or steps for ordered writes.                   |
-| A source item is rejected             | Keep only `target` and `source` in that item. Put customisation in the next item.                            |
+| A source item is rejected             | Keep only the selector and `source` in that item. Put customisation in the next item.                        |
+| A target is rejected as an object     | `target` is one string. Write `target: data/.../skin0.bin` or a quoted 16-digit hash, never `path:` or `hash:`. |
 | A target cannot be found              | Check the game chunk path. Preserve its extension, including no extension for a path such as `shared`.       |
 | An entry or property cannot be found  | Inspect the selected bin and its schema. File paths, entry names and property names are different addresses. |
 | A declared link cannot be resolved    | Check that the companion bin exists at the declared game path and is included in the active content.         |
@@ -279,16 +274,17 @@ The same declarations appear in three containers:
 | Container   | Declaration location                                         | Notes                                                     |
 | ----------- | ------------------------------------------------------------ | --------------------------------------------------------- |
 | Mod project | `content/{layer}/game_data.yaml`, `.yml`, `.toml` or `.json` | The authored manifest, with optional source files.        |
-| `.modpkg`   | Per-layer package metadata                                   | The ordered program and compiled resource references.     |
-| `.fantome`  | `Layers.{name}.GameData` in `META/info.json`                 | The same ordered program, in the LeagueToolkit extension. |
+| `.modpkg`   | Per-layer package metadata, field `game_data`                | The ordered declarations and compiled resource references. |
+| `.fantome`  | `Layers.{name}.GameData` in `META/info.json`                 | The same ordered declarations, in the LeagueToolkit extension. |
 
 The mod project is the subject of this standard. A `.modpkg` and a `.fantome` are build outputs of a project.
 
 ## Vocabulary
 
-- **Target** - the game bin a declaration edits, selected by an explicit `target.path`, `target.hash` or `target.entry` in the layer manifest, or derived from a `modes` selector. The build changes that bin's contents. File placement has no target meaning.
+- **Target** - the game chunk a declaration edits: one string, a chunk hash of exactly 16 hexadecimal digits or a literal game path. A module names it as `target`, names an entry the build resolves to its holder chunks as `entry`, or derives it from a `modes` selector. The build changes that bin's contents. File placement has no target meaning.
 - **Holder** - a chunk that contains a named entry. The game index knows every holder of an entry and every WAD that ships a chunk.
 - **Module** - one application of a body to a target, at a position in the manifest's `modules` array.
+- **Selector** - the key of a module that picks its target: `target`, `entry` or `modes`. A module has exactly one.
 - **Source** - an external file supplying a module body. The manifest owns its target and application order.
 - **Batch** - a set of bindings evaluated in fixed phases. A compact body is one batch; a `steps` array orders multiple batches.
 - **Base** - the bytes the build materialises over: the game's own chunk, or the highest-precedence mod copy of that chunk when one is enabled.
@@ -302,7 +298,7 @@ The mod project is the subject of this standard. A `.modpkg` and a `.fantome` ar
 - **Layer** - a named, prioritised slice of a mod's content. See [Layers](/making-mods/layers/).
 - **Schema** - the [meta class dump](/reference/metaclasses/overview/) for the installed patch: every class, its properties and their types. LTK Manager holds one per patch.
 
-Two vocabularies meet in a module and a reader always knows which it is holding. **This standard's words** - `version`, `modules`, `target`, `path`, `hash`, `entry`, `source`, `steps`, `links`, `modes`, `load`, `overrides`, `objects`, `clone`, `class`, `set`, `remove`, the sign prefixes and the type names - are bare words. **The game's words** - entry names, property paths, map keys - appear only as keys of an entry, a `set` or a map-valued table, and an entry name at the root always carries a slash or is in hash form. Every one of the 359,477 entry names in the community `binentries` list carries a slash; a slash-less entry is written in hash form. Inside an entry no key of this standard appears except `+`, `-` and a type name in a pin.
+Two vocabularies meet in a module and a reader always knows which it is holding. **This standard's words** - `version`, `modules`, `target`, `entry`, `source`, `steps`, `links`, `modes`, `load`, `overrides`, `objects`, `clone`, `class`, `set`, `remove`, the sign prefixes and the type names - are bare words. **The game's words** - entry names, property paths, map keys - appear only as keys of an entry, a `set` or a map-valued table, and an entry name at the root always carries a slash or is in hash form. Every one of the 359,477 entry names in the community `binentries` list carries a slash; a slash-less entry is written in hash form. Inside an entry no key of this standard appears except `+`, `-` and a type name in a pin.
 
 ## Declaration Modules
 
@@ -336,7 +332,7 @@ YAML is read as YAML 1.2 with the core schema: `0x6ecc5fac` is an integer, `on` 
 
 ### Module Order
 
-The manifest contains `version: 1` and an ordered `modules` array. Each item has one `target` and exactly one body form: compact bindings directly beside `target`, an ordered `steps` array, or a `source`. There is no `inline` key. A source item cannot also contain local bindings or steps. Compact bindings and steps are mutually exclusive. A [`modes`](#modes) item is the one item without a `target`: it carries `modes` and `load` and nothing else, and the build derives its target.
+The manifest contains `version: 1` and an ordered `modules` array. Each item has one selector and exactly one body form. The selector is `target`, a chunk string; `entry`, an entry name the build resolves to its holder chunks; or `modes`, a list of mode selectors whose body is `load` and nothing else. The body form is compact bindings directly beside the selector, an ordered `steps` array, or a `source`. There is no `inline` key. A source item cannot also contain local bindings or steps. Compact bindings and steps are mutually exclusive.
 
 <Tabs>
   <TabItem label="YAML">
@@ -345,16 +341,14 @@ The manifest contains `version: 1` and an ordered `modules` array. Each item has
     version: 1
 
     modules:
-      - target:
-          path: data/characters/teemo/skins/skin0.bin
+      - target: data/characters/teemo/skins/skin0.bin
         links:
           - mods/teemo-classic/particles.bin
         Characters/Teemo/Skins/Skin0/Resources:
           +resourceMap:
             Teemo_R_Mis: Mods/TeemoClassic/Particles/R_Missile
 
-      - target:
-          path: shared
+      - target: shared
         source: shared.patch.yaml
     ```
 
@@ -365,14 +359,14 @@ The manifest contains `version: 1` and an ordered `modules` array. Each item has
     version = 1
 
     [[modules]]
-    target = { path = "data/characters/teemo/skins/skin0.bin" }
+    target = "data/characters/teemo/skins/skin0.bin"
     links = ["mods/teemo-classic/particles.bin"]
 
     [modules."Characters/Teemo/Skins/Skin0/Resources"."+resourceMap"]
     Teemo_R_Mis = "Mods/TeemoClassic/Particles/R_Missile"
 
     [[modules]]
-    target = { path = "shared" }
+    target = "shared"
     source = "shared.patch.yaml"
     ```
 
@@ -383,14 +377,14 @@ The manifest contains `version: 1` and an ordered `modules` array. Each item has
       "version": 1,
       "modules": [
         {
-          "target": { "path": "data/characters/teemo/skins/skin0.bin" },
+          "target": "data/characters/teemo/skins/skin0.bin",
           "links": ["mods/teemo-classic/particles.bin"],
           "Characters/Teemo/Skins/Skin0/Resources": {
             "+resourceMap": { "Teemo_R_Mis": "Mods/TeemoClassic/Particles/R_Missile" }
           }
         },
         {
-          "target": { "path": "shared" },
+          "target": "shared",
           "source": "shared.patch.yaml"
         }
       ]
@@ -421,19 +415,17 @@ To apply a source and customise its result, use consecutive items with the same 
 version: 1
 
 modules:
-  - target:
-      path: data/characters/teemo/skins/skin0.bin
+  - target: data/characters/teemo/skins/skin0.bin
     source: teemo-skin0.patch.yaml
 
-  - target:
-      path: data/characters/teemo/skins/skin0.bin
+  - target: data/characters/teemo/skins/skin0.bin
     Characters/Teemo/Skins/Skin0:
       skinMeshProperties.selfIllumination: 1.0
 ```
 
 Paths in `overrides` are relative to the external source file containing them, or to the layer directory for a direct body. In the flat layout above, `overrides: [teemo-skin0.rito]` reads `content/base/teemo-skin0.rito` from either the manifest or `teemo-skin0.patch.yaml`. Source and resource paths must remain within the layer, including after resolving symlinks. Moving a source never changes its target; its relative resource references may need updating.
 
-Missing sources, unsupported versions, invalid bodies and mixed body forms are packing errors. Diagnostics identify the manifest reference and the source location where applicable. Packing resolves sources into the executable program; overlay builds from packages do not reopen authoring files.
+Missing sources, unsupported versions, invalid bodies and mixed body forms are packing errors. Diagnostics identify the manifest reference and the source location where applicable. Packing expands sources into ordered declarations; overlay builds from packages do not reopen authoring files.
 
 ### Steps
 
@@ -503,7 +495,8 @@ A manifest item contains `target` and one body form. An external source file con
 In an external compact body, an entry is a root mapping in YAML and JSON, or a `["Entry/Name"]` table in TOML. In a direct body, the entry belongs to its `modules` item. Entry names carry slashes and are quoted in TOML; property names and map keys are bare unless they carry a dot, a bracket or a sign. Binding examples below use external bodies; the same bindings are valid in direct bodies. Examples in format tabs describe the same edit. Where YAML and JSON write a dotted path, the TOML form writes an inline table per struct; the two nest to one document, as [Block Nesting](#block-nesting) states.
 
 - **`version`** - required integer in the manifest and each external source file. Direct bodies inherit the manifest version. This page describes version 1. A reader refuses an unsupported version.
-- **Targets** - exactly one of `target.path`, `target.hash` or `target.entry`. A path is a literal game chunk path, with forward slashes and the game's own extension; extensionless paths such as `shared` are legal. A hash is a quoted string of exactly 16 hexadecimal digits without `0x`, normalised to lowercase. For example, `target: { hash: "5a791d818ae738a6" }` selects the chunk `shared` by hash. A hexadecimal-looking `path` remains a literal path. An entry is an entry name; the build resolves it to its holder chunks through the game index, as [Entry Targets](#entry-targets) states.
+- **`target`** - one nonempty string. Exactly 16 ASCII hexadecimal characters, without `0x`, are a chunk hash; every other spelling is a literal game chunk path, with forward slashes and the game's own extension. Extensionless paths such as `shared` are legal. `target: '5a791d818ae738a6'` selects the chunk `shared` by hash. A hash-shaped spelling is reserved and cannot name a literal path. A string with a `0x` prefix or a `.bin` suffix is a path. Objects and non-string values are errors. A numeric-looking YAML target is quoted.
+- **`entry`** - one entry name. The build resolves it to its holder chunks through the game index, as [Entry Targets](#entry-targets) states.
 - **Mode selectors** - `Map<N>/<MODE>`, or `Map<N>/*` for every mode entry of one map. A bare `*` is an error. See [`modes`](#modes).
 - **Dependency links** - literal game paths, including extensionless paths. They never accept a hash selector or interpret hexadecimal-looking text as a numeric hash. File-storage conventions, including `.ltk` suffix removal, do not apply to game lookup strings.
 - **Casing** - keys and every declared path or name keep the author's casing. Comparison and hashing use the ASCII-lowercased form, the same rule as [embedded hashtables](/reference/mod-packages/hashtables/#hash-computation).
@@ -515,15 +508,14 @@ In an external compact body, an entry is a root mapping in YAML and JSON, or a `
 
 ### Entry Targets
 
-`target.entry` names an entry instead of a chunk. The build resolves the name to its holder chunks and their WADs for the installed patch, through the game index. Entry-name targeting is sugar over chunk targeting: the plan holds one synthetic override per holder chunk, and the rest of the build is unchanged.
+`entry` names an entry instead of a chunk. The build resolves the name to its holder chunks and their WADs for the installed patch, through the game index. Entry-name targeting is sugar over chunk targeting: the plan holds one synthetic override per holder chunk, and the rest of the build is unchanged.
 
 ```yaml
 # content/base/game_data.yaml
 version: 1
 
 modules:
-  - target:
-      entry: Characters/Teemo/Skins/Skin0
+  - entry: Characters/Teemo/Skins/Skin0
     'Characters/Teemo/Skins/Skin0':
       skinMeshProperties.selfIllumination: 1.0
 ```
@@ -552,7 +544,7 @@ The operation is the sign on the key. A value is always the literal the operatio
 
 | Written       | Meaning                                                                                                             |
 | ------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `key: value`  | Set: the value replaces what the base has. On `links`, an unsigned list adds.                                       |
+| `key: value`  | Set: the value replaces what the base has. On `links`, an unsigned list adds; `+links` is its alias.                |
 | `+key: value` | Add: elements to a list, entries to a map, paths to the link list. The value is a list or a mapping of what to add. |
 | `-key: value` | Remove: elements, entries or paths. The value is a list of what to remove.                                          |
 
@@ -574,7 +566,7 @@ Every binding belongs to a module application and is materialised into its targe
 
 ### `links`
 
-Chunk paths added to, or removed from, the target bin's linked-file list. `links` adds; `-links` removes. There is no set: replacing a game bin's whole link list is never what a mod means.
+Chunk paths added to, or removed from, the target bin's linked-file list. `links` adds, `+links` is its alias, and `-links` removes. A step holds one of the two addition spellings, not both. There is no set: replacing a game bin's whole link list is never what a mod means.
 
 <Tabs>
   <TabItem label="YAML">
@@ -666,8 +658,7 @@ Companion bins that load with one or more game modes and are released with them.
 - **Lowering.** One module becomes one entry edit per selected mode entry, on the derived target `data/maps/shipping/map<N>/map<N>.bin`. The value is the `load` path with `.bin` stripped:
 
   ```yaml
-  - target:
-      path: data/maps/shipping/map12/map12.bin
+  - target: data/maps/shipping/map12/map12.bin
     Maps/Shipping/Map12/Modes/ARAM:
       +AdditionalPropertyDataPaths:
         - mods/example/aram-announcer
@@ -1309,7 +1300,7 @@ Every check below is a report line, report-and-skip, never a build failure:
 For tools that write projects and packages:
 
 - One layer manifest, `game_data.yaml`, `.yml`, `.toml` or `.json`, with an ordered `modules` array. No manifest means no declarations.
-- Each item has an explicit `target` and direct bindings, `steps`, or `source`, with no `inline` wrapper. Targets never come from file placement.
+- Each item has one selector, `target`, `entry` or `modes`, and direct bindings, `steps`, or `source`, with no `inline` wrapper. A `target` is one string, hash or path. Targets never come from file placement.
 - `version` belongs to the manifest and each external source file. Sources cannot include another source or redeclare a target.
 - Classify manifests, referenced sources and override inputs as build resources before collecting game content. Reject ignored required inputs. Every declared path or name keeps its casing and uses forward slashes.
 - This standard's words are bare keys; an entry name carries a slash or is in hash form; the game's names sit only inside an entry, a `set` or a map value.
@@ -1325,7 +1316,7 @@ For tools that build overlays:
 - Hash lowercased: xxh64 for chunk paths and `file` values, FNV-1a 32 for entry names, `hash` and `link` values, and map keys of those types.
 - Type from the schema, then the base; coerce unpinned values; check pinned ones. A YAML tag is a pin; a one-key mapping is a pin except on a struct, where it descends.
 - Apply per key: set, then removals, then additions.
-- Resolve `target.entry` and `modes` selectors through the game index; one synthetic override per holder chunk.
+- Resolve `entry` and `modes` selectors through the game index; one synthetic override per holder chunk.
 - Route every materialised target to every WAD holding the chunk, with identical compressed bytes. Never place a target in a WAD that does not ship it.
 - Materialise every target as a `PROP` over the installed base; never emit a `PTCH`.
 - Check every edit against the target state at that point; report and skip, never fail.
@@ -1347,22 +1338,22 @@ The Creator Workshop adds direct module items to the layer manifest by default, 
 
 ## Modpkg
 
-Packing resolves the layer manifest and source files into an ordered program in per-layer metadata. The program preserves target selectors, module and step boundaries, and references to compiled `.ptch` resources. Those resources are package build inputs, excluded from game-content enumeration. The overlay builder does not reopen authored YAML, TOML or JSON files.
+Packing expands the layer manifest and source files into ordered declarations in per-layer metadata. The declarations preserve selectors, module and step boundaries, and references to compiled `.ptch` resources. Those resources are package build inputs, excluded from game-content enumeration. The overlay builder does not reopen authored YAML, TOML or JSON files.
 
-Filesystem and package providers expose the same executable program. Diagnostic provenance uses an `origin` field; it is not the authoring `source` directive. The executable representation never combines `source` with a body.
+Filesystem and package providers expose the same declarations. Each module carries its declaration location as `origin`: the manifest, the source file if any, and the module index. That field is provenance for diagnostics; it is not the authoring `source` directive. Packed declarations never combine `source` with a body.
 
 A project extracted without preserved source text receives a layer manifest with direct bodies in the same module order and extracted override inputs. Relative resource references are rewritten to those files. Optional source preservation retains file names, comments and formatting. Removing source text cannot change execution order or erase module boundaries.
 
 ## Fantome Packaging
 
-Declarations join the [LeagueToolkit extension](/reference/mod-packages/fantome/#the-leaguetoolkit-extension) of `info.json` as `GameData` under each `Layers.{name}`, beside `StringOverrides`. They carry the same ordered program as modpkg. Compiled override resources live under `META/game_data/`, with references relative to the archive root. This archive resource location does not impose a `game_data/` directory on the authored project.
+Declarations join the [LeagueToolkit extension](/reference/mod-packages/fantome/#the-leaguetoolkit-extension) of `info.json` as `GameData` under each `Layers.{name}`, beside `StringOverrides`. They carry the same ordered declarations as modpkg. Compiled override resources live under `META/game_data/`, with references relative to the archive root. This archive resource location does not impose a `game_data/` directory on the authored project.
 
-Fantome keeps only the base layer's content, as it does for every other per-layer feature. Its retained declaration program must have all referenced build resources in the archive.
+Fantome keeps only the base layer's content, as it does for every other per-layer feature. Its retained declarations must have all referenced build resources in the archive.
 
 ## Roadmap
 
 1. **`links` and `overrides`.** The module loader, the modpkg and fantome fields, the plan entry, and pass 2 on `ltk_meta`. Delivers [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191).
-2. **Entries.** Coercion against the schema, signed keys, block nesting, type pins, reports. `modes` lands here: it lowers to a list append on the mode entry. `target.entry` lands here: it resolves through the game index and needs no new record shape.
+2. **Entries.** Coercion against the schema, signed keys, block nesting, type pins, reports. `modes` lands here: it lowers to a list append on the mode entry. `entry` lands here: it resolves through the game index and needs no new record shape.
 3. **`objects`.** Clone, construct, delete, and the index check on mod-added entry names.
 
 ## Open Questions
