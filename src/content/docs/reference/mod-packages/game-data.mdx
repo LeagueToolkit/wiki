@@ -13,7 +13,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 Game data declarations let a mod edit the game's property bins without shipping a copy of each bin it touches. A layer declares, per target bin, what it changes: linked files, mode-gated companion bins, override records, property edits, new objects. The overlay build reads the installed game's copy of the target and materialises the edit on top of it at build time. This page is the standard: the declaration modules, each binding's meaning, how containers carry the declarations, and the rules the build follows.
 
 :::caution[Status]
-This is a proposal. It is tracked in [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) (links) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) (PTCH overrides). The link engine in [league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225) implements `target`, `links`, `+links`, `-links`, `edits` and `source`. [league-mod#228](https://github.com/LeagueToolkit/league-mod/issues/228) implements the `entries` selector through the game index, with link bindings inside entry bodies. [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) implements `overrides` for `.ptch` files; a `.rito` override file is refused with an error naming the extension until [league-mod#240](https://github.com/LeagueToolkit/league-mod/issues/240) lands. [league-mod#243](https://github.com/LeagueToolkit/league-mod/issues/243) and [league-mod#244](https://github.com/LeagueToolkit/league-mod/issues/244) implement entry bodies with property edits for a `target` and an `entries` module: signed keys, block nesting, type pins, [coercion](#coercion) against the installed schema with the base bin as fallback, and list removal by value or index. `objects`, `modes`, wildcard targets, and `.rito` override files are unimplemented. The [roadmap](#roadmap) names the order the bindings land in.
+This is a proposal. It is tracked in [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) (links) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) (PTCH overrides). The link engine in [league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225) implements `target`, `links`, `+links`, `-links`, `edits` and `source`. [league-mod#228](https://github.com/LeagueToolkit/league-mod/issues/228) implements the `entries` selector through the game index, with link bindings inside entry bodies. [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) implements `overrides` for `.ptch` files; a `.rito` override file is refused with an error naming the extension until [league-mod#240](https://github.com/LeagueToolkit/league-mod/issues/240) lands. [league-mod#243](https://github.com/LeagueToolkit/league-mod/issues/243) and [league-mod#244](https://github.com/LeagueToolkit/league-mod/issues/244) implement entry bodies with property edits for a `target` and an `entries` module: signed keys, block nesting, type pins, [coercion](#coercion) against the installed schema with the base bin as fallback, and list removal by value or index. [league-mod#264](https://github.com/LeagueToolkit/league-mod/pull/264) implements [references](#references), a value read from the installed game's copy of another entry. `objects`, `modes`, wildcard targets, and `.rito` override files are unimplemented. The [roadmap](#roadmap) names the order the bindings land in.
 :::
 
 :::note[Link declaration authoring]
@@ -299,6 +299,7 @@ The mod project is the subject of this standard. A `.modpkg` and a `.fantome` ar
 - **Mode entry** - the game's per-map, per-mode root object, named `Maps/Shipping/Map<N>/Modes/<MODE>` in the map's own bin. Its extra-bin list is the only data-driven load point that is scoped to a mode.
 - **Signed key** - a key with a leading `+` or `-`. The sign is the operation: add to, or remove from, the container the key names. An unsigned key sets.
 - **Type pin** - a value marked with a type name: a YAML tag, `!f32 1.0`, or in TOML and JSON a one-key mapping, `{f32: 1.0}`. The pin fixes the type the edit expects. A YAML tag loads as the one-key mapping; the two spellings are one value in every format.
+- **Reference** - a value named by where it lives in the installed game, written `<entry name>:<property path>`: a YAML tag, `!ref a/b:speed`, or a one-key mapping, `{ref: "a/b:speed"}`. The build reads the game's copy of that value instead of a literal you wrote.
 - **Layer** - a named, prioritised slice of a mod's content. See [Layers](/making-mods/layers/).
 - **Schema** - the [meta class dump](/reference/metaclasses/overview/) for the installed patch: every class, its properties and their types. LTK Manager holds one per patch.
 
@@ -1033,22 +1034,23 @@ A block never replaces the struct: a field the block does not name keeps its bas
 
 The property's type is the target; the written value's kind is the source. The type comes from the schema for the object's class. Where the schema says nothing about a property, the type is the one the base bin serialises, and the fallback is an informational report; a property the base omits with no schema answer is untypable, a report, and the edit is skipped. A base container whose element or key kind is not the schema's is a report. A subscripted path is typed by the container's element type, or the map's value type. The rules are the same wherever a value appears: a property, a list element, a map key or value, a field of an embedded object. Type names are [ritobin](/reference/file-formats/ritobin/)'s: `file` is the [bin format](/reference/file-formats/bin/)'s `WadChunkLink`, `link` its `ObjectLink`, `list` and `list2` its `Container` and `UnorderedContainer`, `pointer` its `Struct`, `embed` its `Embedded`, `option` its `Optional`, `flag` its `BitBool`, `rgba` its `Color`.
 
-| Written value | Coerces to                                  | Rule                                                                                                                                                                                                                                                                                                |
-| ------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| integer       | `i8` to `i64`, `u8` to `u64`, `flag`        | In range for the target width and sign; out of range is a report, never a wrap. A `flag` accepts `0` and `1`.                                                                                                                                                                                       |
-| integer       | `f32`                                       | Exact when representable; a loss of precision is a report.                                                                                                                                                                                                                                          |
-| float         | `f32`                                       | Rounded to single precision. A float never coerces to an integer type, even with a zero fraction.                                                                                                                                                                                                   |
-| boolean       | `bool`, `flag`                              | As is.                                                                                                                                                                                                                                                                                              |
-| string        | `string`                                    | As is.                                                                                                                                                                                                                                                                                              |
-| string        | `hash`, `link`                              | FNV-1a 32 of the ASCII-lowercased string. A `0x` followed by 8 hex digits is a hash and passes through. `""` is the zero hash.                                                                                                                                                                      |
-| string        | `file`                                      | xxh64 of the ASCII-lowercased path. A `0x` followed by 16 hex digits is a hash and passes through. `""` is the zero hash.                                                                                                                                                                           |
-| null          | `hash`, `link`, `file`, `pointer`, `option` | The null of that type: a zero hash, a null pointer, an empty option. In TOML, which has no null, `""` is the null of `hash`, `link` and `file`, and `{}` inside a [pin](#type-pins) is the null of `pointer` and `option`.                                                                          |
-| list          | `list`, `list2`                             | Each element coerced to the element type.                                                                                                                                                                                                                                                           |
-| list          | `option`                                    | Zero or one element, coerced to the element type.                                                                                                                                                                                                                                                   |
-| any other     | `option`                                    | The one element, coerced to the element type.                                                                                                                                                                                                                                                       |
-| list          | `vec2`, `vec3`, `vec4`, `rgba`, `mtx44`     | Exactly 2, 3, 4, 4 or 16 numbers. An `rgba` takes four integers from 0 to 255; a colour is never coerced from a string.                                                                                                                                                                             |
-| mapping       | `map`                                       | Each key, written as a string, coerced to the key type by the string rules; each value to the value type. A numeric key is quoted.                                                                                                                                                                  |
-| mapping       | `embed`, `pointer`                          | A [struct pin](#type-pins) constructs the struct; a pin of any other type is a report. Any other mapping [descends](#block-nesting): each key is a property path on the struct's class, its value coerced by these rules. The class is the base value's. A null base pointer takes a `pointer` pin. |
+| Written value            | Coerces to                                  | Rule                                                                                                                                                                                                                                                                                                |
+| ------------------------ | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| integer                  | `i8` to `i64`, `u8` to `u64`, `flag`        | In range for the target width and sign; out of range is a report, never a wrap. A `flag` accepts `0` and `1`.                                                                                                                                                                                       |
+| integer                  | `f32`                                       | Exact when representable; a loss of precision is a report.                                                                                                                                                                                                                                          |
+| float                    | `f32`                                       | Rounded to single precision. A float never coerces to an integer type, even with a zero fraction.                                                                                                                                                                                                   |
+| boolean                  | `bool`, `flag`                              | As is.                                                                                                                                                                                                                                                                                              |
+| string                   | `string`                                    | As is.                                                                                                                                                                                                                                                                                              |
+| string                   | `hash`, `link`                              | FNV-1a 32 of the ASCII-lowercased string. A `0x` followed by 8 hex digits is a hash and passes through. `""` is the zero hash.                                                                                                                                                                      |
+| string                   | `file`                                      | xxh64 of the ASCII-lowercased path. A `0x` followed by 16 hex digits is a hash and passes through. `""` is the zero hash.                                                                                                                                                                           |
+| null                     | `hash`, `link`, `file`, `pointer`, `option` | The null of that type: a zero hash, a null pointer, an empty option. In TOML, which has no null, `""` is the null of `hash`, `link` and `file`, and `{}` inside a [pin](#type-pins) is the null of `pointer` and `option`.                                                                          |
+| list                     | `list`, `list2`                             | Each element coerced to the element type.                                                                                                                                                                                                                                                           |
+| list                     | `option`                                    | Zero or one element, coerced to the element type.                                                                                                                                                                                                                                                   |
+| any other                | `option`                                    | The one element, coerced to the element type.                                                                                                                                                                                                                                                       |
+| list                     | `vec2`, `vec3`, `vec4`, `rgba`, `mtx44`     | Exactly 2, 3, 4, 4 or 16 numbers. An `rgba` takes four integers from 0 to 255; a colour is never coerced from a string.                                                                                                                                                                             |
+| mapping                  | `map`                                       | Each key, written as a string, coerced to the key type by the string rules; each value to the value type. A numeric key is quoted.                                                                                                                                                                  |
+| mapping                  | `embed`, `pointer`                          | A [struct pin](#type-pins) constructs the struct; a pin of any other type is a report. Any other mapping [descends](#block-nesting): each key is a property path on the struct's class, its value coerced by these rules. The class is the base value's. A null base pointer takes a `pointer` pin. |
+| [reference](#references) | any                                         | Not coerced. The installed game's value carries its own type and is taken as it is; a type that is not the property's is a report. An entry the game does not declare, or a path it does not resolve, is a report.                                                                                  |
 
 A vector or matrix is one flat list of numbers in every form. A list may span lines, so an `mtx44` is written as four rows of four, here inside a pin on a property whose base value is absent:
 
@@ -1187,6 +1189,73 @@ A pin marks a value with the type name it must have. In YAML it is a local tag i
 - **Null spellings.** `null` in YAML and JSON. TOML has no null: `""` is the null `hash`, `link` or `file`, and `{}` is the null `pointer` or the empty `option`.
 - **A pin is a value.** A pin never appears as a key, and no game name ever appears as the key of a pin. In YAML the tag makes that structural.
 - **A one-key mapping keyed by a type name is a pin on every property.** On a `pointer` or `embed` property only a `pointer` or `embed` pin fits; any other pin there is a report and the edit is skipped, never a descent. Riot has fields named `Flag`, `Hash`, `Map`, `Option` and `String`, and names hash case-insensitively. A block whose only key is one of them, `skinMeshProperties: {hash: 1}`, is a pin; the dotted path `skinMeshProperties.hash: 1`, or a second key in the block, reaches the field. A YAML tag loads as the one-key mapping and is read the same way: `!f32 1.0` and `{f32: 1.0}` are one value in every format. A tag whose name is not a type name is a load error.
+
+#### References
+
+A reference names a value in the installed game instead of copying it. It is written `<entry name>:<property path>`: in YAML a local tag, `!ref Characters/Ahri/Skins/Skin0:speed`, and in TOML and JSON a mapping with exactly one key, `{ ref = "Characters/Ahri/Skins/Skin0:speed" }`. The build reads the value out of the game's own copy of that entry and writes it into your target.
+
+Use it for a value you would otherwise copy out of a bin you inspected. A copied literal is frozen at the patch you read it from, and when Riot changes it your mod keeps applying the old number with nothing to tell you. A reference is re-read on every build, so it follows Riot's patches with no re-authoring.
+
+<Tabs>
+  <TabItem label="YAML">
+    ```yaml
+    version: 1
+
+    Characters/Teemo/Skins/Skin0:
+      # Whatever Ahri's base skin runs at on the installed patch.
+      skinMeshProperties.selfIllumination: !ref Characters/Ahri/Skins/Skin0:skinMeshProperties.selfIllumination
+
+      # A reference stands wherever a value stands: an element, a map value,
+      # an operand of a signed key, a field of a struct pin.
+      +tagEventList: [!ref "Characters/Ahri/Skins/Skin0:tagEventList[0]"]
+
+    Characters/Teemo/Skins/Skin0/Resources:
+      +resourceMap:
+        Teemo_R_Mis: !ref Characters/Ahri/Skins/Skin0/Resources:resourceMap{"Ahri_R_Mis"}
+    ```
+
+  </TabItem>
+  <TabItem label="TOML">
+    ```toml
+    version = 1
+
+    ["Characters/Teemo/Skins/Skin0"]
+    "skinMeshProperties.selfIllumination" = { ref = "Characters/Ahri/Skins/Skin0:skinMeshProperties.selfIllumination" }
+    "+tagEventList" = [{ ref = "Characters/Ahri/Skins/Skin0:tagEventList[0]" }]
+
+    ["Characters/Teemo/Skins/Skin0/Resources"]
+    "+resourceMap" = { Teemo_R_Mis = { ref = "Characters/Ahri/Skins/Skin0/Resources:resourceMap{\"Ahri_R_Mis\"}" } }
+    ```
+
+  </TabItem>
+  <TabItem label="JSON">
+    ```json
+    {
+      "version": 1,
+      "Characters/Teemo/Skins/Skin0": {
+        "skinMeshProperties.selfIllumination": {
+          "ref": "Characters/Ahri/Skins/Skin0:skinMeshProperties.selfIllumination"
+        },
+        "+tagEventList": [{ "ref": "Characters/Ahri/Skins/Skin0:tagEventList[0]" }]
+      },
+      "Characters/Teemo/Skins/Skin0/Resources": {
+        "+resourceMap": {
+          "Teemo_R_Mis": {
+            "ref": "Characters/Ahri/Skins/Skin0/Resources:resourceMap{\"Ahri_R_Mis\"}"
+          }
+        }
+      }
+    }
+    ```
+  </TabItem>
+</Tabs>
+
+- **The spelling splits at the first `:`.** Everything before it is an entry name, everything after is a [property path](#property-paths) inside that entry. The path may itself contain a `:` inside a quoted map key; the entry name never does. The entry name takes hash form, and so does any segment of the path.
+- **The game's copy is the source, never the build.** The value comes from the installed game as it ships, read before any mod content is applied. A reference cannot read another mod's edits, and it cannot read edits your own declaration made earlier in the same build. That is what keeps the result a function of the game and your declaration: enabling a different set of mods, or changing their order, never changes what a reference resolves to, and two mods referencing each other cannot deadlock.
+- **The type comes with the value.** The game's value carries its own type, so there is nothing to coerce and nothing to pin. A reference whose value is not the property's type is a report and the edit is skipped. A [type pin](#type-pins) wrapped around a reference is a report: the pin has nothing to fix.
+- **An unresolved reference is a report, never a build failure.** An entry the installed game does not declare, or a path that entry does not resolve, skips that key and leaves the rest of the edit alone. A chunk the game does declare and the build cannot read is reported separately, because that is the installation and not your declaration.
+- **`ref` is reserved as a one-key mapping.** Riot has no field that hashes to `ref`, but the escape exists anyway and matches the one [type pins](#type-pins) use: a block whose only key is `ref` is a reference, and the dotted path `someStruct.ref: 1`, or a second key in the block, reaches a field literally named `ref`.
+- **Cost.** A build containing a reference reads the game's object index, the same index an [`entries`](#entries) module needs, because only the index says which chunk declares an entry. Each referenced entry is read and decoded once per build however many keys name it. An entry declared in several chunks resolves to the first declaring chunk.
 
 ### `objects`
 
@@ -1386,6 +1455,7 @@ For tools that build overlays:
 - Type from the schema, then the base; coerce unpinned values; check pinned ones. A YAML tag is the one-key mapping; a one-key mapping keyed by a type name is a pin on every property, and a block with one type-named field is written dotted.
 - Apply per key: set, then removals, then additions, as one write. A report on any of them skips the key.
 - Resolve `entries` and `modes` selectors through the game index; one synthetic override per declaring chunk.
+- Resolve every [reference](#references) against the installed game's copy, read before any mod content applies, once per referenced entry. Never resolve one against the build state.
 - Route every materialised target to every WAD holding the chunk, with identical compressed bytes. Never place a target in a WAD that does not ship it.
 - Materialise every target as a `PROP` over the installed base; never emit a `PTCH`.
 - Check every edit against the target state at that point; report and skip, never fail.
