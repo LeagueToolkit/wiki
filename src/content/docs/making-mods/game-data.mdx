@@ -31,7 +31,9 @@ The supported bindings are `links`, `+links`, `-links`, `overrides` with `.ptch`
 ([league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191)), and entry bodies of
 property edits under an entry name ([league-mod#243](https://github.com/LeagueToolkit/league-mod/issues/243),
 [league-mod#244](https://github.com/LeagueToolkit/league-mod/issues/244)): signed keys, block
-nesting, and type pins as the [reference](/reference/mod-packages/game-data/#entries) describes
+nesting, type pins, and references
+([league-mod#264](https://github.com/LeagueToolkit/league-mod/pull/264)) as the
+[reference](/reference/mod-packages/game-data/#entries) describes
 them. A `.rito` override file is refused with an error naming the extension. `objects` and
 `modes` belong to the broader [proposal](/reference/mod-packages/game-data/); the engine rejects
 those bindings.
@@ -216,6 +218,15 @@ only key is a type name, such as `hash`, is read as a pin; write that field as a
 builds a struct where the base has a null pointer: `!pointer { class: SomeClass, set: { field: 1 } }`.
 The [reference](/reference/mod-packages/game-data/#type-pins) lists the type names and the full
 conversion table.
+
+A **reference** names a value in the installed game instead of copying it, written
+`<entry name>:<property path>`: `speed: !ref Characters/Ahri/Skins/Skin0:speed` in YAML, or
+`{ ref = "Characters/Ahri/Skins/Skin0:speed" }` in TOML and JSON. Use it wherever you would
+otherwise paste a number out of a bin you inspected. The copied number is frozen at the patch
+you read it from and silently goes stale; the reference is re-read on every build. It reads the
+game's own copy, never another mod's edits, so the result never depends on which mods are
+enabled or in what order. The
+[reference](/reference/mod-packages/game-data/#references) covers the spelling and the reports.
 
 The same body works under `entries`, where the build edits the entry in every declaring chunk:
 
