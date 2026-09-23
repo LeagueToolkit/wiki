@@ -1184,11 +1184,11 @@ A pin marks a value with the type name it must have. In YAML it is a local tag i
 
 - **Type names** are ritobin's: `bool`, `i8` to `i64`, `u8` to `u64`, `f32`, `vec2`, `vec3`, `vec4`, `mtx44`, `rgba`, `string`, `hash`, `file`, `link`, `flag`, `option`, `pointer`, `embed`. `list`, `list2` and `map` are never written: a pin on a list value pins its elements, a pin on a map value pins its values, and a map key is always coerced by the schema.
 - **A pin that disagrees with the schema** is a report and the edit is skipped, never a coercion. That is what the pin is for.
-- **`pointer` and `embed` pins** carry `class` and `set`, the same two words an [object declaration](#objects) uses, at least one of the two. `set` is the only place the struct's fields appear; the pin's own keys never share a mapping with them. A key of `set` is one field name of the class, never a dotted path or a signed key; a nested struct inside a `set` is a nested pin. A `class` the schema does not know is a report, and so is a `set` field the schema does not type. A pin without `class` takes the class of the base value; on a property the base omits, `class` is required. On an `embed` a `class` that differs from the base's is a report. `!pointer null` and `!pointer {}` are the null pointer; an `embed` pin is never null or empty. A struct that exists in the base needs no pin: a bare mapping [descends](#block-nesting) into it. The shape of a struct pin is checked when the manifest loads, before any build.
+- **`pointer` and `embed` pins** carry a class and the struct's fields. In YAML the class goes in parentheses on the tag and the fields go directly under it, the way ritobin writes `pointer = SomeClass { ... }`: `!pointer(SomeClass) { field: 1 }`. A hash-form class needs no quotes there, `!pointer(0x50db156b)`. In TOML and JSON the pin is a one-key mapping holding `class` and `set`, the same two words an [object declaration](#objects) uses, at least one of the two: `{ pointer = { class = "SomeClass", set = { field = 1 } } }`. A key of the fields is one field name of the class, never a dotted path or a signed key; a nested struct inside them is a nested pin. A `class` the schema does not know is a report, and so is a field the schema does not type. A pin without a class, `!embed { field: 1 }`, takes the class of the base value; on a property the base omits, the class is required. On an `embed` a class that differs from the base's is a report. `!pointer(SomeClass)` alone builds the class with no fields set. `!pointer null` is the null pointer, and in TOML `{ pointer = {} }`; an `embed` pin is never null or empty. Under a YAML tag every key is a field: `!pointer { class: SomeClass }` sets a field named `class`, and the build reports it. A struct that exists in the base needs no pin: a bare mapping [descends](#block-nesting) into it. The shape of a struct pin is checked when the manifest loads, before any build.
 - **`option`** wraps one pinned or bare value, or `null` to clear.
 - **Null spellings.** `null` in YAML and JSON. TOML has no null: `""` is the null `hash`, `link` or `file`, and `{}` is the null `pointer` or the empty `option`.
 - **A pin is a value.** A pin never appears as a key, and no game name ever appears as the key of a pin. In YAML the tag makes that structural.
-- **A one-key mapping keyed by a type name is a pin on every property.** On a `pointer` or `embed` property only a `pointer` or `embed` pin fits; any other pin there is a report and the edit is skipped, never a descent. Riot has fields named `Flag`, `Hash`, `Map`, `Option` and `String`, and names hash case-insensitively. A block whose only key is one of them, `skinMeshProperties: {hash: 1}`, is a pin; the dotted path `skinMeshProperties.hash: 1`, or a second key in the block, reaches the field. A YAML tag loads as the one-key mapping and is read the same way: `!f32 1.0` and `{f32: 1.0}` are one value in every format. A tag whose name is not a type name is a load error.
+- **A one-key mapping keyed by a type name is a pin on every property.** On a `pointer` or `embed` property only a `pointer` or `embed` pin fits; any other pin there is a report and the edit is skipped, never a descent. Riot has fields named `Flag`, `Hash`, `Map`, `Option` and `String`, and names hash case-insensitively. A block whose only key is one of them, `skinMeshProperties: {hash: 1}`, is a pin; the dotted path `skinMeshProperties.hash: 1`, or a second key in the block, reaches the field. A YAML tag loads as the one-key mapping and is read the same way: `!f32 1.0` and `{f32: 1.0}` are one value in every format, and `!pointer(SomeClass) { field: 1 }` is `{pointer: {class: SomeClass, set: {field: 1}}}`. A tag whose name is not a type name is a load error. A class in square brackets, `!pointer[SomeClass]`, does not parse as a tag: YAML ends a tag at `[`.
 
 #### References
 
@@ -1275,16 +1275,12 @@ A new object in the target, cloned from an existing entry or constructed from a 
           complexEmitterDefinitionData[0]:
             rate:
               constantValue: 2.0
-            birthColor: !embed
-              class: ValueColor
-              set:
-                constantValue: [0.35, 0.9, 0.45, 0.64]
+            birthColor: !embed(ValueColor)
+              constantValue: [0.35, 0.9, 0.45, 0.64]
           +complexEmitterDefinitionData:
-            - !pointer
-              class: VfxEmitterDefinitionData
-              set:
-                emitterName: Classic_Trail
-                lifetime: 0.8
+            - !pointer(VfxEmitterDefinitionData)
+              emitterName: Classic_Trail
+              lifetime: 0.8
 
       # A second resolver, constructed from the schema, holding the mod's own effects.
       Characters/Teemo/Skins/Skin0/ClassicResources:
