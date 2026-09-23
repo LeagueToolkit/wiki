@@ -1,12 +1,115 @@
 ---
 title: General settings
-description: The League installation path, how Play launches the game, and startup options.
+description: The League installation path, how Play launches the game, startup and tray options, and anonymous diagnostics.
 tags:
   type: reference
   audience: [mod-user]
   subject: [ltk-manager, installation]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Screenshot from '@components/Screenshot.astro';
 
-<UnderConstruction />
+The General tab of **Settings** holds where League is installed, how the patcher button starts
+the game, how LTK Manager starts, and anonymous diagnostics.
+
+## League of Legends
+
+<Screenshot
+  file="manager/settings-general-league.webp"
+  alt="League of Legends section with the Installation path field, the Auto-detect button, the Classic and Modern launcher flows and two switches"
+/>
+
+### Installation
+
+<dl>
+  <dt id="installation-path">Installation path</dt>
+  <dd>
+    The League folder, which contains the `Game` folder. LTK Manager finds it on your computer, so
+    you do not set it yourself. A check mark shows that the folder is valid.
+  </dd>
+  <dt id="auto-detect">Auto-detect</dt>
+  <dd>Finds the League folder again, for example after you move League to another drive.</dd>
+</dl>
+
+### Launching
+
+<dl>
+  <dt id="launcher-flow">Launcher flow</dt>
+  <dd>
+    What the patcher button does. The option you do not pick stays on the button's menu. See
+    [Play with mods](/manager/play/#choose-how-the-button-starts-league).
+
+    - **Classic**: **Start** starts only the patcher. You open League yourself, as you usually do.
+    - **Modern**: **Play** starts the patcher and then League, through the Riot Client. This option
+      is experimental.
+
+  </dd>
+  <dt id="hide-riot-client">Hide Riot Client on Game start</dt>
+  <dd>Hides the Riot Client window when a game starts.</dd>
+  <dt id="stop-patcher-on-game-end">Stop the patcher when the game ends</dt>
+  <dd>Stops the patcher after each game, so that you can change your mods right away.</dd>
+</dl>
+
+## Startup and tray
+
+<Screenshot
+  file="manager/settings-general-startup.webp"
+  alt="Startup and tray section with the Auto run and Always start patcher at launch switches, the Open on buttons and two tray switches"
+/>
+
+### Startup
+
+<dl>
+  <dt id="auto-run">Auto run</dt>
+  <dd>Opens LTK Manager when you start your computer.</dd>
+  <dt id="always-start-patcher">Always start patcher at launch</dt>
+  <dd>Starts the patcher with your last active profile each time LTK Manager opens.</dd>
+  <dt id="open-on">Open on</dt>
+  <dd>The page that LTK Manager shows when it opens: **Home**, **Mods** or **Workshop**.</dd>
+</dl>
+
+### Tray
+
+<dl>
+  <dt id="minimize-to-tray">Minimize to system tray</dt>
+  <dd>
+    Minimizing moves the window to the system tray instead of the taskbar. Select the tray icon to
+    show the window again.
+  </dd>
+  <dt id="start-in-tray">Start minimized to tray</dt>
+  <dd>LTK Manager opens hidden in the system tray. Select the tray icon to show the window.</dd>
+</dl>
+
+## Privacy
+
+<Screenshot
+  file="manager/settings-general-privacy.webp"
+  alt="Privacy section with the Anonymous diagnostics switch, today's anonymous id, the Reset anonymous id button and the Read what is collected link"
+/>
+
+<dl>
+  <dt id="anonymous-diagnostics">Anonymous diagnostics</dt>
+  <dd>
+    Sends an anonymous report when a game session ends badly, or when LTK Manager has an error it
+    did not expect. Reports contain no account, no address, no file paths and no mod names. When you
+    turn it off, LTK Manager deletes the reports it has not sent yet. See [Anonymous
+    diagnostics](/manager/privacy/) for what a report contains.
+  </dd>
+  <dt id="anonymous-id">Today's anonymous id</dt>
+  <dd>
+    The id that today's reports carry. LTK Manager makes it from a secret on your computer and the
+    date, so it changes at midnight UTC. The secret is never sent.
+  </dd>
+  <dt id="reset-anonymous-id">Reset anonymous id</dt>
+  <dd>
+    Makes a new id at once, so that nobody can link your next reports to the ones you sent before.
+  </dd>
+  <dt id="read-what-is-collected">Read what is collected</dt>
+  <dd>Opens the [Anonymous diagnostics](/manager/privacy/) page in your browser.</dd>
+</dl>
+
+## Related pages
+
+- [Play with mods](/manager/play/)
+- [Anonymous diagnostics](/manager/privacy/)
+- [Settings](/manager/settings/)

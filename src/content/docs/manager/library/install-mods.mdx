@@ -7,6 +7,8 @@ tags:
   subject: [ltk-manager, installation, fantome]
 ---
 
+import Screenshot from '@components/Screenshot.astro';
+
 Install a mod to add it to your library. LTK Manager installs `.fantome`, `.modpkg` and `.zip`
 mod files. A mod you install goes to the top of your library and is turned on in your active
 profile.
@@ -29,8 +31,15 @@ LTK Manager ignores files of other types.
 
 ## Install from a file browser
 
-1. On the **Mods** page, select **Import**, or press <kbd>Ctrl</kbd>+<kbd>I</kbd>. On the **Home**
+1. On the **Mods** page, select **Import**, or press <kbd>Ctrl</kbd>+<kbd>I</kbd>. When the
+   library is empty, you can also select **Import Mods** in the middle of the page. On the **Home**
    page, select **Add mod**.
+
+   <Screenshot
+     file="manager/library-empty.webp"
+     alt="Empty Mods page with No mods installed, the Import button in the toolbar and the Import Mods button"
+   />
+
 2. Choose one or more mod files, then select **Open**.
 
 When you install one mod, it appears in the library. When you install two or more, the

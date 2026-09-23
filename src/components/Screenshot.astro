@@ -6,16 +6,42 @@
  * `file` is the path under `src/assets/screenshots/`, such as
  * `manager/home-rail.webp`. Adding that file replaces the placeholder with the
  * optimized image, so the page needs no edit.
+ *
+ * `markers` overlays numbered badges on the image. Each marker's number is its
+ * `n`, or one more than the previous marker's number, so that it matches its row
+ * in the region table below the screenshot.
  */
 import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
 
+/** A numbered badge position, in percent of the image width and height. */
+export interface Marker {
+  x: number;
+  y: number;
+  /** Skips ahead to this number, for a region the capture does not show. */
+  n?: number;
+}
+
 interface Props {
   file: string;
   alt: string;
+  markers?: Marker[];
 }
 
-const { file, alt } = Astro.props;
+const { file, alt, markers = [] } = Astro.props;
+
+const numbered: (Marker & { n: number })[] = [];
+for (const { x, y, n } of markers) {
+  const previous = numbered.at(-1)?.n ?? 0;
+  const number = n ?? previous + 1;
+  if (!(x >= 0 && x <= 100 && y >= 0 && y <= 100)) {
+    throw new Error(`Screenshot ${file}: marker ${number} at (${x}, ${y}) is outside 0-100`);
+  }
+  if (!Number.isInteger(number) || number <= previous) {
+    throw new Error(`Screenshot ${file}: marker n=${number} does not follow marker ${previous}`);
+  }
+  numbered.push({ x, y, n: number });
+}
 
 const images = import.meta.glob<{ default: ImageMetadata }>(
   '/src/assets/screenshots/**/*.{webp,png}',
@@ -26,7 +52,18 @@ const image = images[`/src/assets/screenshots/${file}`]?.default;
 
 {
   image ? (
-    <Image src={image} alt={alt} />
+    markers.length > 0 ? (
+      <div class="annotated">
+        <Image src={image} alt={alt} />
+        {numbered.map(({ x, y, n }) => (
+          <span class="marker" style={`left: ${x}%; top: ${y}%`} aria-hidden="true">
+            {n}
+          </span>
+        ))}
+      </div>
+    ) : (
+      <Image src={image} alt={alt} />
+    )
   ) : (
     <figure class="screenshot-missing not-content">
       <p class="label">Screenshot needed</p>
@@ -34,11 +71,41 @@ const image = images[`/src/assets/screenshots/${file}`]?.default;
         <code>src/assets/screenshots/{file}</code>
       </p>
       <figcaption>{alt}</figcaption>
+      {markers.length > 0 && <p>{markers.length} numbered markers</p>}
     </figure>
   )
 }
 
 <style>
+  .annotated {
+    position: relative;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .annotated :global(img) {
+    display: block;
+  }
+
+  /* Theme-invariant: markers always sit on a dark-theme capture. */
+  .marker {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding-inline: 0.3rem;
+    border-radius: 999px;
+    background: var(--ltk-blue);
+    box-shadow: 0 0 0 2px var(--ltk-on-brand);
+    color: var(--ltk-on-brand);
+    font-size: var(--sl-text-xs);
+    font-weight: var(--ltk-weight-bold);
+    line-height: 1;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
   .screenshot-missing {
     display: grid;
     gap: 0.25rem;

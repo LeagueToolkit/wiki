@@ -38,7 +38,7 @@ found.
 
 <Screenshot
   file="manager/library-health-dialog.webp"
-  alt="Detected issues with mods window with a list of mods, their findings and the Repair buttons"
+  alt="Detected issues with mods window with two mods, their findings grouped by mod, and the Close and Repair 1 mod buttons"
 />
 
 Each finding tells you what you can do:
@@ -51,19 +51,36 @@ Each finding tells you what you can do:
 
 Select **Info** to also show findings that are not faults.
 
-A mod with a health problem shows a mark on its card. Select the mark to see the problem and to
-check the mod again.
+A mod with a health problem shows a mark on its card. Point to the mark to see a summary of the
+problem. Select the mark to check the mod again or to repair it.
+
+<Screenshot
+  file="manager/library-health-mark.webp"
+  alt="Mod card with a repair mark and its tooltip: This mod needs a repair, 3805 findings, all repairable automatically"
+/>
 
 ## Repair mods
 
 1. Stop the patcher. A repair changes mod files that the patcher uses.
 2. In the **Detected issues with mods** window, select one of these:
-   - **Repair** on one mod's row
+   - **Repair** on one mod's row. The button shows when you point to the row.
    - **Repair _n_ enabled mods** to repair the mods that are on
    - **Repair all _n_**, from the arrow next to the repair button, to repair every mod
 
    LTK Manager shows **Repaired _n_ mods** when it is done. To stop a repair, select the close
    button next to the progress.
+
+<Screenshot
+  file="manager/library-health-repair-row.webp"
+  alt="A mod's row in the Detected issues with mods window, with the Repair button under the pointer"
+/>
+
+To repair one mod from its card, select the mark on the card, then select **Repair**.
+
+<Screenshot
+  file="manager/library-health-repair.webp"
+  alt="Health popover on a mod card with This mod needs a repair, the check again button and the Repair button"
+/>
 
 On the Home page, when **Health status** reads **_n_ repairs**, select it to open the Mods page
 with the repair ready.

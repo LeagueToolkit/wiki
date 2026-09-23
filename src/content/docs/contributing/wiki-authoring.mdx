@@ -85,6 +85,11 @@ per region, with a numbered screenshot and a `#` / Name / Description table for 
 <Screenshot
   file="editor/interface-tab-strip.webp"
   alt="Tab strip with a preview tab, a pinned tab and the lock button"
+  markers={[
+    { x: 8, y: 50 },
+    { x: 30, y: 50 },
+    { x: 96, y: 50 },
+  ]}
 />
 
 | #   | Name        | Description                         |
@@ -313,7 +318,7 @@ one file.
 Take screenshots with these settings, so that images from different writers match:
 
 - The app's dark theme and default settings
-- A 1280 x 800 window at 100% display scale
+- A 1280 x 720 window content area at 100% display scale
 - A crop to the region the text describes, with a small margin around it
 - WebP format
 - No personal data: no account names and no local user paths
@@ -332,6 +337,16 @@ entry the `WIP` badge.
 
 Alt text says what the image shows: "Tab strip with a preview tab, a pinned tab and the lock
 button". It does not start with "Screenshot of".
+
+Capture screenshots without numbers. On an interface page, the `markers` prop adds the numbers:
+each marker is an `{ x, y }` position in percent of the image width and height, measured from the
+top-left corner. Put a marker at the centre of a small part, and at the top-left corner of a large
+region so that it does not cover the content. The component numbers the markers in array order,
+so keep the array in the same order as the rows of the table below the screenshot. When the
+capture does not show a region, for example one that appears only when there is a problem, give
+the next marker an `n` with its row number, such as `{ x: 69, y: 18, n: 6 }`. Add the markers
+after the image exists, because the positions come from the real capture. The build fails when a
+value is outside 0-100 or when the numbers do not go up.
 
 Add a screenshot to a task step only when the target is hard to find. Interface pages always have
 one numbered screenshot per region. A screenshot shows the UI, and the text still gives every
@@ -373,7 +388,7 @@ Interactive components are Svelte islands that render at build time and hydrate 
 | Component           | Import path                          | Use                                                  |
 | ------------------- | ------------------------------------ | ---------------------------------------------------- |
 | `Where`             | `components/Where.astro`             | Location box on LTK Editor pages                     |
-| `Screenshot`        | `components/Screenshot.astro`        | A screenshot, or a placeholder until the file exists |
+| `Screenshot`        | `components/Screenshot.astro`        | Screenshot with optional markers, or a placeholder   |
 | `UnderConstruction` | `components/UnderConstruction.astro` | Body of a page that has no content yet               |
 | `Hint`              | `components/Hint.svelte`             | Tooltip on a glossary term's first mention           |
 | `HeadingIcon`       | `components/HeadingIcon.astro`       | Icon inside a heading                                |

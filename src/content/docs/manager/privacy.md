@@ -51,8 +51,9 @@ date. It changes every day at midnight UTC, and the secret itself never leaves y
 That means we can count how many people hit a problem on a given day, and we cannot follow anyone
 from one day to the next.
 
-You can break the link immediately with **Reset anonymous id** in Settings, under Privacy. It
-takes effect at once rather than waiting for midnight.
+You can break the link immediately with **Reset anonymous id** in
+[Settings > General](/manager/settings/general/#privacy), under Privacy. It takes effect at once
+rather than waiting for midnight.
 
 On top of that, not every install reports. We sample, so on any given day many machines send
 nothing at all.
@@ -69,7 +70,7 @@ rather say this plainly than claim more privacy than the design actually gives y
 
 ## Turning it off
 
-Open **Settings**, then the **Privacy** card, and switch off **Anonymous diagnostics**. You are
+Open **Settings** > **General**, and under **Privacy** switch off **Anonymous diagnostics**. You are
 also offered the switch the first time the manager starts after the update that introduced this.
 
 Turning it off stops collection at once. Anything already queued on your machine is deleted rather
