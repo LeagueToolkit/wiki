@@ -1,0 +1,95 @@
+---
+title: Quick start
+description: Install LTK Manager, add your first mod and play a game with it.
+tags:
+  type: tutorial
+  audience: [mod-user]
+  subject: [ltk-manager, installation, patcher]
+---
+
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
+
+This quick start takes you from nothing installed to a game of League with your first mod. It
+takes about ten minutes.
+
+<Screenshot
+  file="manager/quick-start-result.webp"
+  alt="Mods page with one mod turned on and the status bar showing Patcher running"
+/>
+
+## Prerequisites
+
+- Windows 10 or later, 64-bit
+- League of Legends, installed and updated
+- A mod file that ends in `.fantome`, `.modpkg` or `.zip`. See
+  [Where to find mods](/start-here/finding-mods/).
+
+A <Hint as="span" tip="A file that changes how something in League looks or sounds." client:visible>[mod](/glossary/)</Hint> changes how something in League looks or sounds, for example a champion skin. Mods change only what
+you see. Other players see the normal game.
+
+## 1. Install LTK Manager
+
+1. Open the [LTK Manager releases page](https://github.com/LeagueToolkit/ltk-manager/releases/latest).
+2. Under **Assets**, download the file that ends in `x64-setup.exe`.
+3. Open the file you downloaded and follow the installer.
+4. Open LTK Manager from the Start menu.
+
+## 2. Set the League folder
+
+The first time you open LTK Manager, it opens **Settings** with the message
+**Welcome to LTK Manager!**. LTK Manager needs to know where League is installed.
+
+1. Under **Installation path**, select **Auto-detect**.
+
+   The path of your League installation appears in the field.
+
+2. If **Auto-detect** does not find League, select the folder button in the field and choose
+   your League folder yourself. This is the folder that contains the `Game` folder, for example
+   `C:\Riot Games\League of Legends`.
+
+<Screenshot
+  file="manager/quick-start-league-path.webp"
+  alt="General settings with the Welcome to LTK Manager message and the Installation path field with the Auto-detect button"
+/>
+
+## 3. Add a mod
+
+1. Select **Mods** in the title bar.
+2. Drag your mod file from File Explorer onto the LTK Manager window.
+
+   The mod appears at the top of your library. It is turned on.
+
+You can also select **Import** in the toolbar and choose the file. See
+[Install mods](/manager/library/install-mods/) for more ways to add mods.
+
+## 4. Play with the mod
+
+LTK Manager loads your mods with the <Hint as="span" tip="The part of LTK Manager that loads your enabled mods into League while you play." client:visible>[patcher](/glossary/)</Hint>. The patcher must run before League starts a game.
+
+1. Select **Start** in the toolbar.
+
+   The status bar shows **Patcher running**. The first start can take a few minutes, because LTK
+   Manager prepares a copy of the game files your mod changes.
+
+2. Open League from the Riot Client as you usually do, and start a game.
+
+   Your mod shows in game.
+
+3. When you are done playing, select **Stop Patcher**.
+
+<Screenshot file="manager/quick-start-start.webp" alt="Mods page toolbar with the Start button" />
+
+:::caution
+Stop the patcher before you change your mods. LTK Manager does not let you turn mods on or off,
+install mods or switch profiles while the patcher runs.
+:::
+
+If the mod does not show in game, see [Troubleshooting](/manager/troubleshooting/).
+
+## Next steps
+
+- [Play with mods](/manager/play/): let **Play** start League for you too
+- [Turn mods on and off](/manager/library/enable-mods/)
+- [Mod library](/manager/library/): folders, profiles and load order
+- [Updating after a patch](/manager/patch-updates/): what to do when League updates

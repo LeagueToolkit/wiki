@@ -1,0 +1,198 @@
+---
+title: Mods page interface
+description: The regions of the Mods page in LTK Manager and what each control does.
+tags:
+  type: reference
+  audience: [mod-user]
+  subject: [ltk-manager]
+---
+
+import Screenshot from '@components/Screenshot.astro';
+
+The Mods page shows your mod library. To open it, select **Mods** in the title bar or press <kbd>Ctrl</kbd>+<kbd>2</kbd>.
+
+## Page layout
+
+<Screenshot
+  file="manager/library-layout.webp"
+  alt="Mods page with numbered regions: title bar, toolbar, filter chips, mod grid, selection bar and status bar"
+/>
+
+| #   | Name          | Description                                                            |
+| --- | ------------- | ---------------------------------------------------------------------- |
+| 1   | Title bar     | Moves between pages, and opens notifications, diagnostics and settings |
+| 2   | Toolbar       | Search, sort and filter, profiles, import and the patcher button       |
+| 3   | Filter chips  | The filters that are on. Shows only when a filter is on                |
+| 4   | Mod grid      | Your folders and mods, as cards or as a list                           |
+| 5   | Selection bar | Actions for the selected mods. Shows only when mods are selected       |
+| 6   | Status bar    | What the patcher is doing, and the health of your mods                 |
+
+## Title bar
+
+<Screenshot
+  file="manager/library-title-bar.webp"
+  alt="Title bar with the Home, Mods and Workshop tabs and the notification, diagnostics, settings and More buttons"
+/>
+
+| #   | Name          | Description                                                                                                                                                                 |
+| --- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Page tabs     | **Home** (<kbd>Ctrl</kbd>+<kbd>1</kbd>), **Mods** (<kbd>Ctrl</kbd>+<kbd>2</kbd>) and **Workshop** (<kbd>Ctrl</kbd>+<kbd>3</kbd>). **Workshop** opens [LTK Editor](/editor/) |
+| 2   | Update        | Shows when a new version of LTK Manager is available                                                                                                                        |
+| 3   | Notifications | Messages from recent actions. **Clear all** removes them                                                                                                                    |
+| 4   | Diagnostics   | Opens [Diagnostics](/manager/diagnostics/) (<kbd>Ctrl</kbd>+<kbd>D</kbd>). A dot shows when a game had a problem                                                            |
+| 5   | Settings      | Opens [Settings](/manager/settings/) (<kbd>Ctrl</kbd>+<kbd>,</kbd>)                                                                                                         |
+| 6   | More          | **Open storage directory**, **Report a bug** and **Join our Discord**                                                                                                       |
+
+## Toolbar
+
+<Screenshot
+  file="manager/library-toolbar.webp"
+  alt="Mods page toolbar with numbered controls from the search box to the Start button"
+/>
+
+| #   | Name            | Description                                                                                               |
+| --- | --------------- | --------------------------------------------------------------------------------------------------------- |
+| 1   | Search          | Finds mods by name (<kbd>Ctrl</kbd>+<kbd>F</kbd>). See [Find a mod](/manager/library/find-mods/)          |
+| 2   | Sort and filter | The funnel in the search box. Opens the sort and filter options                                           |
+| 3   | Profile         | Shows the active profile. Select it to switch, create or rename profiles                                  |
+| 4   | Select all      | Selects every mod you can see (<kbd>Ctrl</kbd>+<kbd>A</kbd>). Its arrow turns every visible mod on or off |
+| 5   | Analyze         | Finds the champions, maps and tags of mods that have none                                                 |
+| 6   | Check health    | Checks every mod in the library for problems                                                              |
+| 7   | Documents       | Shows or hides the details panel                                                                          |
+| 8   | View            | Shows mods as a grid or as a list. **View options** changes card size and tags                            |
+| 9   | Import          | Opens a file browser to install mods (<kbd>Ctrl</kbd>+<kbd>I</kbd>)                                       |
+| 10  | Start or Play   | Starts and stops the patcher (<kbd>Ctrl</kbd>+<kbd>P</kbd>). See [Play with mods](/manager/play/)         |
+
+**Analyze** shows only when **Automatically categorize mods** is on in **Settings** > **Library**.
+
+## Mod cards
+
+<Screenshot
+  file="manager/library-mod-card.webp"
+  alt="Grid card of a mod with numbered parts: checkbox, marks, menu button, name, version and author, tags and layers"
+/>
+
+| #   | Name               | Description                                                                                  |
+| --- | ------------------ | -------------------------------------------------------------------------------------------- |
+| 1   | Checkbox           | Adds the mod to the selection. Shows when you point at the card, or when mods are selected   |
+| 2   | Marks              | Shows when the mod has a health problem, a missing file, or is blocked                       |
+| 3   | Menu               | **More options** for the mod. You can also right-click the card                              |
+| 4   | Name               | The mod's name                                                                               |
+| 5   | Version and author | The mod's version and its first author                                                       |
+| 6   | Tags               | Up to three tags. A tag with a dashed border was found by LTK Manager, not set by the author |
+| 7   | Layers             | Shows how many layers are on, for mods that have more than one                               |
+
+Select a card to turn the mod on or off. A mod that is off shows dimmed. In the list view, each row
+also has a switch on the right.
+
+### Card menu
+
+The card menu has these items. Some show only for some mods.
+
+<dl>
+  <dt id="menu-details">Details</dt>
+  <dd>Opens the details panel on the **Details** tab.</dd>
+  <dt id="menu-readme">Readme</dt>
+  <dd>Opens the details panel on the **Readme** tab.</dd>
+  <dt id="menu-open-location">Open Location</dt>
+  <dd>Opens the folder of the mod in File Explorer.</dd>
+  <dt id="menu-storage">Storage</dt>
+  <dd>
+    Chooses how LTK Manager stores a `.fantome` mod: as a **Project** folder or as an **Archive**
+    file. Shows only for mods that can change.
+  </dd>
+  <dt id="menu-check-health">Check Health</dt>
+  <dd>Checks this mod for problems. Shows only for `.fantome` mods.</dd>
+  <dt id="menu-update">Update from file</dt>
+  <dd>
+    Replaces the mod with a newer file of the same mod. See [Install
+    mods](/manager/library/install-mods/#update-a-mod).
+  </dd>
+  <dt id="menu-copy-id">Copy ID</dt>
+  <dd>Copies the mod's ID. Useful when you report a problem.</dd>
+  <dt id="menu-remove-from-folder">Remove from folder</dt>
+  <dd>Moves the mod out of its folder. Shows only for mods in a folder.</dd>
+  <dt id="menu-uninstall">Uninstall</dt>
+  <dd>
+    Deletes the mod at once, with no confirmation. See [Uninstall
+    mods](/manager/library/uninstall-mods/).
+  </dd>
+  <dt id="menu-skinhack">What is a skinhack?</dt>
+  <dd>Explains why LTK Manager blocks this mod. Shows instead of **Details** on a blocked mod.</dd>
+</dl>
+
+The card menu is closed while the patcher runs.
+
+## Folder cards
+
+A folder card shows up to four mod images, the folder name, and how many of its mods are on. Select
+the card to open the folder. The checkbox in its top-right corner turns every mod in the folder on
+or off. See [Organize mods into folders](/manager/library/folders/).
+
+## Selection bar
+
+The selection bar shows at the bottom of the page when you select mods. See
+[Select several mods](/manager/library/select-mods/).
+
+<dl>
+  <dt id="bar-count">_n_ selected</dt>
+  <dd>
+    How many mods are selected. **_h_ hidden** counts selected mods that a search or filter hides.
+  </dd>
+  <dt id="bar-enable">Enable _n_</dt>
+  <dd>Turns on the selected mods.</dd>
+  <dt id="bar-disable">Disable _n_</dt>
+  <dd>Turns off the selected mods.</dd>
+  <dt id="bar-check">Check health _n_</dt>
+  <dd>Checks the selected mods for problems.</dd>
+  <dt id="bar-uninstall">Uninstall _n_</dt>
+  <dd>Deletes the selected mods, after you confirm.</dd>
+  <dt id="bar-clear">Clear selection</dt>
+  <dd>
+    The close button on the left. Deselects all mods. You can also press <kbd>Esc</kbd>.
+  </dd>
+</dl>
+
+## Details panel
+
+The details panel opens over the right side of the grid. It shows one mod at a time, in three tabs:
+**Details**, **Readme** and **Licenses**. Drag its left edge to change its width. See
+[View mod details](/manager/library/mod-details/).
+
+## Status bar
+
+The status bar is at the bottom of the window.
+
+<dl>
+  <dt id="status-patcher">Patcher state</dt>
+  <dd>
+    **Patcher idle**, **Patcher running**, **Stopping patcher** or **In game**, with a short
+    explanation. While the patcher starts, the status bar shows each step.
+  </dd>
+  <dt id="status-health">Health</dt>
+  <dd>
+    Shows **_n_ repairs**, **_n_ broken** or **_n_ flagged** when mods that are on have problems.
+    Select it to open the list of problems.
+  </dd>
+</dl>
+
+## Keyboard shortcuts
+
+| Keys                         | Action                                          |
+| ---------------------------- | ----------------------------------------------- |
+| <kbd>Ctrl</kbd>+<kbd>F</kbd> | Go to the search box                            |
+| <kbd>Ctrl</kbd>+<kbd>A</kbd> | Select all visible mods, or clear the selection |
+| <kbd>Esc</kbd>               | Clear the selection                             |
+| <kbd>Ctrl</kbd>+<kbd>I</kbd> | Import mods                                     |
+| <kbd>Ctrl</kbd>+<kbd>P</kbd> | Start or stop the patcher                       |
+| <kbd>Ctrl</kbd>+<kbd>1</kbd> | Open Home                                       |
+| <kbd>Ctrl</kbd>+<kbd>2</kbd> | Open Mods                                       |
+| <kbd>Ctrl</kbd>+<kbd>3</kbd> | Open Workshop                                   |
+| <kbd>Ctrl</kbd>+<kbd>D</kbd> | Open Diagnostics                                |
+| <kbd>Ctrl</kbd>+<kbd>,</kbd> | Open Settings                                   |
+
+## Related pages
+
+- [Mod library](/manager/library/)
+- [Home interface](/manager/home/)
+- [Play with mods](/manager/play/)
