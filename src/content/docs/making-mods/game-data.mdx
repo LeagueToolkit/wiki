@@ -215,7 +215,8 @@ A **type pin** fixes the type a value must have. In YAML it is a tag in front of
 `selfIllumination: !f32 1.0`; in TOML and JSON it is a one-key mapping, `{ f32 = 1.0 }`. A pin
 whose type disagrees with the property's is a report, and the edit is skipped. A block whose
 only key is a type name, such as `hash`, is read as a pin; write that field as a dotted path. A `pointer` pin
-builds a struct where the base has a null pointer: `!pointer { class: SomeClass, set: { field: 1 } }`.
+builds a struct where the base has a null pointer, with the class in parentheses and the fields under
+it: `!pointer(SomeClass) { field: 1 }`.
 The [reference](/reference/mod-packages/game-data/#type-pins) lists the type names and the full
 conversion table.
 
