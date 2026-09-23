@@ -1,0 +1,68 @@
+---
+/**
+ * A large button that downloads the newest LTK Manager installer.
+ *
+ * The slot is the button label, so the wording stays in content. The release
+ * workflow uploads the installer under a fixed name, so `releases/latest`
+ * always resolves it to the newest stable release.
+ */
+import download from '@phosphor-icons/core/assets/bold/download-simple-bold.svg';
+
+const INSTALLER =
+  'https://github.com/LeagueToolkit/ltk-manager/releases/latest/download/LTK.Manager_x64-setup.exe';
+---
+
+<p class="download not-content">
+  <a href={INSTALLER} style={`--icon: url(${download.src})`}>
+    <span class="glyph" aria-hidden="true"></span>
+    <slot />
+  </a>
+</p>
+
+<style>
+  .download {
+    margin-block: 1.25rem;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.85rem 1.6rem;
+    border-radius: var(--ltk-radius-md);
+    background: linear-gradient(135deg, var(--ltk-violet), var(--ltk-blue));
+    box-shadow: 0 0.5rem 1.5rem -0.5rem color-mix(in srgb, var(--ltk-blue) 70%, transparent);
+    color: var(--ltk-on-brand);
+    font-size: var(--sl-text-lg);
+    font-weight: var(--ltk-weight-semibold);
+    text-decoration: none;
+    transition:
+      transform 0.15s ease,
+      box-shadow 0.2s ease;
+  }
+
+  a:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0.75rem 2rem -0.5rem color-mix(in srgb, var(--ltk-violet) 85%, transparent);
+  }
+
+  a:focus-visible {
+    outline: 2px solid var(--sl-color-accent-high);
+    outline-offset: 3px;
+  }
+
+  .glyph {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    background-color: currentColor;
+    mask: var(--icon) center / contain no-repeat;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    a,
+    a:hover {
+      transform: none;
+    }
+  }
+</style>

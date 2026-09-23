@@ -7,6 +7,7 @@ tags:
   subject: [ltk-manager, installation, patcher]
 ---
 
+import DownloadButton from '@components/DownloadButton.astro';
 import Hint from '@components/Hint.svelte';
 import Screenshot from '@components/Screenshot.astro';
 
@@ -30,10 +31,24 @@ you see. Other players see the normal game.
 
 ## 1. Install LTK Manager
 
-1. Open the [LTK Manager releases page](https://github.com/LeagueToolkit/ltk-manager/releases/latest).
-2. Under **Assets**, download the file that ends in `x64-setup.exe`.
-3. Open the file you downloaded and follow the installer.
-4. Open LTK Manager from the Start menu.
+<DownloadButton>Download LTK Manager</DownloadButton>
+
+1. Select **Download LTK Manager**. Your browser downloads `LTK.Manager_x64-setup.exe`, the
+   installer for the newest version.
+2. Open the file you downloaded and follow the installer.
+3. Open LTK Manager from the Start menu.
+
+:::note[If the download does not start]
+Open the [LTK Manager release page](https://github.com/LeagueToolkit/ltk-manager/releases/latest).
+Scroll down to **Assets** and select the file that ends in `x64-setup.exe`. Do not download the
+other files: `latest.json`, the `.sig` file and the source code are for developers.
+
+<Screenshot
+  file="manager/quick-start-download.webp"
+  alt="Assets list of an LTK Manager release on GitHub, with the x64-setup.exe file highlighted"
+/>
+
+:::
 
 LTK Manager finds your League installation itself.
 

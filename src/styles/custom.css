@@ -718,8 +718,16 @@ header.header .social-icons a:hover {
   --ltk-section-icon: url('@phosphor-icons/core/assets/bold/rocket-launch-bold.svg');
 }
 
-.sidebar-pane ul.top-level > li:has(a[href='/mod-management/']) {
-  --ltk-section-icon: url('@phosphor-icons/core/assets/bold/puzzle-piece-bold.svg');
+/* LTK app sections: the full-colour logo, as a background image because a mask flattens it. */
+.sidebar-pane
+  ul.top-level
+  > li:is(:has(a[href='/manager/']), :has(a[href='/editor/']))
+  > details
+  > summary
+  > .group-label::before {
+  background: url('../assets/logo.svg') center / contain no-repeat;
+  mask: none;
+  opacity: 1;
 }
 
 .sidebar-pane ul.top-level > li:has(a[href='/making-mods/']) {
