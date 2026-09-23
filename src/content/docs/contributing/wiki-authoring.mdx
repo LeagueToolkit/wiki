@@ -1,43 +1,386 @@
 ---
-title: Wiki Authoring
-description: Learn how to contribute content to the LTK Wiki, including writing guides, formatting conventions, and submission workflow.
+title: Wiki authoring
+description: The writing and formatting rules for LTK Wiki pages, from page types and voice to screenshots and components.
 tags:
-  type: guide
+  type: reference
   audience: [contributor]
   subject: [wiki]
 ---
 
-This guide covers everything you need to know about authoring and contributing content to the LTK Wiki.
+import { Aside } from '@astrojs/starlight/components';
+import Hint from '@components/Hint.svelte';
+import Where from '@components/Where.astro';
 
-## Interactive Components
+This page sets the rules for every page in the LTK Wiki. Follow it when you write a new page or
+change an existing one. The rules draw on the Unity, Unreal Engine and Blender manuals.
 
-The wiki supports interactive Svelte components embedded in MDX pages. Components use Astro's island architecture - they render statically at build time and hydrate on the client when needed. Available hydration strategies:
+## Readers and scope
 
-- `client:load` - Hydrate immediately (critical interactivity)
-- `client:visible` - Hydrate when scrolled into view
-- `client:idle` - Hydrate when the browser is idle
+The wiki documents LTK Manager and LTK Editor for two groups of readers.
 
-### Available Components
+| Section     | Reader                    | Depth                                                       |
+| ----------- | ------------------------- | ----------------------------------------------------------- |
+| Start Here  | Someone new to modding    | A short linear path to the first working mod                |
+| LTK Manager | Players who install mods  | Tasks and settings, no file formats                         |
+| LTK Editor  | Creators who build mods   | Every editor, panel and field, with its meaning in the game |
+| Reference   | Creators and tool authors | File formats, packages and hashing                          |
 
-The following custom components are available for use in MDX pages:
+- **Baseline reader.** Outside LTK Editor and Reference, assume that the reader plays League of
+  Legends and has never modded it. Explain terms like mod, patch and profile on first use.
+- **Product names.** Write **LTK Manager** for the mod manager and **LTK Editor** for the creator
+  side. Do not write Workshop or Creator Workshop.
+- **Current release only.** Document the app as it is in the latest release. Do not write "new in
+  0.x" or describe how a feature used to work. Release notes record changes.
+- **No counts that go stale.** Write "each editor", not "the six editors".
+- **Limits, not bugs.** Put a known limit under a `## Limitations` heading at the end of the page.
+  Report a bug as an issue, not in a page.
 
-| Component          | Import path                          | Description                                           |
-| ------------------ | ------------------------------------ | ----------------------------------------------------- |
-| `HashCalculator`   | `components/HashCalculator.svelte`   | Interactive hash calculator for FNV-1a, ELF, and SDBM |
-| `FormatComparison` | `components/FormatComparison.svelte` | Side-by-side modpkg vs fantome feature comparison     |
-| `BinaryStructure`  | `components/BinaryStructure.svelte`  | Visual byte layout diagram for binary format specs    |
-| `VersionMatrix`    | `components/VersionMatrix.svelte`    | Interactive version-feature matrix with filtering     |
-| `ProjectScaffold`  | `components/ProjectScaffold.svelte`  | Live config builder with file tree preview            |
-| `BeforeAfter`      | `components/BeforeAfter.svelte`      | Image comparison slider for before/after screenshots  |
-| `PatchingPipeline` | `components/PatchingPipeline.svelte` | Animated patching pipeline step-through diagram       |
-| `GlossarySearch`   | `components/GlossarySearch.svelte`   | Searchable, filterable glossary with category tags    |
-| `PlatformBadges`   | `components/PlatformBadges.svelte`   | Platform support status badges                        |
-| `Collapsible`      | `components/Collapsible.svelte`      | Expandable/collapsible content sections with badges   |
-| `Mermaid`          | `components/Mermaid.svelte`          | Mermaid diagram renderer (client-side)                |
+## Page types
+
+Each page is one type. When a page answers two kinds of question, split it into two pages. The
+type goes in the `type` tag, and the title shape tells the reader the type before they open it.
+
+| Type        | Answers                                       | Title shape                         | Example                   | `type` tag  |
+| ----------- | --------------------------------------------- | ----------------------------------- | ------------------------- | ----------- |
+| Concept     | What is this, and why does it matter?         | Noun, or "About" and a noun         | Profiles, About VFX files | `concept`   |
+| Task        | How do I do this?                             | Imperative verb and object          | Create a profile          | `guide`     |
+| Reference   | What does each part do?                       | Noun and "reference" or "interface" | VFX editor interface      | `reference` |
+| Quick start | How do I reach this result from start to end? | Imperative verb and object          | Recolor a skin            | `tutorial`  |
+| Overview    | What is in this section?                      | Section name                        | LTK Editor                | `overview`  |
+
+`troubleshooting` and `faq` pages keep their own shape: one heading per symptom or question.
+
+### Concept pages
+
+1. A lead sentence that defines the subject: "A profile is a saved set of enabled mods and their
+   load order."
+2. What the subject does for the reader, and when it matters.
+3. How it works, as far as the reader needs it to use the feature.
+4. Related pages.
+
+### Task pages
+
+1. A lead sentence that says what the task does and when to do it.
+2. Prerequisites, when there are any, as a short list of links.
+3. One `##` heading per task, or one numbered list when the page holds a single task.
+4. One action per step. When a step has a visible result, put it in its own sentence at the end
+   of the step: "The profile appears in the list."
+5. Next steps.
+
+### Reference pages
+
+1. A lead sentence that names the subject.
+2. On LTK Editor pages, a `Where` box. See [Where box](#where-box).
+3. One `##` heading per panel or group, in the order the app shows them.
+4. A definition list of fields under each heading. See
+   [Fields and properties](#fields-and-properties).
+5. Related pages.
+
+An **interface page** is the reference page for a window or an editor. It has one `##` heading
+per region, with a numbered screenshot and a `#` / Name / Description table for that region.
+
+```mdx
+## Tab strip
+
+![Tab strip with a preview tab, a pinned tab and the lock button](../../../assets/screenshots/editor/interface-tab-strip.webp)
+
+| #   | Name        | Description                         |
+| --- | ----------- | ----------------------------------- |
+| 1   | Preview tab | Shows a file until you open another |
+| 2   | Pinned tab  | Stays at the left of the strip      |
+| 3   | Lock        | Opens new files in another group    |
+```
+
+### Quick starts
+
+1. A lead sentence and a screenshot of the finished result.
+2. Prerequisites.
+3. Numbered `##` sections, such as `## 1. Set up the project`, each with numbered steps.
+4. Next steps.
+
+Keep a quick start to one result that a reader can finish in one sitting. LTK Editor has two or
+three quick starts. Start Here is the quick start path for LTK Manager.
+
+### Overview pages
+
+An overview page is a section's landing page. It has a lead paragraph and a Topic / Description
+table with one row for each page in the section.
+
+## LTK Editor depth
+
+Each editor in LTK Editor gets four kinds of page:
+
+- A concept page about the file or game system it edits
+- An interface page for the editor's window
+- Task pages for the common jobs in it
+- A reference page with every field
+
+Tell the reader what a field does in the game, not only what the control does in the app. Do not
+copy tooltip text into the page. A reader who opens the wiki already read the tooltip and needs
+more than it says.
+
+## Voice
+
+- **Second person, present tense, active voice.** "LTK Manager saves the profile", not "The
+  profile is saved".
+- **Imperative for instructions.** "Select **New Profile**."
+- **One idea per sentence.** Aim for 20 words or fewer.
+- **One term for one thing.** When the page says profile, it says profile every time. It does not
+  switch to preset or setup.
+- **Goal before location.** "To pin a tab, right-click it and select **Pin**."
+- **Contractions are allowed.** "Don't", "you're", "it's".
+- **American English.** Color, behavior, customize.
+- **No first person.** No "we", no "I", no opinions.
+- **No vague claims.** "This probably fixes it" and "most people" tell the reader nothing. State
+  the condition, or leave the sentence out.
+- **No filler.** Drop "simply", "just", "easily" and "note that".
+
+The rules in [AGENTS.md](https://github.com/LeagueToolkit/wiki/blob/main/AGENTS.md) also apply:
+no em dashes, ASCII quotes and no hollow openers.
+
+### Interaction verbs
+
+| Action                                  | Verb                            | Example                             |
+| --------------------------------------- | ------------------------------- | ----------------------------------- |
+| Buttons, tabs, menu items, list entries | select                          | Select **Import**.                  |
+| Typing text                             | enter                           | Enter a name for the profile.       |
+| Switches and checkboxes                 | turn on, turn off               | Turn on the switch next to the mod. |
+| Gestures that matter                    | drag, right-click, double-click | Double-click a tab to keep it open. |
+| Keys                                    | press                           | Press <kbd>Ctrl</kbd>+<kbd>S</kbd>. |
+
+Do not write click, hit, tap, check or navigate to.
+
+## Headings and titles
+
+- **Sentence case.** "Create a profile", "VFX editor interface". Product names keep their
+  capitals.
+- **Imperative for tasks, not the gerund.** "Switch profiles", not "Switching profiles".
+- **No emoji** in titles, headings or body text. Use `HeadingIcon` for a deliberate icon.
+- **No questions**, except on FAQ pages.
+- **No skipped levels.** A `###` sits under a `##`. The page title is the only `#`, and it comes
+  from `title` in the frontmatter.
+
+## Formatting
+
+### UI text
+
+- **Labels in bold, exactly as the app shows them**, with the same case: **New Profile**.
+- **Menu paths** bold each segment and keep the separator plain: **Settings** > **General**.
+- **Keys** use one `<kbd>` per key: <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd>.
+- **Code formatting** for file names, folders, extensions, config keys, values and engine names:
+  `mod.config.json`, `content/base`, `.wad.client`, `birthRate`.
+- **Bold marks one thing.** Use it for UI labels and a term's first definition, never for half a
+  sentence.
+
+### Terms
+
+On a page's first mention of a glossary term, wrap the term in `Hint` with the glossary entry's
+text, and link the term to the glossary:
+
+```mdx
+import Hint from '@components/Hint.svelte';
+
+Each <Hint as="span" tip="A saved set of enabled mods and their load order." client:visible>[profile](/glossary/)</Hint> keeps its own load order.
+```
+
+Each <Hint as="span" tip="A saved set of enabled mods and their load order." client:visible>[profile](/glossary/)</Hint> keeps its own load order.
+
+A glossary entry starts with the definition. It does not open with "X is" or "It is", and it
+does not repeat the term. Write "A saved set of enabled mods and their load order.", not
+"Profile: a profile is a saved set of mods."
+
+### Fields and properties
+
+Document fields as an HTML definition list, with one `<dt>` per field. Give each `<dt>` an `id`
+so the field has a stable link.
+
+- The `<dt>` is the UI label, then the engine name in code when the field maps to one. Give the
+  engine name once, on the field's entry.
+- The `<dd>` starts with a noun phrase or a verb, never "This option". It says what the field
+  does in the game, then any limits, then the default last: "Default: `1`."
+- A field that shows only when another field has a value is a nested list inside its parent's
+  `<dd>`, with a sentence that says when it shows.
+- Name the engine class once, in the panel's intro sentence.
+
+The example below shows the format. Its values and labels are not taken from the app.
+
+```mdx
+The **Emitter** panel edits a `VfxEmitterDefinitionData` entry.
+
+<dl>
+  <dt id="birth-rate">Birth rate (`birthRate`)</dt>
+  <dd>Particles the emitter spawns each second. Default: `1`.</dd>
+
+  <dt id="lifetime">Lifetime (`particleLifetime`)</dt>
+  <dd>
+    Seconds each particle lives before it disappears.
+
+    <dl>
+      <dt id="lifetime-random">Random range</dt>
+      <dd>Adds a random offset to **Lifetime** for each particle. Shows only when **Lifetime** is random.</dd>
+    </dl>
+
+  </dd>
+</dl>
+```
+
+The same list renders like this:
+
+The **Emitter** panel edits a `VfxEmitterDefinitionData` entry.
+
+<dl>
+  <dt id="birth-rate">Birth rate (`birthRate`)</dt>
+  <dd>Particles the emitter spawns each second. Default: `1`.</dd>
+
+  <dt id="lifetime">Lifetime (`particleLifetime`)</dt>
+  <dd>
+    Seconds each particle lives before it disappears.
+
+    <dl>
+      <dt id="lifetime-random">Random range</dt>
+      <dd>Adds a random offset to **Lifetime** for each particle. Shows only when **Lifetime** is random.</dd>
+    </dl>
+
+  </dd>
+</dl>
+
+Use a table instead only when every entry fits on one short line and nothing is nested.
+
+### Where box
+
+An LTK Editor reference or task page opens with a lead sentence and a `Where` box. The box tells
+the reader where the feature lives, its shortcut and the files it opens. `keys` and `files` are
+optional.
+
+```mdx
+import Where from '@components/Where.astro';
+
+The curve panel edits a value over a particle's life.
+
+<Where path={['VFX editor', 'Inspector', 'Curve']} keys={['Ctrl', 'K']} files="VFX .bin files" />
+```
+
+The curve panel edits a value over a particle's life.
+
+<Where path={['VFX editor', 'Inspector', 'Curve']} keys={['Ctrl', 'K']} files="VFX .bin files" />
+
+LTK Manager pages state the location in the first step instead.
+
+### Asides
+
+Each aside type has one meaning. Use at most two asides in a section, and never two in a row. An
+aside holds a side fact. When the reader needs the text to finish the task, it belongs in a step.
+
+| Aside     | Meaning                                                  |
+| --------- | -------------------------------------------------------- |
+| `note`    | A side fact the reader can skip                          |
+| `tip`     | A faster way to do the same thing                        |
+| `caution` | The reader can lose work or break the game               |
+| `danger`  | The reader can put their account at risk or delete files |
+
+```md
+:::caution[Not while the patcher is running]
+Stop the patcher before you switch profiles.
+:::
+```
+
+<Aside type="caution" title="Not while the patcher is running">
+  Stop the patcher before you switch profiles.
+</Aside>
+
+### Lists and tables
+
+- A numbered list for steps in order, and a bulleted list for a set with no order.
+- A list item that is a full sentence ends with a full stop. A fragment has no end punctuation.
+- A table for data with two or more columns, never for layout.
+
+### Links
+
+- Link text names the target: "see [Profiles](/mod-management/profiles/)", never "click here".
+- Link wiki pages root-relative with a trailing slash: `/mod-management/profiles/`.
+- Link a term or page on its first mention on a page, not on every mention.
+
+### Code blocks
+
+Give every code block a language. Add `title="mod.config.json"` when the block is the contents of
+one file.
+
+## Screenshots
+
+Take screenshots with these settings, so that images from different writers match:
+
+- The app's dark theme and default settings
+- A 1280 x 800 window at 100% display scale
+- A crop to the region the text describes, with a small margin around it
+- WebP format
+- No personal data: no account names and no local user paths
+
+Store images in `src/assets/screenshots/<section>/` and name them `<page>-<detail>.webp`, for
+example `editor/interface-tab-strip.webp`. Reference them with a relative path so that Astro
+optimizes them.
+
+Alt text says what the image shows: "Tab strip with a preview tab, a pinned tab and the lock
+button". It does not start with "Screenshot of".
+
+Add a screenshot to a task step only when the target is hard to find. Interface pages always have
+one numbered screenshot per region. A screenshot shows the UI, and the text still gives every
+step.
+
+## Page endings
+
+- Concept and reference pages end with a `## Related pages` list.
+- Task pages and quick starts end with a `## Next steps` list that points to the next page in
+  order.
+- A `## Limitations` heading, when the page has one, comes before these lists.
+
+## Frontmatter
+
+```yaml
+---
+title: Create a profile
+description: Save a set of enabled mods as a profile and switch to it later.
+tags:
+  type: guide
+  audience: [mod-user]
+  subject: [profiles, ltk-manager]
+---
+```
+
+- `title` follows [Headings and titles](#headings-and-titles).
+- `description` is one sentence for search results and link previews.
+- `tags` are checked at build time against the vocabulary in `src/lib/tags.ts`. Add a term there
+  before a page uses it.
+
+## Components
+
+Interactive components are Svelte islands that render at build time and hydrate in the browser:
+
+- `client:load` hydrates at once. Use it only for content above the fold.
+- `client:visible` hydrates when the component scrolls into view.
+- `client:idle` hydrates when the browser is idle.
+
+| Component          | Import path                          | Use                                                  |
+| ------------------ | ------------------------------------ | ---------------------------------------------------- |
+| `Where`            | `components/Where.astro`             | Location box on LTK Editor pages                     |
+| `Hint`             | `components/Hint.svelte`             | Tooltip on a glossary term's first mention           |
+| `HeadingIcon`      | `components/HeadingIcon.astro`       | Icon inside a heading                                |
+| `HashCalculator`   | `components/HashCalculator.svelte`   | Interactive hash calculator for FNV-1a, ELF and SDBM |
+| `FormatComparison` | `components/FormatComparison.svelte` | Side-by-side modpkg and fantome feature comparison   |
+| `BinaryStructure`  | `components/BinaryStructure.svelte`  | Byte layout diagram for binary format specs          |
+| `VersionMatrix`    | `components/VersionMatrix.svelte`    | Version and feature matrix with filters              |
+| `ProjectScaffold`  | `components/ProjectScaffold.svelte`  | Config builder with a file tree preview              |
+| `BeforeAfter`      | `components/BeforeAfter.svelte`      | Image comparison slider                              |
+| `PatchingPipeline` | `components/PatchingPipeline.svelte` | Step-through diagram of the patching pipeline        |
+| `GlossarySearch`   | `components/GlossarySearch.svelte`   | Searchable glossary with category filters            |
+| `PlatformBadges`   | `components/PlatformBadges.svelte`   | Platform support badges                              |
+| `Collapsible`      | `components/Collapsible.svelte`      | Expandable section with badges                       |
+| `Mermaid`          | `components/Mermaid.svelte`          | Mermaid diagram, rendered in the browser             |
+
+Use `.md` for a page with no components. Use `.mdx` only when the page imports one.
 
 ### BinaryStructure
 
-Renders an interactive byte-level diagram of a binary structure. Hover over fields to highlight them.
+A byte-level diagram of a binary structure. Hovering over a field highlights it.
 
 ```mdx
 import BinaryStructure from '@components/BinaryStructure.svelte';
@@ -54,7 +397,7 @@ import BinaryStructure from '@components/BinaryStructure.svelte';
 
 ### BeforeAfter
 
-Image comparison slider. Provide two image paths and drag to compare.
+An image comparison slider. The reader drags the handle to compare the two images.
 
 ```mdx
 import BeforeAfter from '@components/BeforeAfter.svelte';
@@ -69,4 +412,19 @@ import BeforeAfter from '@components/BeforeAfter.svelte';
 />
 ```
 
-_The rest of this page is a placeholder. Full authoring guide content will be added here._
+## Checklist
+
+Before you open a pull request, check that:
+
+- The page is one type, and its title has that type's shape.
+- Headings are in sentence case and have no emoji.
+- UI labels are bold and match the app.
+- Glossary terms have a `Hint` on first mention.
+- Every screenshot follows the capture settings and has alt text.
+- The page ends with Related pages or Next steps.
+- `pnpm build` passes.
+
+## Related pages
+
+- [Project guidelines](/contributing/project-guidelines/)
+- [Glossary](/glossary/)
