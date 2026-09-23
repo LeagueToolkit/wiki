@@ -1,0 +1,79 @@
+---
+/**
+ * Location box for an LTK Editor page: where the feature lives, its shortcut,
+ * and the files it opens. Sits under the lead sentence.
+ *
+ * `path` is the UI path segment by segment, rendered bold with plain `>`
+ * separators. `keys` is one shortcut, one entry per key.
+ */
+interface Props {
+  path: string[];
+  keys?: string[];
+  files?: string;
+}
+
+const { path, keys, files } = Astro.props;
+---
+
+<dl class="where not-content">
+  <dt>Where</dt>
+  <dd>
+    {
+      path.map((segment, index) => (
+        <>
+          {index > 0 && ' > '}
+          <strong>{segment}</strong>
+        </>
+      ))
+    }
+  </dd>
+
+  {
+    keys && (
+      <>
+        <dt>Shortcut</dt>
+        <dd>
+          {keys.map((key, index) => (
+            <>
+              {index > 0 && '+'}
+              <kbd>{key}</kbd>
+            </>
+          ))}
+        </dd>
+      </>
+    )
+  }
+
+  {
+    files && (
+      <>
+        <dt>Files</dt>
+        <dd>{files}</dd>
+      </>
+    )
+  }
+</dl>
+
+<style>
+  .where {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.35rem 1rem;
+    margin-block: 1rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: var(--ltk-radius-lg);
+    background: var(--sl-color-gray-6);
+    font-size: var(--sl-text-sm);
+  }
+
+  dt {
+    color: var(--sl-color-gray-3);
+    font-weight: var(--ltk-weight-medium);
+  }
+
+  dd {
+    margin: 0;
+    color: var(--sl-color-white);
+  }
+</style>

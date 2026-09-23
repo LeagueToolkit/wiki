@@ -245,6 +245,18 @@ starlight-file-tree {
   border-color: color-mix(in srgb, var(--sl-color-asides-text-accent) 25%, transparent);
 }
 
+/* Keyboard keys, one <kbd> per key. Unguarded so the Where box's keys match. */
+.sl-markdown-content kbd {
+  font-family: var(--sl-font-mono);
+  font-size: 0.85em;
+  border: 1px solid var(--sl-color-gray-4);
+  border-bottom-width: 2px;
+  border-radius: var(--ltk-radius-sm);
+  padding-block: 0.05em;
+  padding-inline: 0.35em;
+  white-space: nowrap;
+}
+
 /* ── Badges ─────────────────────────────────────────────────── */
 
 /* Badges are kind-labels (CLI, App), so mono like code spans - Starlight

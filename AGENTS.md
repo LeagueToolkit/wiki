@@ -11,8 +11,8 @@ The rules that get violated most, inlined so they apply even without network acc
 - **No em dashes (U+2014).** Use a plain hyphen `-` for the parenthetical break. En dashes are
   fine in numeric ranges (2013–2024), just never as a sentence break.
 - **No smart quotes, smart apostrophes, or the ellipsis character** - ASCII `'`, `"`, and `...`.
-- **Emoji in markdown headings are fine used sparingly**, as a scanning anchor - one per heading,
-  never on every heading, never as enthusiasm. None in code, commits, or PR titles.
+- **No emoji in wiki pages** - titles, headings and body text (see Repo specifics). None in
+  code, commits, or PR titles.
 - **Exclamation marks are fine** for real warnings. Not for manufactured excitement ("Happy
   hacking!").
 - **No contrast clichés** ("it's not just X, it's Y"), **no rule-of-three padding** ("fast,
@@ -100,6 +100,17 @@ fact the code cannot show - the opacity constraint, and the reason `@property` i
 
 ## Repo specifics
 
-<!-- Replace with build commands, architecture notes, and gotchas for this repo. -->
+Build commands and code conventions are in [CLAUDE.md](./CLAUDE.md). Page-writing rules are in
+[Wiki authoring](src/content/docs/contributing/wiki-authoring.mdx), published at
+`/contributing/wiki-authoring/`. Read it before writing a page. The rules broken most often:
 
-{{TODO}}
+- **One type per page**, and the title shows it: a concept is a noun ("Profiles"), a task is an
+  imperative verb ("Create a profile"), a reference ends in "reference" or "interface".
+- **Sentence case** for titles and headings, and no emoji.
+- **UI labels in bold, exactly as the app shows them.** Menu paths are **Settings** > **General**,
+  keys are `<kbd>Ctrl</kbd>+<kbd>S</kbd>`.
+- **Verbs:** select, enter, turn on, turn off, press. Never click, hit, tap or navigate to.
+- **Product names:** LTK Manager and LTK Editor. Never Workshop or Creator Workshop.
+- **Current release only.** No "new in 0.x", no history, no counts that go stale.
+- **Fields** are a `<dl>` with an `id` on each `<dt>`. The UI label comes first, then the engine
+  name in code, and the `<dd>` ends with the default.
