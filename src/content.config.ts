@@ -14,7 +14,7 @@ const tags = z.object({
 });
 
 // Values must match the `icons` map in components/starlight/PageTitle.astro.
-const titleIcon = z.enum(['fantome']);
+const titleIcon = z.enum(['fantome', 'hexshade']);
 
 export const collections = {
   docs: defineCollection({

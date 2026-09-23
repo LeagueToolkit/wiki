@@ -14,7 +14,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "deploy": "pnpm run build && wrangler deploy",
-    "cf-typegen": "wrangler types"
+    "cf-typegen": "wrangler types",
+    "media": "node scripts/optimize-media.mjs"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.41.3",

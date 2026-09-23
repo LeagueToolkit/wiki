@@ -3,10 +3,11 @@ import { Image } from 'astro:assets';
 import Default from '@astrojs/starlight/components/PageTitle.astro';
 import PageTags from '../PageTags.astro';
 import fantome from '@assets/fantome.png';
+import hexshade from '@assets/hexshade.png';
 
 // Icon URLs are resolved at build time, which means the set has to be a static
 // map: add an entry here and to the `titleIcon` enum in content.config.ts together.
-const icons = { fantome } as const;
+const icons = { fantome, hexshade } as const;
 
 // Tagging every page from here rather than from the pages themselves keeps the
 // row out of the content body, where it would sit inside the prose styles and

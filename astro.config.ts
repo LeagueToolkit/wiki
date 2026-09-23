@@ -257,6 +257,11 @@ export default defineConfig({
               ],
             },
             {
+              label: 'Hexshade',
+              slug: 'editor/hexshade',
+              badge: { text: 'WIP', variant: 'caution' },
+            },
+            {
               label: 'Test a project',
               slug: 'editor/test-a-project',
               badge: { text: 'WIP', variant: 'caution' },

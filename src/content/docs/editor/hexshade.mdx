@@ -1,0 +1,148 @@
+---
+title: Hexshade
+titleIcon: hexshade
+description: The shading engine that draws LTK Editor's 3D viewports with League's own shaders, so content looks as it will in game.
+tags:
+  type: concept
+  audience: [mod-creator]
+  subject: [creator-workshop]
+---
+
+import Compare from '@components/Compare.astro';
+import Screenshot from '@components/Screenshot.astro';
+import Video from '@components/Video.astro';
+
+Hexshade is the shading engine of LTK Editor. It takes the shaders from your League installation
+and runs them in the editor, so a 3D viewport draws League content the same way the game does. Its
+purpose is an accurate picture of how your content will look in game, without starting a game.
+
+<Video
+  file="editor/hexshade-skin"
+  alt="A skin in the skin preview, first with the editor's standard shading, then with Hexshade on"
+/>
+
+## Why it matters
+
+Without Hexshade, a viewport draws with a general-purpose material that only comes close to
+League's look. A texture or a material setting can then look right in the editor and wrong in game,
+and you find out only when you test.
+
+With Hexshade, the viewport runs the shader that the material names in the game data, with the
+material's textures and parameters. What you see is what the game draws.
+
+<Compare
+  before="editor/hexshade-rift-off.webp"
+  after="editor/hexshade-rift-on.webp"
+  beforeLabel="Hexshade off"
+  afterLabel="Hexshade on"
+  alt="The river of Summoner's Rift in the map preview. Without Hexshade the river is a flat, dark surface and the rocks and grass are unlit. With Hexshade the scene has the game's lighting and the river shows the ground under the water."
+/>
+
+On a character, the difference shows in effects that the standard shading cannot draw. Here the
+translucent cloth of Revenant Viego is solid black without Hexshade, and the glowing details of
+the crown and armour stay flat.
+
+<Compare
+  before="editor/hexshade-viego-off.webp"
+  after="editor/hexshade-viego-on.webp"
+  beforeLabel="Hexshade off"
+  afterLabel="Hexshade on"
+  alt="Revenant Viego in the skin preview. Without Hexshade the translucent cloth draws as solid black shapes and the cyan details are dull. With Hexshade the cloth is translucent and the crown and armour details glow."
+/>
+
+## How it works
+
+Hexshade is the editor's registry and manager for every shader:
+
+- **It reads the game's shader bundles.** The shaders come from your League installation, so they
+  are always the ones your game uses, also after a patch.
+- **It translates them while you work.** Hexshade turns a game shader into one that WebGL can run
+  the first time a viewport needs it, not in advance. A viewport that shows new content can take a
+  moment to draw it with Hexshade.
+- **It shares them.** Every viewport gets its shaders from the same registry, so a shader is
+  translated once and then reused.
+
+## Turn on Hexshade
+
+Hexshade works in every 3D viewport that shows League content. It is off by default.
+
+1. Open a viewport, for example the skin preview or the map preview.
+2. In the viewport toolbar, select **Hexshade**, the button with the swirl icon.
+
+   The viewport draws again with League's shaders. In the map preview, this includes the map's
+   lightmaps and its sun.
+
+<Screenshot
+  file="editor/hexshade-toggle.webp"
+  alt="Viewport toolbar with the Hexshade button turned on and its tooltip, next to the Lit view mode menu and the Orbit camera menu"
+/>
+
+## Edit materials live
+
+In the character skin preview, you can edit a material and see the change at once, drawn with the
+game's shader. Select a submesh on the character to open its material next to the preview. See
+[Material editor](/editor/material-editor/).
+
+Live material editing works only in the skin preview for now. The map preview will get it later.
+
+## View modes
+
+The view mode menu in the viewport toolbar changes what the viewport draws. It shows the current
+mode, for example **Lit**. The choice applies to every viewport, and LTK Editor keeps it.
+
+<dl>
+  <dt id="lit">Lit</dt>
+  <dd>Full shading with lights. With **Hexshade** on, this is the view that matches the game.</dd>
+  <dt id="unshaded">Unshaded</dt>
+  <dd>Textures without lighting.</dd>
+  <dt id="untextured">Untextured</dt>
+  <dd>Lighting on plain surfaces, without textures.</dd>
+  <dt id="wireframe">Wireframe</dt>
+  <dd>Only the edges of the meshes.</dd>
+  <dt id="wireframe-overlay">Wireframe overlay</dt>
+  <dd>The edges drawn over the current view mode.</dd>
+</dl>
+
+## Maps with Hexshade
+
+Every map mode draws with its own lighting, water and effects.
+
+**Bilgewater**, the ARAM map, with its lanterns and furnaces lit:
+
+<Screenshot
+  file="editor/hexshade-aram-bilgewater.webp"
+  alt="The Bilgewater ARAM map in the map preview with Hexshade on, with glowing lanterns, lit furnaces and green fog"
+/>
+
+**Freljord: Winter's Claw**, a Teamfight Tactics map:
+
+<Video
+  file="editor/hexshade-tft-freljord"
+  alt="The Freljord Winter's Claw Teamfight Tactics board in the map preview with Hexshade on, with glowing ice, burning braziers and drifting clouds"
+/>
+
+**Pool Party**, a Teamfight Tactics map from Set 5:
+
+<Video
+  file="editor/hexshade-tft-pool-party"
+  alt="The Pool Party Teamfight Tactics board in the map preview with Hexshade on, with moving sea water, foam and light on the sand"
+/>
+
+**Arena** in its snow theme:
+
+<Video
+  file="editor/hexshade-arena-snow"
+  alt="The snow Arena map in the map preview with Hexshade on, with icy ground, snow-covered trees and glowing blue lights"
+/>
+
+## Planned
+
+- **Custom shader variants.** Author your own variants of a game shader in LTK Editor.
+- **Custom shaders in mods.** Ship your own shaders with a mod.
+
+## Related pages
+
+- [Skin editor](/editor/skin-editor/)
+- [Material editor](/editor/material-editor/)
+- [Map viewer](/editor/map-viewer/)
+- [Test a project](/editor/test-a-project/)

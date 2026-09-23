@@ -200,6 +200,12 @@
   margin-top: 0.5rem;
 }
 
+/* Starlight's loose-list gap: a list with any multi-paragraph item gives every item's last
+   child a 1.25rem bottom margin, on top of the sibling spacing above. */
+.sl-markdown-content :is(ul, ol):not([class]):not(:where(.not-content *)) > li > :last-child {
+  margin-bottom: 0;
+}
+
 .sl-markdown-content :is(ul, ol):not([class]):not(:where(.not-content *)) > li::marker {
   color: var(--sl-color-gray-2);
 }
@@ -728,6 +734,17 @@ header.header .social-icons a:hover {
   background: url('../assets/logo.svg') center / contain no-repeat;
   mask: none;
   opacity: 1;
+}
+
+/* Hexshade's sidebar entry: its own full-colour mark, as the product has one. */
+.sidebar-pane a[href='/editor/hexshade/'] > span:first-child::before {
+  content: '';
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-inline-end: 0.4em;
+  vertical-align: -0.15em;
+  background: url('../assets/hexshade.svg') center / contain no-repeat;
 }
 
 .sidebar-pane ul.top-level > li:has(a[href='/making-mods/']) {

@@ -348,6 +348,35 @@ the next marker an `n` with its row number, such as `{ x: 69, y: 18, n: 6 }`. Ad
 after the image exists, because the positions come from the real capture. The build fails when a
 value is outside 0-100 or when the numbers do not go up.
 
+### Videos
+
+Use a short video when motion is the point: a preview that turns, a toggle that changes the render,
+an effect that plays. Keep a clip under 15 seconds and show one thing. Capture it with the same
+settings as a screenshot, with no audio.
+
+Do not commit the raw capture. Run it through `pnpm media`, which crops, trims, scales to at most
+1600 pixels wide and 30 frames per second, and writes the three files the `Video` component needs:
+
+```sh
+pnpm media capture.mp4 videos/editor/hexshade-skin --crop 0,40,1280,680 --start 2 --duration 8
+```
+
+This writes `hexshade-skin.webm` (AV1), `hexshade-skin.mp4` (H.264, for browsers without AV1) and
+`hexshade-skin.webp` (the poster frame) to `src/assets/videos/editor/`. `--poster` picks the
+second the poster comes from, `0` by default. The script warns when a file is over 5 MB. Trim or
+crop the clip until it is not.
+
+Place the clip with the `Video` component. Like `Screenshot`, it shows a placeholder until the
+files exist. The clip plays muted and in a loop while it is on screen, and does not start by itself
+for a reader who asks for reduced motion:
+
+```mdx
+<Video file="editor/hexshade-skin" alt="A skin with Hexshade turned on" />
+```
+
+`pnpm media` also converts a screenshot: give it a `.png` and a target under `screenshots/`, and
+it writes the smallest WebP.
+
 Add a screenshot to a task step only when the target is hard to find. Interface pages always have
 one numbered screenshot per region. A screenshot shows the UI, and the text still gives every
 step.
@@ -388,6 +417,7 @@ Interactive components are Svelte islands that render at build time and hydrate 
 | Component           | Import path                          | Use                                                  |
 | ------------------- | ------------------------------------ | ---------------------------------------------------- |
 | `Where`             | `components/Where.astro`             | Location box on LTK Editor pages                     |
+| `Video`             | `components/Video.astro`             | Short looping clip, or a placeholder                 |
 | `Screenshot`        | `components/Screenshot.astro`        | Screenshot with optional markers, or a placeholder   |
 | `UnderConstruction` | `components/UnderConstruction.astro` | Body of a page that has no content yet               |
 | `Hint`              | `components/Hint.svelte`             | Tooltip on a glossary term's first mention           |
@@ -397,7 +427,7 @@ Interactive components are Svelte islands that render at build time and hydrate 
 | `BinaryStructure`   | `components/BinaryStructure.svelte`  | Byte layout diagram for binary format specs          |
 | `VersionMatrix`     | `components/VersionMatrix.svelte`    | Version and feature matrix with filters              |
 | `ProjectScaffold`   | `components/ProjectScaffold.svelte`  | Config builder with a file tree preview              |
-| `BeforeAfter`       | `components/BeforeAfter.svelte`      | Image comparison slider                              |
+| `Compare`           | `components/Compare.astro`           | Two screenshots with a slider between them           |
 | `PatchingPipeline`  | `components/PatchingPipeline.svelte` | Step-through diagram of the patching pipeline        |
 | `GlossarySearch`    | `components/GlossarySearch.svelte`   | Searchable glossary with category filters            |
 | `PlatformBadges`    | `components/PlatformBadges.svelte`   | Platform support badges                              |
@@ -423,20 +453,25 @@ import BinaryStructure from '@components/BinaryStructure.svelte';
 />
 ```
 
-### BeforeAfter
+### Compare
 
-An image comparison slider. The reader drags the handle to compare the two images.
+Two screenshots of the same view with a slider between them, for a change that is easiest to see
+side by side: a setting turned off and on, a mod before and after. The reader drags the slider, or
+focuses it and uses the arrow keys.
+
+Capture both images at the same size and framing, so that only the change differs. Store them like
+any screenshot. The build fails when the two sizes differ, and the component shows a placeholder
+until both files exist.
 
 ```mdx
-import BeforeAfter from '@components/BeforeAfter.svelte';
+import Compare from '@components/Compare.astro';
 
-<BeforeAfter
-  client:visible
-  beforeSrc="/images/before.png"
-  afterSrc="/images/after.png"
-  beforeLabel="Original"
-  afterLabel="Modded"
-  height="24rem"
+<Compare
+  before="editor/hexshade-off.webp"
+  after="editor/hexshade-on.webp"
+  beforeLabel="Hexshade off"
+  afterLabel="Hexshade on"
+  alt="The same skin drawn with the editor's standard shading and with Hexshade"
 />
 ```
 
