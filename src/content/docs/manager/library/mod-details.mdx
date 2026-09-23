@@ -1,0 +1,84 @@
+---
+title: View mod details
+description: Read a mod's details, readme and license in LTK Manager, and edit its name, tags and image.
+tags:
+  type: guide
+  audience: [mod-user]
+  subject: [ltk-manager]
+---
+
+import Screenshot from '@components/Screenshot.astro';
+
+The details panel shows everything about one mod: what it is, who made it, which game files it
+changes, its readme and its license. You can also edit the name, tags and image that the library
+shows for the mod.
+
+## Open the details panel
+
+1. Right-click the mod, or select its menu button.
+2. Select **Details** or **Readme**.
+
+   The panel opens over the right side of the grid, on the tab you chose.
+
+To close the panel, select its close button. To open it again on the same mod, select
+**Documents** in the toolbar. Drag the left edge of the panel to change its width.
+
+<Screenshot
+  file="manager/library-details-panel.webp"
+  alt="Details panel with the Details, Readme and Licenses tabs, showing a mod's cover, authors, tags and folds"
+/>
+
+## Read the Details tab
+
+The **Details** tab shows the mod's image, name, version, authors, install date, description and
+tags.
+
+<dl>
+  <dt id="details-layers">Layers</dt>
+  <dd>
+    The mod's layers, and which ones are on. See [Turn mods on and
+    off](/manager/library/enable-mods/#choose-a-mods-layers).
+  </dd>
+  <dt id="details-wad">WAD footprint</dt>
+  <dd>
+    The game files the mod changes, grouped by **Champions**, **Maps**, **UI** and **Other**. LTK
+    Manager reads the mod the first time you open this section. Select **Re-analyze** to read it
+    again.
+  </dd>
+  <dt id="details-packaging">Packaging</dt>
+  <dd>
+    Shows only when the tool that packed the mod wrote wrong information into it. The mod still
+    works. You can tell the mod's author.
+  </dd>
+</dl>
+
+## Read the readme and license
+
+- **Readme** shows the readme file the author included. It shows **No readme** when there is none.
+- **Licenses** shows the license the author chose, and its text when the mod includes it. It shows
+  **No license declared** when the author chose none.
+
+When a tab shows **Readme unreadable**, LTK Manager cannot read the mod's file. The mod may not
+work. Install it again.
+
+## Edit a mod's details
+
+1. On the **Details** tab, select **Edit**.
+2. Change any of these:
+   - **Mod Name**
+   - **Tags** and **Maps**
+   - **Champions**, as a comma-separated list
+   - The image: select **Set thumbnail** or **Remove thumbnail**
+3. Select **Save**.
+
+   LTK Manager shows **Metadata updated**.
+
+Under **Auto-detected suggestions**, LTK Manager suggests tags, maps and champions from the mod's
+files. Select a suggestion to add it, or select **Apply all**.
+
+Your changes apply only to your library. They do not change the mod file.
+
+## Next steps
+
+- [Find a mod](/manager/library/find-mods/)
+- [Check and repair mods](/manager/library/mod-health/)

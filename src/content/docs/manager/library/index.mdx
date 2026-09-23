@@ -1,0 +1,82 @@
+---
+title: Mod library
+description: How LTK Manager keeps your installed mods, and how folders, profiles and load order work together.
+tags:
+  type: concept
+  audience: [mod-user]
+  subject: [ltk-manager, load-order, profiles]
+---
+
+import Hint from '@components/Hint.svelte';
+
+The mod library is the set of mods you installed in LTK Manager. You see and manage it on the
+**Mods** page. To open it, select **Mods** in the title bar or press <kbd>Ctrl</kbd>+<kbd>2</kbd>.
+
+## Installed and turned on
+
+An installed mod is in your library, but it loads in game only when it is turned on. Turn off a
+mod to keep it for later without uninstalling it. When you start the <Hint as="span" tip="The part of LTK Manager that loads your enabled mods into League while you play." client:visible>[patcher](/glossary/)</Hint>, it loads every mod that is turned on.
+
+The library keeps a copy of each mod file. You can delete the file you downloaded after you
+install it.
+
+## Load order
+
+Two mods can change the same game file, for example two skins for the same champion. Only one of
+them can show in game. The **load order** decides which one: **the mod higher in the list wins**.
+
+The load order is the order the library shows when **Sort by** is **Priority**, which is the
+default. A mod you install goes to the top. See
+[Change the load order](/manager/library/load-order/).
+
+## Folders
+
+A folder groups mods, for example all your ward skins. You can turn every mod in a folder on or
+off at once. Folders are one level deep, so a folder cannot hold another folder. Every profile
+shows the same folders. See [Organize mods into folders](/manager/library/folders/).
+
+## Profiles
+
+A <Hint as="span" tip="A saved set of enabled mods and their load order." client:visible>[profile](/glossary/)</Hint> is a saved set of the mods that are turned on. Each profile has its own mods on and off, and its own
+load order. All profiles share the same installed mods and the same folders.
+
+Use profiles to switch between setups, for example one for ranked games and one with every mod.
+The profile named **Default** always exists. See [Manage profiles](/manager/library/profiles/).
+
+## Mod health
+
+LTK Manager can check your mods for problems, such as files that no longer match the current
+version of League. It repairs what it can. See
+[Check and repair mods](/manager/library/mod-health/).
+
+## Mods that LTK Manager blocks
+
+LTK Manager does not load a skinhack, which is a mod that gives access to paid League skins. A
+skinhack shows dimmed in the library and you cannot turn it on. Select **What is a skinhack?** in
+its menu to read why.
+
+:::danger
+Using a skinhack breaks Riot's rules and can put your account at risk.
+:::
+
+If you think LTK Manager blocked a mod by mistake, open an issue on the
+[LTK Manager repository](https://github.com/LeagueToolkit/ltk-manager/issues).
+
+## Changes while the patcher runs
+
+While the patcher runs, LTK Manager does not let you:
+
+- Turn mods on or off
+- Install, update or uninstall mods
+- Change the load order
+- Switch or rename profiles
+
+Stop the patcher, make your changes, then start it again. You can still search, filter, read mod
+details and check mod health.
+
+## Related pages
+
+- [Mods page interface](/manager/library/interface/)
+- [Install mods](/manager/library/install-mods/)
+- [Play with mods](/manager/play/)
+- [How modding works](/start-here/how-modding-works/)

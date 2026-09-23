@@ -1,0 +1,175 @@
+---
+title: Home interface
+description: The regions of the Home page in LTK Manager and what each one does.
+tags:
+  type: reference
+  audience: [mod-user]
+  subject: [ltk-manager]
+---
+
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
+
+Home is the page LTK Manager opens on. It shows whether you can play, what changed in the latest
+version of the app, and news from the LeagueToolkit project.
+
+To open Home from another page, select **Home** in the title bar or press <kbd>Ctrl</kbd>+<kbd>1</kbd>.
+
+## Page layout
+
+<Screenshot
+  file="manager/home-layout.webp"
+  alt="Home page with numbered regions: notice, Runeforge banners, Recent changes, Play, status line, Your library, Last game and News"
+/>
+
+| #   | Name           | Description                                                              |
+| --- | -------------- | ------------------------------------------------------------------------ |
+| 1   | Notice         | An important message from the LeagueToolkit team. Shows only when needed |
+| 2   | Runeforge      | Links to community mods and to guides for mod creators                   |
+| 3   | Recent changes | Release notes for LTK Manager, newest first                              |
+| 4   | Start or Play  | Starts the patcher, and with some settings also starts League            |
+| 5   | Status line    | A problem that stops you from playing. Shows only when there is one      |
+| 6   | Your library   | Your active profile, how many mods are on, and their health              |
+| 7   | Last game      | What happened in your most recent game that had a problem                |
+| 8   | News           | Posts from the LeagueToolkit team, and links to help                     |
+
+## Notice
+
+A notice is a one-line message from the LeagueToolkit team, for example when a League <Hint as="span" tip="A new version of League of Legends, released by Riot." client:visible>[patch](/glossary/)</Hint> changes how mods load. A notice shows only for the LTK Manager versions it applies to, and it goes
+away after a set date.
+
+- Select **What to do** to open the full post in your browser.
+- Select the close button to dismiss the notice. It does not come back.
+
+## Runeforge
+
+Two banners link to sites outside LTK Manager. Each opens in your browser.
+
+<dl>
+  <dt id="runeforge-mods">Runeforge</dt>
+  <dd>Community site to find mods and publish your own. **Browse mods** opens runeforge.dev.</dd>
+  <dt id="runeforge-wiki">Runeforge Wiki</dt>
+  <dd>Guides for mod creators. **Get started** opens the guide to making your first mod.</dd>
+</dl>
+
+## Recent changes
+
+Recent changes lists each release of LTK Manager with its release notes. The newest release is at
+the top. The notes for your installed version are available without an internet connection.
+
+A label next to the version number tells you about that release:
+
+<dl>
+  <dt id="installed">Installed</dt>
+  <dd>The version you have now.</dd>
+  <dt id="new">New</dt>
+  <dd>
+    A newer version you can install. Select **Update** in its row to see the update and install it.
+  </dd>
+  <dt id="pre-release">Pre-release</dt>
+  <dd>A test version. It can have more bugs than a normal release.</dd>
+</dl>
+
+## Play
+
+This button starts the <Hint as="span" tip="The part of LTK Manager that loads your enabled mods into League while you play." client:visible>[patcher](/glossary/)</Hint>, which loads your enabled mods into the game. It reads **Start** by default, or **Play** when it
+also starts League. It is the same button as on the Mods page, and it turns green while the patcher
+runs. See [Play with mods](/manager/play/).
+
+## Status line
+
+The status line shows under the patcher button only when something stops you from playing. Select it to fix
+the problem.
+
+<dl>
+  <dt id="league-unset">League's folder is not set</dt>
+  <dd>
+    LTK Manager does not know where League is installed. Select **Set it** to open the setting.
+  </dd>
+  <dt id="platform">The patcher does not run on this system yet</dt>
+  <dd>Your operating system can manage mods, but it cannot load them into the game.</dd>
+</dl>
+
+## Your library
+
+<Screenshot
+  file="manager/home-library-tile.webp"
+  alt="Your library tile with the profile name, the enabled count, the health status row and the Open Mods and Add mod buttons"
+/>
+
+| #   | Name                 | Description                                                |
+| --- | -------------------- | ---------------------------------------------------------- |
+| 1   | Profile              | The name of your active profile                            |
+| 2   | Enabled count        | How many of your installed mods are turned on              |
+| 3   | Health status        | The result of the last health check. See the table below   |
+| 4   | Open Mods            | Opens the Mods page                                        |
+| 5   | Add mod              | Opens a file browser to install mod files                  |
+| 6   | More library actions | Opens a menu with **Export mods** and **Open mod storage** |
+
+A <Hint as="span" tip="A saved set of enabled mods and their load order." client:visible>[profile](/glossary/)</Hint> is a saved set of enabled mods. See [Manage profiles](/manager/library/profiles/).
+
+**Export mods** copies your mod files to a folder or a `.zip` file. See
+[Export mods](/manager/library/export-mods/). **Open mod storage** opens the folder where LTK
+Manager keeps your installed mods.
+
+### Health status
+
+Health status counts problems only in mods that are turned on. The text on the right of the row
+changes with the result. Select the row to do what the table says.
+
+| Text          | Meaning                                                | Selecting it                             |
+| ------------- | ------------------------------------------------------ | ---------------------------------------- |
+| Healthy       | The last check found no problems                       | Checks your mods again                   |
+| _n_ repairs   | Some mods have problems that LTK Manager can repair    | Opens the Mods page and offers a repair  |
+| _n_ broken    | Some mods have problems that LTK Manager cannot repair | Opens the list of problems               |
+| _n_ flagged   | Some mods have small faults, and they still load       | Opens the list of problems               |
+| Not checked   | No mod in your library has been checked yet            | Checks your mods                         |
+| No hashtables | The files needed for the check are not downloaded      | Downloads them                           |
+| Syncing       | The files needed for the check are downloading         | Nothing. Wait for the download to finish |
+| Checking      | A check is running                                     | Nothing. Wait for the check to finish    |
+
+For what the check looks for and how to repair a mod, see
+[Check and repair mods](/manager/library/mod-health/).
+
+### Import from cslol-manager
+
+Until you dismiss it, the tile shows **Migrating from cslol-manager?**. Select
+**Import from cslol-manager** to copy your cslol-manager mods into your library, or select the
+close button to hide the offer. See
+[Migrating from cslol](/start-here/from-cslol/).
+
+## Last game
+
+Last game shows only when your most recent game had a problem, for example a crash while loading.
+It shows what happened and when. Select **Review** to open the details in
+[Diagnostics](/manager/diagnostics/).
+
+## News
+
+<Screenshot
+  file="manager/home-news.webp"
+  alt="News tile with two posts, the Getting started, Managing mods and Troubleshooting links, and the Discord and GitHub buttons"
+/>
+
+| #   | Name            | Description                                                  |
+| --- | --------------- | ------------------------------------------------------------ |
+| 1   | Posts           | The newest announcements. Select one to read it in a browser |
+| 2   | Getting started | Opens the Start Here section of this wiki                    |
+| 3   | Managing mods   | Opens the LTK Manager section of this wiki                   |
+| 4   | Troubleshooting | Opens the FAQ of this wiki                                   |
+| 5   | Discord         | Opens the invite to the LeagueToolkit Discord server         |
+| 6   | GitHub          | Opens the LTK Manager source code repository                 |
+
+When there are no posts, the tile shows only the links.
+
+## Add mods from Home
+
+You can drop mod files onto the Home page to install them, the same as on the Mods page. See
+[Install mods](/manager/library/install-mods/).
+
+## Related pages
+
+- [Play with mods](/manager/play/)
+- [Mods page interface](/manager/library/interface/)
+- [Check and repair mods](/manager/library/mod-health/)
+- [General settings](/manager/settings/general/)

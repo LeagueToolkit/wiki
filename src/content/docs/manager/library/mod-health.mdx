@@ -1,0 +1,74 @@
+---
+title: Check and repair mods
+description: Find problems in your mods with a health check in LTK Manager, and repair the ones it can fix.
+tags:
+  type: guide
+  audience: [mod-user]
+  subject: [ltk-manager, validation, patch-day]
+---
+
+import Screenshot from '@components/Screenshot.astro';
+
+A health check looks for problems in your mods, for example files made for an older version of
+League. LTK Manager repairs many of these problems itself. Check your mods after a League patch,
+or when a mod does not show in game.
+
+## Prerequisites
+
+- The hashtables are downloaded. The check needs these files to read mods. If **Check health** says
+  the hashtables are not synced, sync them in [Settings](/manager/settings/).
+
+## Check your mods
+
+Do one of these:
+
+- To check every mod, select **Check health** in the toolbar of the Mods page.
+- To check some mods, select them, then select **Check health _n_** in the selection bar.
+- To check one `.fantome` mod, right-click it and select **Check Health**.
+- On the Home page, select **Health status** when it reads **Healthy** or **Not checked**.
+
+When the check finds no problems, LTK Manager shows **No problems found**.
+
+## Read the results
+
+When the check finds a broken mod, the **Detected issues with mods** window opens. For smaller
+problems, LTK Manager shows a message instead. Select **Show me** in the message, or select the
+health item in the status bar, to open the window. The window lists each mod and what the check
+found.
+
+<Screenshot
+  file="manager/library-health-dialog.webp"
+  alt="Detected issues with mods window with a list of mods, their findings and the Repair buttons"
+/>
+
+Each finding tells you what you can do:
+
+- A **Repair** button: LTK Manager can fix the finding.
+- **Not auto-fixable**: LTK Manager cannot fix the finding. The mod still loads, but part of it
+  may not work.
+- **Needs an updated version**: the mod does not work with the current version of League. Look for
+  a new version from the mod's author.
+
+Select **Info** to also show findings that are not faults.
+
+A mod with a health problem shows a mark on its card. Select the mark to see the problem and to
+check the mod again.
+
+## Repair mods
+
+1. Stop the patcher. A repair changes mod files that the patcher uses.
+2. In the **Detected issues with mods** window, select one of these:
+   - **Repair** on one mod's row
+   - **Repair _n_ enabled mods** to repair the mods that are on
+   - **Repair all _n_**, from the arrow next to the repair button, to repair every mod
+
+   LTK Manager shows **Repaired _n_ mods** when it is done. To stop a repair, select the close
+   button next to the progress.
+
+On the Home page, when **Health status** reads **_n_ repairs**, select it to open the Mods page
+with the repair ready.
+
+## Next steps
+
+- [Updating after a patch](/manager/patch-updates/)
+- [Play with mods](/manager/play/)

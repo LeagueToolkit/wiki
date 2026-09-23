@@ -82,7 +82,10 @@ per region, with a numbered screenshot and a `#` / Name / Description table for 
 ```mdx
 ## Tab strip
 
-![Tab strip with a preview tab, a pinned tab and the lock button](../../../assets/screenshots/editor/interface-tab-strip.webp)
+<Screenshot
+  file="editor/interface-tab-strip.webp"
+  alt="Tab strip with a preview tab, a pinned tab and the lock button"
+/>
 
 | #   | Name        | Description                         |
 | --- | ----------- | ----------------------------------- |
@@ -99,7 +102,7 @@ per region, with a numbered screenshot and a `#` / Name / Description table for 
 4. Next steps.
 
 Keep a quick start to one result that a reader can finish in one sitting. LTK Editor has two or
-three quick starts. Start Here is the quick start path for LTK Manager.
+three quick starts. LTK Manager has one, [Quick start](/manager/quick-start/), and Start Here links to it.
 
 ### Overview pages
 
@@ -296,8 +299,8 @@ Stop the patcher before you switch profiles.
 
 ### Links
 
-- Link text names the target: "see [Profiles](/mod-management/profiles/)", never "click here".
-- Link wiki pages root-relative with a trailing slash: `/mod-management/profiles/`.
+- Link text names the target: "see [Profiles](/manager/library/profiles/)", never "click here".
+- Link wiki pages root-relative with a trailing slash: `/manager/library/profiles/`.
 - Link a term or page on its first mention on a page, not on every mention.
 
 ### Code blocks
@@ -316,8 +319,16 @@ Take screenshots with these settings, so that images from different writers matc
 - No personal data: no account names and no local user paths
 
 Store images in `src/assets/screenshots/<section>/` and name them `<page>-<detail>.webp`, for
-example `editor/interface-tab-strip.webp`. Reference them with a relative path so that Astro
-optimizes them.
+example `editor/interface-tab-strip.webp`. Place them with the `Screenshot` component, which
+takes the path under `src/assets/screenshots/`. Until the file exists, the component shows a
+placeholder that names it, so a page can be written before its screenshots are taken:
+
+```mdx
+<Screenshot file="manager/home-layout.webp" alt="Home page with numbered regions" />
+```
+
+A page with no content yet has only its frontmatter and `<UnderConstruction />`. Give its sidebar
+entry the `WIP` badge.
 
 Alt text says what the image shows: "Tab strip with a preview tab, a pinned tab and the lock
 button". It does not start with "Screenshot of".
@@ -359,22 +370,24 @@ Interactive components are Svelte islands that render at build time and hydrate 
 - `client:visible` hydrates when the component scrolls into view.
 - `client:idle` hydrates when the browser is idle.
 
-| Component          | Import path                          | Use                                                  |
-| ------------------ | ------------------------------------ | ---------------------------------------------------- |
-| `Where`            | `components/Where.astro`             | Location box on LTK Editor pages                     |
-| `Hint`             | `components/Hint.svelte`             | Tooltip on a glossary term's first mention           |
-| `HeadingIcon`      | `components/HeadingIcon.astro`       | Icon inside a heading                                |
-| `HashCalculator`   | `components/HashCalculator.svelte`   | Interactive hash calculator for FNV-1a, ELF and SDBM |
-| `FormatComparison` | `components/FormatComparison.svelte` | Side-by-side modpkg and fantome feature comparison   |
-| `BinaryStructure`  | `components/BinaryStructure.svelte`  | Byte layout diagram for binary format specs          |
-| `VersionMatrix`    | `components/VersionMatrix.svelte`    | Version and feature matrix with filters              |
-| `ProjectScaffold`  | `components/ProjectScaffold.svelte`  | Config builder with a file tree preview              |
-| `BeforeAfter`      | `components/BeforeAfter.svelte`      | Image comparison slider                              |
-| `PatchingPipeline` | `components/PatchingPipeline.svelte` | Step-through diagram of the patching pipeline        |
-| `GlossarySearch`   | `components/GlossarySearch.svelte`   | Searchable glossary with category filters            |
-| `PlatformBadges`   | `components/PlatformBadges.svelte`   | Platform support badges                              |
-| `Collapsible`      | `components/Collapsible.svelte`      | Expandable section with badges                       |
-| `Mermaid`          | `components/Mermaid.svelte`          | Mermaid diagram, rendered in the browser             |
+| Component           | Import path                          | Use                                                  |
+| ------------------- | ------------------------------------ | ---------------------------------------------------- |
+| `Where`             | `components/Where.astro`             | Location box on LTK Editor pages                     |
+| `Screenshot`        | `components/Screenshot.astro`        | A screenshot, or a placeholder until the file exists |
+| `UnderConstruction` | `components/UnderConstruction.astro` | Body of a page that has no content yet               |
+| `Hint`              | `components/Hint.svelte`             | Tooltip on a glossary term's first mention           |
+| `HeadingIcon`       | `components/HeadingIcon.astro`       | Icon inside a heading                                |
+| `HashCalculator`    | `components/HashCalculator.svelte`   | Interactive hash calculator for FNV-1a, ELF and SDBM |
+| `FormatComparison`  | `components/FormatComparison.svelte` | Side-by-side modpkg and fantome feature comparison   |
+| `BinaryStructure`   | `components/BinaryStructure.svelte`  | Byte layout diagram for binary format specs          |
+| `VersionMatrix`     | `components/VersionMatrix.svelte`    | Version and feature matrix with filters              |
+| `ProjectScaffold`   | `components/ProjectScaffold.svelte`  | Config builder with a file tree preview              |
+| `BeforeAfter`       | `components/BeforeAfter.svelte`      | Image comparison slider                              |
+| `PatchingPipeline`  | `components/PatchingPipeline.svelte` | Step-through diagram of the patching pipeline        |
+| `GlossarySearch`    | `components/GlossarySearch.svelte`   | Searchable glossary with category filters            |
+| `PlatformBadges`    | `components/PlatformBadges.svelte`   | Platform support badges                              |
+| `Collapsible`       | `components/Collapsible.svelte`      | Expandable section with badges                       |
+| `Mermaid`           | `components/Mermaid.svelte`          | Mermaid diagram, rendered in the browser             |
 
 Use `.md` for a page with no components. Use `.mdx` only when the page imports one.
 

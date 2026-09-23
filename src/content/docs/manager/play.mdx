@@ -1,0 +1,105 @@
+---
+title: Play with mods
+description: Start the patcher so that your enabled mods load in League, and stop it when you are done.
+tags:
+  type: guide
+  audience: [mod-user]
+  subject: [ltk-manager, patcher]
+---
+
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
+
+To play with mods, you start the <Hint as="span" tip="The part of LTK Manager that loads your enabled mods into League while you play." client:visible>[patcher](/glossary/)</Hint> before League starts a game. The patcher loads the mods that are turned on. Your game files do not
+change.
+
+The patcher button is at the top of the Home page and in the toolbar of the Mods page. Both are the
+same button.
+
+## Prerequisites
+
+- The League folder is set. See [Quick start](/manager/quick-start/#2-set-the-league-folder).
+- At least one mod is turned on. See [Turn mods on and off](/manager/library/enable-mods/).
+
+## Choose how the button starts League
+
+The **Launcher flow** setting decides what the button does. Open **Settings** > **General** to
+change it.
+
+<dl>
+  <dt id="classic">Classic</dt>
+  <dd>
+    The button reads **Start**. It starts only the patcher, and you open League from the Riot Client
+    yourself. This is the default.
+  </dd>
+  <dt id="modern">Modern</dt>
+  <dd>
+    The button reads **Play**. It starts the patcher and then League, through the Riot Client. This
+    option is experimental.
+  </dd>
+</dl>
+
+## Start the patcher
+
+1. Select **Start**, or press <kbd>Ctrl</kbd>+<kbd>P</kbd> on the Mods page.
+
+   The status bar shows each step as it runs. When the patcher is ready, the status bar shows
+   **Patcher running** and the button turns green.
+
+2. Open League and start a game.
+
+With **Modern**, select **Play** instead. LTK Manager starts the patcher and then League.
+
+The first start after you change your mods takes longer. LTK Manager builds an <Hint as="span" tip="The folder of game files that your enabled mods change. League reads it instead of its own files." client:visible>[overlay](/glossary/)</Hint>, a copy of the game files that your mods change. Later starts reuse it.
+
+<Screenshot
+  file="manager/play-session-bar.webp"
+  alt="Status bar showing the steps of a patcher start"
+/>
+
+:::note
+If League is already running, the patcher applies your mods to your next game, not to the game in
+progress.
+:::
+
+## Stop the patcher
+
+- Select **Stop Patcher**, or press <kbd>Ctrl</kbd>+<kbd>P</kbd> on the Mods page.
+
+While the patcher runs, you cannot turn mods on or off, install or update mods, or switch profiles.
+Stop the patcher first, make your changes, then start it again.
+
+To stop the patcher when each game ends, turn on **Stop the patcher when the game ends** in
+**Settings** > **General**.
+
+## Use the launch menu
+
+With **Modern**, the arrow on the right of the button opens **More launch options**:
+
+<dl>
+  <dt id="patcher-only">Start patcher only</dt>
+  <dd>Starts the patcher without League, as **Classic** does.</dd>
+  <dt id="league-only">Launch League only</dt>
+  <dd>Starts League without the patcher. The game is not modded.</dd>
+  <dt id="close-league">Close League</dt>
+  <dd>Closes the running League client. Shows only while League runs.</dd>
+</dl>
+
+## When LTK Manager warns you before a game
+
+If a mod that is turned on has a problem that stops it from loading, LTK Manager asks
+**Launch with _n_ broken mods?** before it starts.
+
+- Select **Repair first** to repair the mods, or **Show me** to see the problems.
+- Select **Launch anyway** to start with the mods as they are.
+
+See [Check and repair mods](/manager/library/mod-health/).
+
+LTK Manager does not load a mod that gives access to paid skins. If one is turned on, LTK Manager
+turns it off and shows **Skinhack excluded**.
+
+## Next steps
+
+- [Check and repair mods](/manager/library/mod-health/)
+- [Change the load order](/manager/library/load-order/)
+- [Troubleshooting](/manager/troubleshooting/)

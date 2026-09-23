@@ -1,0 +1,44 @@
+---
+title: LTK Manager
+description: Install, organize and play with League of Legends mods in LTK Manager.
+tags:
+  type: overview
+  audience: [mod-user]
+  subject: [ltk-manager]
+---
+
+LTK Manager is the desktop app that installs League of Legends mods and loads them into the game.
+A mod is a file that changes how something in League looks or sounds, for example a champion skin
+or a map. LTK Manager does not change your game files. It loads your mods while you play, and the
+game is unmodded again when you stop.
+
+New to LTK Manager? Start with the [Quick start](/manager/quick-start/).
+
+## Pages in this section
+
+| Topic                                                   | Description                                                 |
+| ------------------------------------------------------- | ----------------------------------------------------------- |
+| [Quick start](/manager/quick-start/)                    | Install LTK Manager and play your first game with a mod     |
+| [Home interface](/manager/home/)                        | The page LTK Manager opens on                               |
+| [Play with mods](/manager/play/)                        | Start the patcher and launch League                         |
+| [Mod library](/manager/library/)                        | How LTK Manager keeps your mods, folders and profiles       |
+| [Mods page interface](/manager/library/interface/)      | The regions of the Mods page                                |
+| [Install mods](/manager/library/install-mods/)          | Add mod files to your library                               |
+| [Turn mods on and off](/manager/library/enable-mods/)   | Choose which mods load in your next game                    |
+| [Select several mods](/manager/library/select-mods/)    | Act on many mods at once                                    |
+| [Find a mod](/manager/library/find-mods/)               | Search, filter and sort the library                         |
+| [Change the load order](/manager/library/load-order/)   | Choose which mod wins when two mods change the same file    |
+| [Organize mods into folders](/manager/library/folders/) | Group mods and turn a group on or off                       |
+| [Manage profiles](/manager/library/profiles/)           | Keep different sets of enabled mods                         |
+| [View mod details](/manager/library/mod-details/)       | Read a mod's details, readme and license, and edit its info |
+| [Check and repair mods](/manager/library/mod-health/)   | Find and fix problems in your mods                          |
+| [Export mods](/manager/library/export-mods/)            | Copy your mod files out of LTK Manager                      |
+| [Uninstall mods](/manager/library/uninstall-mods/)      | Remove mods from your library                               |
+| [Settings](/manager/settings/)                          | Every setting, by tab                                       |
+| [Diagnostics](/manager/diagnostics/)                    | What LTK Manager records when a game has a problem          |
+| [Update LTK Manager](/manager/update/)                  | Install a new version of the app                            |
+| [Updating after a patch](/manager/patch-updates/)       | What to do when League updates                              |
+| [Troubleshooting](/manager/troubleshooting/)            | Fixes for common problems                                   |
+| [Privacy](/manager/privacy/)                            | What data LTK Manager sends                                 |
+
+To make your own mods, see [LTK Editor](/editor/).
