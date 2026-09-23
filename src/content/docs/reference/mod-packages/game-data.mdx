@@ -13,7 +13,7 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 Game data declarations let a mod edit the game's property bins without shipping a copy of each bin it touches. A layer declares, per target bin, what it changes: linked files, mode-gated companion bins, override records, property edits, new objects. The overlay build reads the installed game's copy of the target and materialises the edit on top of it at build time. This page is the standard: the declaration modules, each binding's meaning, how containers carry the declarations, and the rules the build follows.
 
 :::caution[Status]
-This is a proposal. It is tracked in [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) (links) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) (PTCH overrides). The link engine in [league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225) implements `target`, `links`, `+links`, `-links`, `edits` and `source`. [league-mod#228](https://github.com/LeagueToolkit/league-mod/issues/228) implements the `entries` selector through the game index, with link bindings inside entry bodies. [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) implements `overrides` for `.ptch` files; a `.rito` override file is refused with an error naming the extension until [league-mod#240](https://github.com/LeagueToolkit/league-mod/issues/240) lands. [league-mod#243](https://github.com/LeagueToolkit/league-mod/issues/243) and [league-mod#244](https://github.com/LeagueToolkit/league-mod/issues/244) implement entry bodies with property edits for a `target` and an `entries` module: signed keys, block nesting, type pins, [coercion](#coercion) against the installed schema with the base bin as fallback, and list removal by value or index. [league-mod#264](https://github.com/LeagueToolkit/league-mod/pull/264) implements [references](#references), a value read from the installed game's copy of another entry. `objects`, `modes`, wildcard targets, and `.rito` override files are unimplemented. The [roadmap](#roadmap) names the order the bindings land in.
+This is a proposal. It is tracked in [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) (links) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) (PTCH overrides). The link engine in [league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225) implements `target`, `links`, `+links`, `-links`, `edits` and `source`. [league-mod#228](https://github.com/LeagueToolkit/league-mod/issues/228) implements the `entries` selector through the game index, with link bindings inside entry bodies. [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) implements `overrides` for `.ptch` files; a `.rito` override file is refused with an error naming the extension until [league-mod#240](https://github.com/LeagueToolkit/league-mod/issues/240) lands. [league-mod#243](https://github.com/LeagueToolkit/league-mod/issues/243) and [league-mod#244](https://github.com/LeagueToolkit/league-mod/issues/244) implement entry bodies with property edits for a `target` and an `entries` module: signed keys, block nesting, type pins, [coercion](#coercion) against the installed schema with the base bin as fallback, and list removal by value or index. [league-mod#264](https://github.com/LeagueToolkit/league-mod/pull/264) implements [references](#references), a value read from the installed game's copy of another entry. [league-mod#275](https://github.com/LeagueToolkit/league-mod/pull/275) implements [`objects`](#objects): clone, construct and remove. `modes`, wildcard targets, and `.rito` override files are unimplemented. The [roadmap](#roadmap) names the order the bindings land in.
 :::
 
 :::note[Link declaration authoring]
@@ -573,7 +573,7 @@ In an external compact body, an entry is a root mapping in YAML and JSON, or a `
 - **Single-container entries** _(unimplemented)_. For an entry the client looks up in one loaded container, the build edits that container alone. Examples include skin properties, per-skin `Resources` and character records. The report names the chunks left alone.
 - **A name with no declaring chunk** produces `EntryUnresolved`. The build skips that entry's edits.
 - **An unavailable object index** produces `IndexUnavailable` on every `entries` item. The build skips those items and continues.
-- **New entries** a mod adds under [`objects`](#objects) carry the `Mods/<modid>/` prefix. The build checks the name against the index before packing. A name the index holds is a packing error unless the declaration says the override is intended.
+- **New entries** a mod adds under [`objects`](#objects) should carry the `Mods/<modid>/` prefix. The build checks each created name against the index: a name another game bin declares produces `ObjectShadowsGame`, and the object is still created. Which of the two objects the game reads then depends on load order.
 - The index gives the entry's class. Types come from the [schema](#vocabulary) for the installed patch, with the base bin as the reported fallback, as [Coercion](#coercion) states.
 
 ### Precedence
@@ -1376,11 +1376,14 @@ A new object in the target, cloned from an existing entry or constructed from a 
   </TabItem>
 </Tabs>
 
-- `clone` names an entry in the target state at the start of the batch's object-creation phase. The build copies it, applies `set`, and rewrites the copy's own-path property where its class carries one.
-- `class` constructs a default object of that class from the schema; `set` fills it. A class the schema does not know is a report. `clone` and `class` are exclusive.
+- `clone` names an entry in the target state at the start of the batch's object-creation phase. A source the target does not hold then is `SourceMissing`, including an object the same phase creates; clone it from a later edit. The build copies the source, rewrites the copy's own path, and applies `set`.
+- **Own path.** Some classes hold their own path: `objectPath` as a `hash` on `VfxSystemDefinitionData`, `SkinCharacterDataProperties`, `SpellObject` and others, `particlePath` as a `string` on `VfxSystemDefinitionData`. A clone rewrites every top-level `hash` property holding the source's hash, and every top-level `string` property spelling the source's path, compared case-insensitively, to name the clone. Nothing else is rewritten: a field naming another object keeps its value.
+- `class` constructs an object of that class holding only the properties `set` names; the game fills the rest from the class's defaults. A class the schema does not know is `UnknownClass` and nothing is created. `clone` and `class` are exclusive.
 - `set` is an entry body for the new object: the same paths, [blocks](#block-nesting), [signs](#operations), [coercion](#coercion) and [pins](#type-pins), applied against the cloned or constructed object. A struct the object does not yet hold is a `pointer` or `embed` pin.
 - `remove: true` deletes the object. The client's override format carries a deletion record, and the build materialises the removal by omitting the object from the written `PROP`.
-- An entry name the target already holds at object creation under `clone` or `class` is a report; an existing object is edited as an [entry](#entries).
+- An entry name the target already holds at object creation under `clone` or `class` is `ObjectExists`, and so is a name the same `objects` mapping creates twice, by path and by hash; an existing object is edited as an [entry](#entries). `remove` on an object the target does not hold is `RemovalUnmatched`.
+- A created object is an entry of the target from the entry-edit phase on: the same batch edits it by name, and a later batch clones it.
+- `objects` belongs to a `target` item. Inside an `entries` item it is an error. Riot's own `Objects` field, capitalised, is a property.
 
 ## Build Semantics
 
@@ -1429,7 +1432,7 @@ Every check below is a report line, report-and-skip, never a build failure:
 - every targeted entry exists in the resolved declaring chunk, with the class the schema expects;
 - every edited property exists on that class with the expected type; list-valued properties first: a stale list edit does not no-op, it empties the list;
 - every mode selector resolves to a shipped mode entry;
-- every mod-added entry name is absent from the game index, or the override is declared;
+- every mod-added entry name is absent from the game index, else `ObjectShadowsGame`;
 - every companion path sits under the mod's namespace;
 - a companion bin declared under both `load` and a permanent `links` anchor is flagged.
 
