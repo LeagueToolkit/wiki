@@ -7,6 +7,8 @@ tags:
   subject: [ltk-manager]
 ---
 
+import Screenshot from '@components/Screenshot.astro';
+
 When your library grows, search, filters and sorting help you find a mod. They change only what
 the Mods page shows. They do not change the load order.
 
@@ -21,9 +23,14 @@ again, clear the search box.
 ## Filter by champion, tag or map
 
 1. Select the funnel in the search box.
-2. Select the values you want under **Champion**, **Tags** or **Maps**.
+2. Select the values you want under **Champions**, **Tags** or **Maps**.
 
    The mods that match show. The active filters show as chips under the toolbar.
+
+<Screenshot
+  file="manager/library-filter-menu.webp"
+  alt="Sort and filter menu with the Sort by options and the Champions, Tags and Maps columns"
+/>
 
 A mod matches when it has any of the values you selected in a column. When you select values in
 two columns, a mod must match both. For example, **Ahri** and **Summoner's Rift** shows only Ahri
@@ -59,8 +66,20 @@ To reverse the direction, select the same option again.
 
 ## Change how mods show
 
-- Select the grid or list button in the toolbar to change the view.
-- Select **View options** next to it to change **Card size**, or to show or hide **Tags** on cards.
+- Select the grid or list button in the toolbar to change the view. The list view shows one row per
+  mod, with a switch to turn it on or off.
+- Select **View options** next to it to change **Card size**, from 70 to 130, or to show or hide
+  **Tags** on cards.
+
+<Screenshot
+  file="manager/library-list-view.webp"
+  alt="Mods page in the list view, with three mod rows that each have a switch and a menu button"
+/>
+
+<Screenshot
+  file="manager/library-view-options.webp"
+  alt="View options menu with the Card size slider set to 100 and the Tags checkbox under Card display"
+/>
 
 LTK Manager keeps these choices when you restart it.
 

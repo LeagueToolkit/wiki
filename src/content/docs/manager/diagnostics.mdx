@@ -1,12 +1,92 @@
 ---
 title: Diagnostics
-description: How LTK Manager records game crashes and what each verdict means.
+description: How LTK Manager records a game that had a problem, and how to read an incident.
 tags:
   type: concept
   audience: [mod-user]
   subject: [ltk-manager, patcher]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Screenshot from '@components/Screenshot.astro';
 
-<UnderConstruction />
+When a game with mods has a problem, for example a crash or a stop on the loading screen, LTK
+Manager records an incident. Diagnostics lists these incidents and tells you what went wrong, which
+mod is the likely cause, and what to do next.
+
+To open Diagnostics, press <kbd>Ctrl</kbd>+<kbd>D</kbd> or select the diagnostics button in the
+title bar. On the Home page, **Review** in the Last game tile opens the incident
+for your most recent game.
+
+## Page layout
+
+<Screenshot
+  file="manager/diagnostics-skinhack.webp"
+  alt="Diagnostics page with numbered regions, showing a Skinhack detection triggered incident with its suspect, hint, evidence and actions"
+  markers={[
+    { x: 23.1, y: 6.3 },
+    { x: 12.1, y: 10.1 },
+    { x: 28.2, y: 11.2 },
+    { x: 35.2, y: 32.1 },
+    { x: 33.5, y: 42.8 },
+    { x: 35.2, y: 50.1 },
+    { x: 50.9, y: 67.6 },
+    { x: 70.4, y: 72.7 },
+  ]}
+/>
+
+| #   | Name          | Description                                                                         |
+| --- | ------------- | ----------------------------------------------------------------------------------- |
+| 1   | Tabs          | **Games** lists incidents from your games. **System** shows LTK Manager's own state |
+| 2   | Incident list | Every recorded incident, grouped by day, newest first                               |
+| 3   | Verdict       | What LTK Manager decided went wrong, and what it did about it                       |
+| 4   | Suspects      | The mods that likely caused the problem, and why                                    |
+| 5   | Hints         | What to do next                                                                     |
+| 6   | Evidence      | The lines from the game log and the patcher that the verdict is based on            |
+| 7   | Summary       | The game patch, how long the game ran, the profile, and whether a game log was read |
+| 8   | Actions       | What you can do with the incident                                                   |
+
+The screenshot shows an incident for a skinhack. See [Skinhack detection](#skinhack-detection).
+
+## Incident list
+
+Each row shows the verdict, the time, the profile and how long the game ran. The mark before the
+verdict tells you how serious it is: a triangle for a problem, a circle for information. A selected
+incident is highlighted.
+
+Examples of verdicts are **Unexplained Game Exit**, **Loading Screen Stall**, **Missing Game
+Data** and **Skinhack Detection**.
+
+## Actions
+
+<dl>
+  <dt id="open-game-log">Open game log</dt>
+  <dd>Opens the game's log file for this session.</dd>
+  <dt id="copy-report">Copy report</dt>
+  <dd>Copies the whole incident as text. Paste it when you ask for help or open an issue.</dd>
+  <dt id="copy-token">Copy token</dt>
+  <dd>Copies a short code that identifies the incident.</dd>
+  <dt id="rebuild-overlay">Rebuild overlay</dt>
+  <dd>Builds the [overlay](/glossary/) again the next time the patcher starts.</dd>
+  <dt id="dismiss">Dismiss</dt>
+  <dd>Marks the incident as handled. A dismissed incident shows **Dismissed**.</dd>
+</dl>
+
+## Skinhack detection
+
+Before the game loads your mods, the patcher scans them for a skinhack: an official Riot skin put
+onto a base champion. When the scan finds one, the patcher stops, and no mods are applied for that
+game. The incident shows **Skinhack detection triggered** and **No mod ran**.
+
+- The verdict names the game file that the scan rejected, such as `graves.wad.client`.
+- **Suspects** names the mod that writes that file.
+- To play with your other mods, turn off the mod that the scan named, then start the patcher
+  again.
+
+See [Mods that LTK Manager blocks](/manager/library/#mods-that-ltk-manager-blocks).
+
+## Related pages
+
+- [Play with mods](/manager/play/)
+- [Troubleshooting](/manager/troubleshooting/)
+- [Anonymous diagnostics](/manager/privacy/), which is a different thing: the reports LTK Manager
+  sends, not the incidents it keeps on your computer
