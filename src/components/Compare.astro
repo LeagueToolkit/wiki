@@ -1,0 +1,90 @@
+---
+/**
+ * Two screenshots of the same view with a slider between them, or a
+ * placeholder that names the missing files.
+ *
+ * `before` and `after` are paths under `src/assets/screenshots/`, like
+ * `Screenshot`'s `file`. Capture both at the same size and framing, so that
+ * only the change being shown differs. The labels are the words on each side,
+ * such as "Hexshade off" and "Hexshade on".
+ */
+import type { ImageMetadata } from 'astro';
+import Slider from './compare/Slider.svelte';
+
+interface Props {
+  before: string;
+  after: string;
+  beforeLabel: string;
+  afterLabel: string;
+  /** What the comparison shows as a whole, read by screen readers. */
+  alt: string;
+}
+
+const { before, after, beforeLabel, afterLabel, alt } = Astro.props;
+
+const images = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/screenshots/**/*.{webp,png}',
+  { eager: true },
+);
+const beforeImage = images[`/src/assets/screenshots/${before}`]?.default;
+const afterImage = images[`/src/assets/screenshots/${after}`]?.default;
+
+if (
+  beforeImage &&
+  afterImage &&
+  (beforeImage.width !== afterImage.width || beforeImage.height !== afterImage.height)
+) {
+  throw new Error(
+    `Compare: ${before} is ${beforeImage.width}x${beforeImage.height} but ${after} is ` +
+      `${afterImage.width}x${afterImage.height}. Capture both at the same size.`,
+  );
+}
+---
+
+{
+  beforeImage && afterImage ? (
+    <Slider
+      client:visible
+      before={{ src: beforeImage.src, label: beforeLabel }}
+      after={{ src: afterImage.src, label: afterLabel }}
+      width={afterImage.width}
+      height={afterImage.height}
+      alt={alt}
+    />
+  ) : (
+    <figure class="compare-missing not-content">
+      <p class="label">Screenshots needed</p>
+      <p>
+        <code>src/assets/screenshots/{before}</code> ({beforeLabel})
+        <br />
+        <code>src/assets/screenshots/{after}</code> ({afterLabel})
+      </p>
+      <figcaption>{alt}</figcaption>
+    </figure>
+  )
+}
+
+<style>
+  .compare-missing {
+    display: grid;
+    gap: 0.25rem;
+    margin-block: 1rem;
+    padding: 2rem 1.25rem;
+    border: 1px dashed var(--sl-color-gray-4);
+    border-radius: var(--ltk-radius-lg);
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+    text-align: center;
+  }
+
+  .label {
+    margin: 0;
+    color: var(--sl-color-white);
+    font-weight: var(--ltk-weight-medium);
+  }
+
+  p,
+  figcaption {
+    margin: 0;
+  }
+</style>

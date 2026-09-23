@@ -5,14 +5,14 @@
  *
  * `file` is the path under `src/assets/screenshots/`, such as
  * `manager/home-rail.webp`. Adding that file replaces the placeholder with the
- * optimized image, so the page needs no edit.
+ * image, so the page needs no edit. The file is served as it is: `pnpm media`
+ * already encoded it, and a second encode would only lose quality.
  *
  * `markers` overlays numbered badges on the image. Each marker's number is its
  * `n`, or one more than the previous marker's number, so that it matches its row
  * in the region table below the screenshot.
  */
 import type { ImageMetadata } from 'astro';
-import { Image } from 'astro:assets';
 
 /** A numbered badge position, in percent of the image width and height. */
 export interface Marker {
@@ -54,7 +54,14 @@ const image = images[`/src/assets/screenshots/${file}`]?.default;
   image ? (
     markers.length > 0 ? (
       <div class="annotated">
-        <Image src={image} alt={alt} />
+        <img
+          src={image.src}
+          width={image.width}
+          height={image.height}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+        />
         {numbered.map(({ x, y, n }) => (
           <span class="marker" style={`left: ${x}%; top: ${y}%`} aria-hidden="true">
             {n}
@@ -62,7 +69,14 @@ const image = images[`/src/assets/screenshots/${file}`]?.default;
         ))}
       </div>
     ) : (
-      <Image src={image} alt={alt} />
+      <img
+        src={image.src}
+        width={image.width}
+        height={image.height}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+      />
     )
   ) : (
     <figure class="screenshot-missing not-content">

@@ -1,0 +1,112 @@
+---
+/**
+ * A short looping clip from `src/assets/videos/`, or a placeholder that names
+ * the missing files.
+ *
+ * `file` is the path under `src/assets/videos/` without an extension, such as
+ * `editor/hexshade-skin`. `pnpm media` writes the three files it looks for:
+ * `.webm` (AV1), `.mp4` (H.264 fallback) and `.webp` (poster frame).
+ *
+ * The clip plays muted while it is on screen and pauses when it scrolls away.
+ * Under `prefers-reduced-motion` it never starts by itself.
+ */
+interface Props {
+  file: string;
+  /** What the clip shows, read by screen readers in place of the video. */
+  alt: string;
+}
+
+const { file, alt } = Astro.props;
+
+const assets = import.meta.glob<string>('/src/assets/videos/**/*.{webm,mp4,webp}', {
+  query: '?url',
+  import: 'default',
+  eager: true,
+});
+const base = `/src/assets/videos/${file}`;
+const webm = assets[`${base}.webm`];
+const mp4 = assets[`${base}.mp4`];
+const poster = assets[`${base}.webp`];
+---
+
+{
+  webm || mp4 ? (
+    <video
+      class="clip"
+      poster={poster}
+      aria-label={alt}
+      controls
+      muted
+      loop
+      playsinline
+      preload="none"
+      data-autoplay
+    >
+      {webm && <source src={webm} type='video/webm; codecs="av01.0.08M.08"' />}
+      {mp4 && <source src={mp4} type="video/mp4" />}
+    </video>
+  ) : (
+    <figure class="video-missing not-content">
+      <p class="label">Video needed</p>
+      <p>
+        <code>src/assets/videos/{file}.webm</code>, <code>.mp4</code> and <code>.webp</code>
+      </p>
+      <figcaption>{alt}</figcaption>
+    </figure>
+  )
+}
+
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const { target, isIntersecting } of entries) {
+        const video = target as HTMLVideoElement;
+        if (isIntersecting && !reduceMotion.matches) {
+          void video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      }
+    },
+    { threshold: 0.5 },
+  );
+
+  for (const video of document.querySelectorAll<HTMLVideoElement>('video[data-autoplay]')) {
+    observer.observe(video);
+  }
+</script>
+
+<style>
+  .clip {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--ltk-radius-lg);
+    background: var(--sl-color-gray-6);
+  }
+
+  .video-missing {
+    display: grid;
+    gap: 0.25rem;
+    margin-block: 1rem;
+    padding: 2rem 1.25rem;
+    border: 1px dashed var(--sl-color-gray-4);
+    border-radius: var(--ltk-radius-lg);
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+    text-align: center;
+  }
+
+  .label {
+    margin: 0;
+    color: var(--sl-color-white);
+    font-weight: var(--ltk-weight-medium);
+  }
+
+  p,
+  figcaption {
+    margin: 0;
+  }
+</style>
