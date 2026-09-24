@@ -377,6 +377,19 @@ for a reader who asks for reduced motion:
 `pnpm media` also converts a screenshot: give it a `.png` and a target under `screenshots/`, and
 it writes the smallest WebP.
 
+### Link previews
+
+A link to any page shows a preview card on Discord and other sites. Every page gets the site card,
+with the LTK logo. A page that is worth sharing on its own, such as a feature page, can have its own
+card with a screenshot behind the title:
+
+```sh
+pnpm og-card og/hexshade --title "Hexshade" --subtitle "Shading engine" --icon src/assets/hexshade.png --background src/assets/screenshots/editor/hexshade-aram-bilgewater.webp
+```
+
+This writes `src/assets/og/hexshade.png`. Point the page's `ogImage` frontmatter at it, as a path
+relative to the page. The card uses the Segoe UI font, so render it on Windows and commit the file.
+
 Add a screenshot to a task step only when the target is hard to find. Interface pages always have
 one numbered screenshot per region. A screenshot shows the UI, and the text still gives every
 step.

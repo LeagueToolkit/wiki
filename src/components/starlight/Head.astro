@@ -1,6 +1,20 @@
 ---
 import Default from '@astrojs/starlight/components/Head.astro';
-import { Font } from 'astro:assets';
+import { Font, getImage } from 'astro:assets';
+import siteCard from '@assets/og/default.png';
+
+// Open Graph card: the page's own `ogImage`, or the site card. Starlight emits title and
+// description but no image, so without this a shared link shows as plain text.
+const { entry } = Astro.locals.starlightRoute;
+const card = await getImage({
+  src: entry.data.ogImage ?? siteCard,
+  width: 1200,
+  height: 630,
+  fit: 'cover',
+  format: 'jpg',
+  quality: 90,
+});
+const cardUrl = new URL(card.src, Astro.site).href;
 ---
 
 {
@@ -10,6 +24,12 @@ import { Font } from 'astro:assets';
     so they preload; JetBrains Mono only matters once a code block scrolls in. */
 }
 <Default><slot /></Default>
+<meta property="og:image" content={cardUrl} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={entry.data.title} />
+<meta name="twitter:image" content={cardUrl} />
+<meta name="theme-color" content="#7d4bfa" />
 <Font cssVariable="--font-geist" preload />
 <Font cssVariable="--font-jetbrains-mono" />
 <Font cssVariable="--font-bricolage" preload />

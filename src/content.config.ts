@@ -20,7 +20,14 @@ export const collections = {
   docs: defineCollection({
     loader: docsLoader(),
     schema: docsSchema({
-      extend: z.object({ tags: tags.optional(), titleIcon: titleIcon.optional() }),
+      // `ogImage` is the card a shared link shows, rendered by `pnpm og-card`. Pages without
+      // one fall back to the site card in components/starlight/Head.astro.
+      extend: ({ image }) =>
+        z.object({
+          tags: tags.optional(),
+          titleIcon: titleIcon.optional(),
+          ogImage: image().optional(),
+        }),
     }),
   }),
 };
