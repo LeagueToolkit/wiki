@@ -1,12 +1,136 @@
 ---
 title: Built-in mods settings
-description: Changes LTK Manager applies to the game without a mod to install.
+description: Changes LTK Manager applies to the game without a mod to install, from base skins to map skins and map decorations.
 tags:
   type: reference
   audience: [mod-user]
-  subject: [ltk-manager, patcher]
+  subject: [ltk-manager, patcher, overlay]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
 
-<UnderConstruction />
+The Built-in mods tab of **Settings** holds changes that LTK Manager makes to the game by itself,
+with no mod to install.
+
+LTK Manager makes each built-in mod from your League installation when the <Hint as="span" tip="The part of LTK Manager that loads your enabled mods into League while you play." client:visible>[patcher](/glossary/)</Hint> starts.
+It puts the built-in mods in the <Hint as="span" tip="The folder of game files that your enabled mods change. League reads it instead of its own files." client:visible>[overlay](/glossary/)</Hint>
+above every mod in your library, so a built-in mod wins when it and a mod change the same file.
+After a game patch, the next patcher start makes the built-in mods again from the new game files.
+
+A built-in mod changes the game only on your screen. Other players see their own game as it is.
+
+When a built-in mod that changes the game by itself is on, you can start the patcher with no mod
+turned on in your library. **Modded champions** is the one choice that needs a mod, because it
+changes only champions that a mod changes.
+
+<Screenshot
+  file="manager/settings-built-in-mods.webp"
+  alt="Built-in mods section with the Default ward skins switch, the Base skins, Map skin and Chosen map skin rows and the Map decorations list with a map tag on each decoration"
+/>
+
+## Skins
+
+<dl>
+  <dt id="default-ward-skins">Default ward skins</dt>
+  <dd>
+    Shows every ward in its base skin, whatever ward skin its owner uses. The overlay then holds
+    its own copy of each map archive, which takes several GB, so the first patcher start after you
+    turn it on takes longer. Default: off.
+  </dd>
+  <dt id="base-skins">Base skins</dt>
+  <dd>
+    Shows each skin of a champion as the champion's base skin. When a mod in your library replaces
+    the base skin, every skin shows the mod's version instead. A mod made for one skin keeps that
+    skin.
+
+    - **Off**: every champion shows the skin its player picked.
+    - **Modded champions**: only champions whose base skin a turned-on mod replaces. Every skin of
+      such a champion shows the mod.
+    - **Every champion**: all champions. The overlay then holds each champion archive, about
+      16 GB, so the first patcher start after you choose it takes longer.
+
+    Default: **Off**.
+
+  </dd>
+</dl>
+
+## Maps
+
+<dl>
+  <dt id="map-skin">Map skin</dt>
+  <dd>
+    The map skin each game shows. An event, such as a seasonal event or a tournament, can give
+    Summoner's Rift or the Howling Abyss a different look for its games. A map skin changes the
+    environment: the map's geometry, grass, particles, minimap and color grading. Minions, turrets,
+    music and the loading screen still follow the event.
+
+    - **Game**: each game shows the map skin that the game server picks.
+    - **Classic**: event games show the normal map.
+    - **Chosen**: every game shows the map skin you choose in **Chosen map skin**, event games
+      included.
+
+    With **Classic** or **Chosen**, the overlay holds its own copy of each map archive, which
+    takes several GB, so the first patcher start after you choose it takes longer. Default:
+    **Game**.
+
+    <dl>
+      <dt id="chosen-map-skin">Chosen map skin</dt>
+      <dd>
+        The map skin that every game shows. Shows only when **Map skin** is **Chosen**. Enter part
+        of a name to search the list. Each skin shows the maps it has, **Summoner's Rift** or
+        **Howling Abyss**, and a map that the skin does not have keeps its own skin. The list holds
+        only skins whose map geometry and materials are in your installation, and it stays empty
+        until the League installation path is set. Nothing changes until you choose a skin.
+        Default: none.
+      </dd>
+    </dl>
+
+  </dd>
+  <dt id="map-decorations">Map decorations</dt>
+  <dd>
+    Map pieces that an event turns on, such as a statue or banners, with a choice for each. The
+    list shows each decoration that a map in your installation has:
+
+    - **Hall of Legends**: the Hall of Legends pieces on Summoner's Rift, the Tristana statue
+      included.
+    - **MSI winner effects**: the particle effects on Summoner's Rift for the MSI winning team.
+    - **Esports banners**: the sponsor banners on Summoner's Rift.
+
+    Each decoration shows the maps it is on. A decoration that LTK Manager has no name for shows
+    its name from the game files. Each decoration has three choices:
+
+    - **Game**: the decoration shows when the game turns it on.
+    - **Hidden**: the decoration never shows.
+    - **Always**: the decoration shows in every game.
+
+    When you set a decoration to **Hidden** or **Always**, the overlay holds its own copy of each
+    map archive, which takes several GB. The first patcher start after you hide the Hall of Legends
+    takes longer, because LTK Manager rewrites each Summoner's Rift map to remove the Tristana
+    statue. Later starts reuse the rewritten maps until a game patch changes them. Default:
+    **Game** for each decoration.
+
+  </dd>
+</dl>
+
+:::caution[Try a new map skin in the Practice Tool]
+A map skin in the list can still fail to load in a game. Before you play a match with a new
+**Chosen map skin**, start a Practice Tool game on the map and check that the map loads.
+:::
+
+## Limitations
+
+- **Every champion** and each map built-in mod need several GB of free disk space for the overlay.
+- **Hidden** on the Hall of Legends does not remove the carved mid-lane ground on Summoner's Rift.
+  The game draws that ground in every game, and the game files have no other texture for it.
+- When the Hall of Legends is **Hidden**, a mod in your library that replaces a Summoner's Rift
+  map mesh (a `.mapgeo` file) loses that change. LTK Manager rewrites the game's own map mesh
+  instead.
+- **Esports banners** show in every game when the choice is **Game**, because the game turns them
+  on by default. Select **Hidden** to remove them.
+
+## Related pages
+
+- [Play with mods](/manager/play/)
+- [Load order](/manager/library/load-order/)
+- [Settings](/manager/settings/)

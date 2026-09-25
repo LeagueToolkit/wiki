@@ -151,7 +151,6 @@ export default defineConfig({
                 {
                   label: 'Built-in mods',
                   slug: 'manager/settings/built-in-mods',
-                  badge: { text: 'WIP', variant: 'caution' },
                 },
                 {
                   label: 'Appearance',
