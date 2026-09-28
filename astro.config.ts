@@ -210,6 +210,11 @@ export default defineConfig({
               badge: { text: 'WIP', variant: 'caution' },
             },
             {
+              label: 'Sandboxes',
+              slug: 'editor/sandboxes',
+              badge: { text: 'WIP', variant: 'caution' },
+            },
+            {
               label: 'LTK Editor interface',
               slug: 'editor/interface',
               badge: { text: 'WIP', variant: 'caution' },
@@ -225,8 +230,29 @@ export default defineConfig({
               items: [
                 {
                   label: 'Bin editor',
-                  slug: 'editor/bin-editor',
-                  badge: { text: 'WIP', variant: 'caution' },
+                  collapsed: true,
+                  items: [
+                    {
+                      label: 'Overview',
+                      slug: 'editor/bin-editor',
+                      badge: { text: 'WIP', variant: 'caution' },
+                    },
+                    {
+                      label: 'Bin editor interface',
+                      slug: 'editor/bin-editor/interface',
+                      badge: { text: 'WIP', variant: 'caution' },
+                    },
+                    {
+                      label: 'Edit a bin file',
+                      slug: 'editor/bin-editor/edit-a-bin',
+                      badge: { text: 'WIP', variant: 'caution' },
+                    },
+                    {
+                      label: 'Declare edits to a game bin',
+                      slug: 'editor/bin-editor/declare-game-data',
+                      badge: { text: 'WIP', variant: 'caution' },
+                    },
+                  ],
                 },
                 {
                   label: 'VFX editor',

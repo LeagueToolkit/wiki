@@ -1,0 +1,77 @@
+---
+title: Sandboxes
+description: The data a tab in LTK Editor reads from and saves to, either your project's layers over the game or the game alone.
+tags:
+  type: concept
+  audience: [mod-creator]
+  subject: [creator-workshop, layers, bin]
+---
+
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
+
+A <Hint as="span" tip="The data a tab in LTK Editor reads from and saves to: a project's layers over the game, or the game alone." client:visible>[sandbox](/glossary/)</Hint>
+is the data a tab in LTK Editor reads from and saves to. Each bin tab opens in one sandbox, and the
+**Sandbox** button in its header names it.
+
+## Why it matters
+
+A game file can exist more than once: in your League installation, and in one or more <Hint as="span" tip="A named group of files within a mod project. Layers let mod creators offer optional components that users can toggle independently." client:visible>[layers](/glossary/)</Hint>
+of your project. The sandbox decides which copy a tab shows, and where its edits go. In your
+project's sandbox, a tab shows the copy that the build packs, so what you edit is what your mod
+ships.
+
+## The two sandboxes
+
+<dl>
+  <dt id="project">Project</dt>
+  <dd>
+    Your project's layers stacked over the game, in the order the build applies them. A tab you open
+    in a project opens here.
+  </dd>
+
+  <dt id="game">Game</dt>
+  <dd>The installed game alone. Every file opens read-only.</dd>
+</dl>
+
+## Which copy a tab opens
+
+| File                       | In the project sandbox                                                                          | In the game sandbox        |
+| -------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------- |
+| A file in a layer          | The layer's file, editable                                                                      | The layer's file           |
+| A game file a layer ships  | The layer's file, editable                                                                      | The game's copy, read-only |
+| A game file no layer ships | The game's copy, edited through [game data declarations](/editor/bin-editor/declare-game-data/) | The game's copy, read-only |
+| A file outside a project   | Read-only                                                                                       | Read-only                  |
+
+When two layers ship the same file, the tab opens the copy of the layer that the build applies
+last.
+
+## Switch a tab's sandbox
+
+1. In the tab header, select **Sandbox**.
+2. Select your project or **Game**.
+
+   The tab switches in place. **Game** is disabled when the installed game has no copy of the file.
+
+<Screenshot
+  file="editor/sandboxes-switch.webp"
+  alt="Sandbox options open on a bin tab, with the project selected and Game below it"
+/>
+
+## Links keep the sandbox
+
+A link you follow out of a tab opens in that tab's sandbox. A link out of a game tab opens in the
+game, and a link out of a project tab opens the copy the project builds.
+
+## Layer changes
+
+The sandbox follows your project as you change it. When you add a file to a layer, delete one,
+rename a layer or change the layer order, open tabs and links read the new state. A tab of a
+renamed layer's file follows the new name.
+
+## Related pages
+
+- [Bin editor](/editor/bin-editor/)
+- [Declare edits to a game bin](/editor/bin-editor/declare-game-data/)
+- [Layers](/making-mods/layers/)
+- [Projects](/editor/projects/)
