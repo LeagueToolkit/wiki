@@ -1,0 +1,117 @@
+---
+title: Edit a bin file
+description: Change values, add and remove properties, and edit lists and maps in a bin file of your project.
+tags:
+  type: guide
+  audience: [mod-creator]
+  subject: [creator-workshop, bin]
+---
+
+import Screenshot from '@components/Screenshot.astro';
+import Where from '@components/Where.astro';
+
+Edit a bin file of your project to change what the game reads from it. LTK Editor saves each edit
+to the file as you make it.
+
+<Where path={['Bin editor', 'File tab']} files="Bin files in a layer of your project" />
+
+Prerequisites:
+
+- A [project](/editor/projects/) with the bin file in one of its layers. To edit a game bin, see
+  [Declare edits to a game bin](/editor/bin-editor/declare-game-data/).
+
+## Edit a value
+
+1. Open the bin file from your project's files.
+2. Expand the object and the properties that hold the value.
+3. Select the value, or focus its row and press <kbd>Enter</kbd> or <kbd>F2</kbd>.
+4. Enter the new value and press <kbd>Enter</kbd>.
+
+   The row shows the new value. Press <kbd>Escape</kbd> instead to drop the change.
+
+A value that shows as a link, such as a file path or an object name, opens what it names when you
+select it. To edit it, right-click the row and select **Edit value**.
+
+A value the property cannot hold, such as 300 in a `u8`, is refused. The field stays open with
+your text and a mark that says why.
+
+## Pick a file for a path
+
+A file path and a string that names a file edit in a path field, which lists files as you type.
+
+1. Open the value for an edit.
+2. Enter part of the file name. The list shows matching files of your project first, then matching
+   game files.
+3. Select a file, or press <kbd>Enter</kbd> for the highlighted one.
+
+<Screenshot
+  file="editor/bin-editor-path-field.webp"
+  alt="A texture path field open on a row, with project files and game files listed under it"
+/>
+
+## Add a property
+
+1. Expand the object or struct that should hold the property.
+2. Select the add line under its last property, or select **Add property** on the row's menu.
+3. Enter part of the property name. The list shows the fields the class declares and the file does
+   not write yet.
+4. Press <kbd>Enter</kbd> to add the highlighted field.
+
+   The property appears at its default value, with the value ready for an edit.
+
+To remove a property, right-click its row and select **Remove property**. The game then reads the
+property's default value.
+
+## Edit a list or a map
+
+Right-click a list, a map or one of their items to see the actions it has.
+
+| Row                    | Actions                                                       |
+| ---------------------- | ------------------------------------------------------------- |
+| A list                 | **Add item**                                                  |
+| A map                  | **Add entry**                                                 |
+| An item of a list      | **Insert after**, **Move up**, **Move down**, **Remove item** |
+| An entry of a map      | **Insert after**, **Remove entry**                            |
+| An empty option        | **Set value**                                                 |
+| An option with a value | **Clear value**                                               |
+| An empty pointer       | **Set class**                                                 |
+| A pointer with a class | **Add property**, **Set to null**                             |
+
+Press <kbd>Alt</kbd>+<kbd>Up</kbd> or <kbd>Alt</kbd>+<kbd>Down</kbd> to move the focused list
+item. Press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to insert an item after it.
+
+## Undo an edit
+
+Press <kbd>Ctrl</kbd>+<kbd>Z</kbd> to undo and <kbd>Ctrl</kbd>+<kbd>Y</kbd> to redo. A file tab
+and the object tabs of the same file share one undo history.
+
+## Saving
+
+LTK Editor saves each edit shortly after you make it, so the bin editor has no save button. Press
+
+<kbd>Ctrl</kbd>+<kbd>S</kbd> to save a waiting edit at once.
+
+When the file changed on disk after you opened it, for example in another program, LTK Editor does
+not save over it. Select **Reload** to read the file again. Reload drops the edits that were not
+saved.
+
+## Row keys
+
+| Key                             | Action                                     |
+| ------------------------------- | ------------------------------------------ |
+| <kbd>Up</kbd>, <kbd>Down</kbd>  | Move to the row above or below             |
+| <kbd>Home</kbd>, <kbd>End</kbd> | Move to the first or last row              |
+| <kbd>Right</kbd>                | Expand the row, or move to its first child |
+| <kbd>Left</kbd>                 | Collapse the row, or move to its parent    |
+| <kbd>Enter</kbd>, <kbd>F2</kbd> | Edit the row's value                       |
+| <kbd>Shift</kbd>+<kbd>F10</kbd> | Open the row menu                          |
+
+## Limitations
+
+- An object's path and class cannot change.
+- A patch bin (`PTCH`) is read-only.
+
+## Next steps
+
+- [Declare edits to a game bin](/editor/bin-editor/declare-game-data/)
+- [Test a project](/editor/test-a-project/)

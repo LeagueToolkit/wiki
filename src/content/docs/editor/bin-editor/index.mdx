@@ -1,0 +1,74 @@
+---
+title: Bin editor
+description: Read and edit the objects and properties of a League bin file in LTK Editor, without a second tool.
+tags:
+  type: concept
+  audience: [mod-creator]
+  subject: [creator-workshop, bin]
+---
+
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
+
+The bin editor opens a <Hint as="span" tip="Binary property file format (magic PROP). Stores configuration, game data, and asset metadata." client:visible>[bin file](/glossary/)</Hint>
+in LTK Editor and shows its objects and their properties as rows you can read and edit. It opens
+every `.bin` file of your project and of your League installation.
+
+<Screenshot
+  file="editor/bin-editor-file-tab.webp"
+  alt="A skin bin open in a file tab, with its objects collapsed and one object expanded to its properties"
+/>
+
+## What a bin holds
+
+A bin is a list of objects. Each object has a path, such as
+`Characters/Aatrox/Skins/Skin0/Resources`, and a class, such as `SkinCharacterDataProperties`. The
+class says which properties the object can have. Each property is a named value: a number, a
+string, a color, a link to another object or file, or a container of other values.
+
+The game identifies objects, classes and properties by hashes. The bin editor shows the name of
+each hash that the hash tables know, and the hash itself where no table names it.
+
+## File tabs and object tabs
+
+A bin opens in one of two kinds of tab:
+
+- **File tab**: the whole file, with every object collapsed to one row. Expand an object to see its
+  properties.
+- **Object tab**: one object as a document of its own. Open it with **Open object** on an object
+  row, from the **Objects** view, or by following a link to the object.
+
+Two files can hold an object with the same path, for example the game's copy and your layer's
+copy. Each opens in its own object tab, so you can compare them side by side.
+
+## Links between files
+
+A value that names an object or a file shows as a link. Select a link to open what it names.
+Press <kbd>Ctrl</kbd> while you select it to open the target beside the current tab. A link opens
+in the same [sandbox](/editor/sandboxes/) as the tab it is in.
+
+## Where you can edit
+
+Whether a bin takes edits depends on the tab's sandbox and on the file:
+
+- A bin in one of your project's layers is editable. Edits save to that file.
+- A game bin opened in your project is editable through game data declarations. See
+  [Declare edits to a game bin](/editor/bin-editor/declare-game-data/).
+- A bin opened in the game sandbox, a bin outside a project, and a patch bin (`PTCH`) are
+  read-only. The toolbar says why.
+
+See [Sandboxes](/editor/sandboxes/) for which copy of a file a tab opens.
+
+## Class views
+
+Some classes have a class view: a layout built for that class, next to the plain **Properties**
+list. A particle system, for example, opens with its emitters, a timeline and a preview. Switch
+between the class view and **Properties** with the view mode control in the tab header.
+
+## Related pages
+
+- [Bin editor interface](/editor/bin-editor/interface/)
+- [Edit a bin file](/editor/bin-editor/edit-a-bin/)
+- [Declare edits to a game bin](/editor/bin-editor/declare-game-data/)
+- [Sandboxes](/editor/sandboxes/)
+- [BIN file format](/reference/file-formats/bin/)

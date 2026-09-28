@@ -1,0 +1,144 @@
+---
+title: Bin editor interface
+description: The regions of a bin file tab and an object tab, and what each control does.
+tags:
+  type: reference
+  audience: [mod-creator]
+  subject: [creator-workshop, bin]
+---
+
+import Screenshot from '@components/Screenshot.astro';
+import Where from '@components/Where.astro';
+
+The bin editor shows a bin file in a file tab and a single object in an object tab. Both tabs have
+a header row and a tree of property rows.
+
+<Where path={['Bin editor']} files=".bin files" />
+
+## File tab header
+
+<Screenshot
+  file="editor/bin-editor-file-header.webp"
+  alt="Header row of a bin file tab with the Sandbox button, the object count, the version, the dependency count and the save state"
+/>
+
+| #   | Name         | Description                                                        |
+| --- | ------------ | ------------------------------------------------------------------ |
+| 1   | Sandbox      | The tab's [sandbox](/editor/sandboxes/) and where its edits go     |
+| 2   | Objects      | The number of objects in the file                                  |
+| 3   | Version      | The file's bin version, or `PTCH` for a patch bin                  |
+| 4   | Dependencies | The number of files the bin depends on. Select it to open the list |
+| 5   | Save state   | Whether the latest edit reached the file                           |
+| 6   | Read-only    | Shows when the tab takes no edits. Hover over it to see why        |
+| 7   | Object       | Adds a new object. Shows on a declared game bin                    |
+
+## Object tab header
+
+<Screenshot
+  file="editor/bin-editor-object-header.webp"
+  alt="Header row of an object tab with the Sandbox button, the class card, Show in file, the other declarations, the view mode and the menu"
+/>
+
+| #   | Name               | Description                                                 |
+| --- | ------------------ | ----------------------------------------------------------- |
+| 1   | Sandbox            | The tab's sandbox and where its edits go                    |
+| 2   | Class              | The object's class. Hover over it to see the class's fields |
+| 3   | Show in file       | Opens the file that holds the object, scrolled to it        |
+| 4   | Other declarations | The other files that hold an object with the same path      |
+| 5   | View mode          | Switches between the class view and **Properties**          |
+| 6   | Menu               | **Find references**, **Copy path** and the class's actions  |
+
+**Other declarations** needs the object index. When the index is not built, it shows **Build the
+object index** instead.
+
+## Sandbox options
+
+<Screenshot
+  file="editor/bin-editor-sandbox-options.webp"
+  alt="Sandbox options open under the Sandbox button, with the project and Game choices"
+/>
+
+| #   | Name                       | Description                                                                 |
+| --- | -------------------------- | --------------------------------------------------------------------------- |
+| 1   | Project                    | Opens the file as your project builds it                                    |
+| 2   | Game                       | Opens the installed game's copy, read-only. Disabled when the game has none |
+| 3   | Use game data declarations | Turns declaring on or off for the project. Shows on a declared game bin     |
+| 4   | Layer                      | The layer that edits declare into. Shows on a declared game bin             |
+| 5   | Module                     | The module that new keys join. Shows on a declared game bin                 |
+
+See [Sandboxes](/editor/sandboxes/) and
+[Declare edits to a game bin](/editor/bin-editor/declare-game-data/).
+
+## Property tree
+
+<Screenshot
+  file="editor/bin-editor-tree.webp"
+  alt="An object row expanded to its property rows, each with a name, a type tag and a value"
+/>
+
+| #   | Name       | Description                                                               |
+| --- | ---------- | ------------------------------------------------------------------------- |
+| 1   | Object row | The object's path, its class and its number of properties                 |
+| 2   | Name       | The property's name, or its hash when no table names it                   |
+| 3   | Type tag   | The property's type in the file, such as `f32`, `string` or `list[embed]` |
+| 4   | Value      | The value. A link opens what it names                                     |
+| 5   | Mark       | A declaration or an override on the row. Hover over it to see the layer   |
+
+A row whose type in the file differs from the type the game expects shows a warning mark.
+
+## Row menu
+
+Right-click a row, or focus it and press <kbd>Shift</kbd>+<kbd>F10</kbd>, to open its menu. The
+menu lists every action the row has.
+
+<dl>
+  <dt id="open-object">Open object</dt>
+  <dd>Opens the object in an object tab. **Open object beside** opens it in the other group.</dd>
+
+<dt id="find-references">Find references</dt>
+<dd>Lists the objects and files that link to the object or use the class.</dd>
+
+<dt id="reveal-in-objects">Reveal in Objects</dt>
+<dd>Shows the object in the **Objects** view.</dd>
+
+<dt id="edit-value">Edit value</dt>
+<dd>Opens a link, a hash or a file path for an edit.</dd>
+
+<dt id="copy-path">Copy path</dt>
+<dd>Copies the row's property path, such as `skinMeshProperties.texture`.</dd>
+
+<dt id="copy-as-declaration">Copy as declaration</dt>
+<dd>Copies the row as an `entries` module of a `game_data.yaml`.</dd>
+
+<dt id="copy-reference">Copy reference</dt>
+<dd>Copies a `!ref` to the row's value.</dd>
+
+  <dt id="reset-to-default">Reset to default</dt>
+  <dd>Sets the property back to its class default. On a declared game bin, drops the declaration.</dd>
+</dl>
+
+## Changes menu
+
+The **Changes** menu marks the rows that differ from a baseline.
+
+<dl>
+  <dt id="mark-changes">Mark changes</dt>
+  <dd>Shows a dot on each changed row. Default: on.</dd>
+
+<dt id="changed-only">Changed only</dt>
+<dd>Lists only the changed properties. Default: off.</dd>
+
+  <dt id="compare-with">Compare with the file as opened, Compare with the game's copy</dt>
+  <dd>
+    The baseline. The file as opened keeps the changes of this session. The game's copy compares
+    each object with the game's own. Default: **Compare with the file as opened**.
+  </dd>
+</dl>
+
+A dot is amber for a changed value, green for an added one and red for a removed one.
+
+## Related pages
+
+- [Bin editor](/editor/bin-editor/)
+- [Edit a bin file](/editor/bin-editor/edit-a-bin/)
+- [Sandboxes](/editor/sandboxes/)
