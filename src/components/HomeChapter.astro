@@ -1,0 +1,91 @@
+---
+/**
+ * One product chapter on the home page: the product's name and job, its onward
+ * routes, and a real capture of it at work (the default slot).
+ *
+ * `media` picks the capture's side on wide screens; chapters alternate so the
+ * page reads as a sequence, not a grid.
+ */
+import logo from '../assets/logo.svg';
+import CaptureFrame from './home/CaptureFrame.astro';
+import RouteList, { type Route } from './home/RouteList.astro';
+
+export type { Route };
+
+interface Props {
+  id: string;
+  title: string;
+  lead: string;
+  routes: Route[];
+  /** Shows the LTK mark beside the title, for the LTK apps. */
+  mark?: boolean;
+  media?: 'start' | 'end';
+}
+
+const { id, title, lead, routes, mark = false, media = 'end' } = Astro.props;
+---
+
+<section class="chapter not-content" aria-labelledby={id} data-media={media}>
+  <div class="text">
+    <h2 id={id}>
+      {mark && <img src={logo.src} alt="" width="28" height="28" />}
+      {title}
+    </h2>
+    <p class="lead">{lead}</p>
+    <RouteList routes={routes} />
+  </div>
+  <CaptureFrame>
+    <slot />
+  </CaptureFrame>
+</section>
+
+<style>
+  .chapter {
+    display: grid;
+    gap: 2rem;
+    align-items: start;
+    margin-block-start: clamp(4.5rem, 10vw, 7.5rem);
+  }
+
+  @media (min-width: 60rem) {
+    .chapter {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+      gap: 3.5rem;
+    }
+
+    .chapter[data-media='start'] {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    }
+
+    .chapter[data-media='start'] .text {
+      order: 2;
+    }
+  }
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+    font-family: var(--ltk-font-display);
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    font-weight: var(--ltk-weight-bold);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--sl-color-white);
+  }
+
+  h2 img {
+    flex-shrink: 0;
+    width: 0.8em;
+    height: 0.8em;
+  }
+
+  .lead {
+    max-width: 42ch;
+    margin: 1rem 0 1.75rem;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--sl-color-gray-2);
+  }
+</style>

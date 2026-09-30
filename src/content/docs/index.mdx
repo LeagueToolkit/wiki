@@ -7,103 +7,119 @@ hero:
     <span class="accent">League Toolkit</span>
   tagline: |
     The modern modding ecosystem for League.<br />Install your favorite mods, or learn how to create your own.
+  image:
+    file: ../../assets/screenshots/manager/library-layout.webp
+    alt: LTK Manager's Mods page with three installed mods in the grid, one of them selected, and the Play button in the toolbar
   actions:
     - text: Download LTK Manager
       link: https://github.com/LeagueToolkit/ltk-manager/releases/latest/download/LTK.Manager_x64-setup.exe
     - text: Quick start
       link: /start-here/
       variant: minimal
-    - text: Create mods
-      link: /making-mods/
-      variant: minimal
+heroNote: Windows installer from the latest GitHub release.
 ---
 
-import PathCards from '@components/PathCards.astro';
-import TopicCards from '@components/TopicCards.astro';
+import HomeBackdrop from '@components/HomeBackdrop.astro';
+import HomeChapter from '@components/HomeChapter.astro';
+import HomeRedirect from '@components/HomeRedirect.astro';
+import HomeTools from '@components/HomeTools.astro';
+import Screenshot from '@components/Screenshot.astro';
+import Video from '@components/Video.astro';
 
-<PathCards />
+<HomeBackdrop />
 
-## New to League modding?
+<HomeChapter
+  id="ltk-manager"
+  title="LTK Manager"
+  mark
+  lead="The desktop app for playing with mods. Install them, turn them on and off, group them into profiles, and start the patcher: your mods apply when League starts. No modding experience needed."
+  routes={[
+    { label: 'Quick start', href: '/manager/quick-start/' },
+    { label: 'Install mods', href: '/manager/library/install-mods/' },
+    { label: 'Manage profiles', href: '/manager/library/profiles/' },
+    { label: 'Where to find mods', href: '/start-here/finding-mods/' },
+    { label: 'FAQ & Safety', href: '/start-here/faq/' },
+    { label: 'Troubleshooting', href: '/manager/troubleshooting/' },
+  ]}
+>
+  <Screenshot
+    file="manager/home-layout.webp"
+    alt="LTK Manager's Home page with the patcher running, the library's health status, recent changes and news"
+  />
+</HomeChapter>
 
-<TopicCards
-  topics={[
-    {
-      title: 'How Modding Works',
-      href: '/start-here/how-modding-works/',
-      description:
-        'What a mod actually does to your game - WAD archives, the overlay, and the patcher.',
-      icon: 'gear',
-    },
-    {
-      title: 'FAQ & Safety',
-      href: '/start-here/faq/',
-      description: 'Is modding allowed? Will mods survive a patch? What breaks and why?',
-      icon: 'shield',
-    },
-    {
-      title: 'Finding Mods',
-      href: '/start-here/finding-mods/',
-      description: 'Where mods are shared, what archives are, and how to get them into your game.',
-      icon: 'search',
-    },
-    {
-      title: 'Mod Creation',
-      href: '/making-mods/workshop/',
-      description:
-        'What goes into building one - the Workshop, layered edits, and packaging a .modpkg.',
-      icon: 'brush',
-    },
+<HomeRedirect
+  id="how-modding-works"
+  title="How a mod reaches your game"
+  lead="LTK Manager never edits your League installation. It builds an overlay that holds only the files your mods change, and the patcher answers the game's file reads from it."
+  link={{ label: 'How modding works', href: '/start-here/how-modding-works/' }}
+  file="Ahri.wad.client"
+  stages={{
+    request: { name: 'League', detail: 'Asks for a file' },
+    patcher: { name: 'Patcher', detail: 'Runs as a service redirecting files' },
+    overlay: { name: 'Overlay', detail: 'Our modded copy of the game' },
+    game: { name: 'Game files', detail: "Riot's copy stays on disk, unedited" },
+  }}
+/>
+
+<HomeChapter
+  id="ltk-editor"
+  title="LTK Editor"
+  mark
+  media="start"
+  lead="The mod creation workspace inside LTK Manager. Its viewports run League's own shaders through Hexshade, so a skin or map looks in the editor the way it looks in game."
+  routes={[
+    { label: 'Mod creation', href: '/making-mods/' },
+    { label: 'Mod projects', href: '/making-mods/mod-projects/' },
+    { label: 'Hexshade', href: '/editor/hexshade/' },
+    { label: 'Bin editor', href: '/editor/bin-editor/' },
+    { label: 'Sandboxes', href: '/editor/sandboxes/' },
+    { label: 'Packaging', href: '/making-mods/packaging/' },
+  ]}
+>
+  <Video
+    file="editor/hexshade-tft-freljord"
+    alt="The Freljord Winter's Claw Teamfight Tactics board in the map preview with Hexshade on, with glowing ice, burning braziers and drifting clouds"
+  />
+</HomeChapter>
+
+<HomeTools
+  id="formats"
+  title="Libraries and file formats"
+  lead="league-toolkit is the Rust library for reading and writing League file formats, and lol-meta-classes tracks what every .bin property means across patches. The wiki documents the formats and the mod project standard they share, so a launcher, mod site or creation tool built against them works with every other tool."
+  tree={{
+    caption: 'A mod project, the standard every tool builds from',
+    lines: [
+      { text: 'my-mod/' },
+      { text: '├── mod.config.json', note: 'the manifest' },
+      { text: '├── README.md', note: 'optional, ships inside the package' },
+      { text: '├── thumbnail.webp', note: 'optional preview image' },
+      { text: '├── content/' },
+      { text: '│   ├── base/', note: 'one folder per layer' },
+      { text: '│   │   └── Ahri.wad.client/' },
+      { text: '│   └── high-res/' },
+      { text: '│       └── Ahri.wad.client/' },
+      { text: '└── build/', note: 'default pack output' },
+    ],
+  }}
+  formats={[
+    { label: 'WAD', href: '/reference/file-formats/wad/' },
+    { label: 'BIN', href: '/reference/file-formats/bin/' },
+    { label: 'SKN', href: '/reference/file-formats/skn/' },
+    { label: 'SKL', href: '/reference/file-formats/skl/' },
+    { label: 'ANM', href: '/reference/file-formats/anm/' },
+    { label: 'TEX', href: '/reference/file-formats/tex/' },
+    { label: 'MapGeo', href: '/reference/file-formats/mapgeo/' },
+    { label: 'SCB/SCO', href: '/reference/file-formats/scb-sco/' },
+    { label: 'WGEO', href: '/reference/file-formats/wgeo/' },
+    { label: 'Ritobin', href: '/reference/file-formats/ritobin/' },
+  ]}
+  routes={[
+    { label: 'league-toolkit', href: '/tools/league-toolkit/overview/' },
+    { label: 'lol-meta-classes', href: '/tools/lol-meta-classes/' },
+    { label: 'Ecosystem integration', href: '/developers/ecosystem-integration/' },
+    { label: 'All tools', href: '/tools/' },
   ]}
 />
 
-## Building tools?
-
-The wiki doubles as a technical reference for the file formats and libraries
-behind the ecosystem.
-
-<TopicCards
-  topics={[
-    {
-      title: 'File Format Reference',
-      href: '/reference/file-formats/wad/',
-      description: 'WAD, SKN, SKL, ANM, BIN, TEX, MapGeo and more - format documentation.',
-      icon: 'fileCode',
-    },
-    {
-      title: 'All Tools',
-      href: '/tools/',
-      description: 'The libraries and CLIs that make up the LeagueToolkit ecosystem.',
-      icon: 'toolbox',
-    },
-  ]}
-/>
-
-## Integrating with the ecosystem?
-
-Launchers, mod sites, and creation tools all build against the same standards
-the official toolchain uses - a project or package your tool produces is one
-every other tool already understands.
-
-<TopicCards
-  topics={[
-    {
-      title: 'Ecosystem Integration',
-      href: '/developers/ecosystem-integration/',
-      description:
-        'The standards to build against, what supporting them buys you, and the gaps to plan around.',
-      icon: 'plugs',
-    },
-    {
-      title: 'Mod Projects',
-      href: '/making-mods/mod-projects/',
-      description: 'The folder layout and manifest standard everything builds from.',
-      icon: 'package',
-    },
-  ]}
-/>
-
-:::note[Coming from cslol-manager?]
-cslol-manager is being deprecated in favor of LTK Manager. The
-[migration guide](/start-here/from-cslol/) walks you through bringing your
-existing mods across.
-:::
+Stuck on something the wiki does not cover? Ask in the [LeagueToolkit Discord](https://discord.gg/B36wgabjmD).

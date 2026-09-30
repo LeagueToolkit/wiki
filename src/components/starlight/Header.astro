@@ -7,8 +7,8 @@ import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
 // Composed from Starlight's building blocks rather than wrapping the default
 // Header: the layout is our own - title | centered section nav | socials.
 // Search rides the sidebar instead (see Sidebar.astro); splash pages have no
-// sidebar, so they mount it here next to the nav. LanguageSelect is dropped
-// because the site is single-locale.
+// sidebar, so they mount it at the start of the end group. LanguageSelect is
+// dropped because the site is single-locale.
 const sections = [
   { label: 'Start Here', href: '/start-here/' },
   { label: 'LTK Manager', href: '/manager/' },
@@ -41,13 +41,21 @@ const isSplash = Astro.locals.starlightRoute.entry.data.template === 'splash';
         ))
       }
     </nav>
-    {isSplash && <Search />}
   </div>
-  <div class="sl-hidden md:sl-flex print:hidden right-group">
-    <div class="sl-flex social-icons">
-      <SocialIcons />
+  <div class="sl-flex print:hidden right-group">
+    {
+      isSplash && (
+        <div class="splash-search">
+          <Search />
+        </div>
+      )
+    }
+    <div class="sl-hidden md:sl-flex right-tools">
+      <div class="sl-flex social-icons">
+        <SocialIcons />
+      </div>
+      <ThemeSelect />
     </div>
-    <ThemeSelect />
   </div>
 </div>
 {
@@ -126,9 +134,25 @@ const isSplash = Astro.locals.starlightRoute.entry.data.template === 'splash';
   }
 
   .right-group,
+  .right-tools,
   .social-icons {
     gap: 1rem;
     align-items: center;
+  }
+
+  .right-group {
+    justify-content: flex-end;
+    min-width: 0;
+  }
+
+  .splash-search {
+    display: flex;
+  }
+
+  @media (min-width: 72rem) {
+    .splash-search {
+      width: 12.5rem;
+    }
   }
 
   .social-icons::after {

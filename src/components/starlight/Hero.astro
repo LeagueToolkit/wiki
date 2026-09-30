@@ -1,96 +1,105 @@
 ---
 /**
- * Splash-page hero.
+ * Splash-page hero: the statement and actions beside a real app capture that
+ * runs off the viewport's end edge.
  *
- * Replaces Starlight's default hero (oversized logo + pill buttons) with a
- * single centred column. There is deliberately no supporting graphic: a wiki's
- * subject is its writing, and the cards immediately below the fold are the real
- * entry points, so anything sitting beside the headline would be filler.
- *
- * Copy comes from the page's `hero` frontmatter, so index.mdx stays the single
- * place to edit wording.
+ * Copy, the capture (`hero.image.file`) and the fine print (`heroNote`) come
+ * from the page's frontmatter, so index.mdx stays the single place to edit.
  */
+import CaptureFrame from '../home/CaptureFrame.astro';
+
 // Starlight's PAGE_TITLE_ID, inlined: the constant lives behind an internal
 // specifier that is not exported from the package.
 const PAGE_TITLE_ID = '_top';
 
 const { data } = Astro.locals.starlightRoute.entry;
-const { title = data.title, tagline, actions = [] } = data.hero || {};
+const { title = data.title, tagline, actions = [], image } = data.hero || {};
+const capture = image && 'file' in image ? image : undefined;
 ---
 
-<div class="ltk-hero">
-  <h1 id={PAGE_TITLE_ID} data-page-title set:html={title} />
-  {tagline && <p class="tagline" set:html={tagline} />}
+<div class:list={['ltk-hero', { 'has-capture': capture }]}>
+  <div class="copy">
+    <h1 id={PAGE_TITLE_ID} data-page-title set:html={title} />
+    {tagline && <p class="tagline" set:html={tagline} />}
+    {
+      actions.length > 0 && (
+        <div class="actions">
+          {actions.map(({ link: href, text, variant }) => (
+            <a {href} class:list={['action', variant === 'minimal' ? 'ghost' : 'primary']}>
+              {text}
+              <svg class="arrow" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                <path
+                  d="M2 8h11M9 4l4 4-4 4"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </a>
+          ))}
+        </div>
+      )
+    }
+    {data.heroNote && <p class="note">{data.heroNote}</p>}
+  </div>
   {
-    actions.length > 0 && (
-      <div class="actions">
-        {actions.map(({ link: href, text, variant }) => (
-          <a {href} class:list={['action', variant === 'minimal' ? 'ghost' : 'primary']}>
-            {text}
-            <svg class="arrow" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-              <path
-                d="M2 8h11M9 4l4 4-4 4"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.75"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
-          </a>
-        ))}
+    capture && (
+      <div class="capture">
+        <CaptureFrame bleed>
+          <img
+            src={capture.file.src}
+            width={capture.file.width}
+            height={capture.file.height}
+            alt={capture.alt}
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </CaptureFrame>
       </div>
     )
   }
 </div>
 
 <style>
+  /* The capture's overshoot past the viewport edge must not scroll the page. */
+  :global(html:has(.ltk-hero.has-capture)) {
+    overflow-x: clip;
+  }
+
   .ltk-hero {
     position: relative;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    gap: 2.5rem;
     align-items: center;
+    padding-block: clamp(2.5rem, 8vmin, 5.5rem) clamp(1rem, 3vmin, 2rem);
+  }
+
+  @media (min-width: 60rem) {
+    .ltk-hero.has-capture {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: 3.5rem;
+    }
+  }
+
+  .ltk-hero:not(.has-capture) {
+    justify-items: center;
     text-align: center;
-    /* Bottom padding is deliberately short: the two path cards directly below
-       are the hero's real call to action and should sit close to it. */
-    padding-block: clamp(3rem, 11vmin, 7rem) clamp(2rem, 5vmin, 3rem);
-  }
-
-  /* Ambient wash behind the headline so the page opens in light rather than on
-     a flat field. Sized off the hero box, clipped by the page container. */
-  .ltk-hero::before {
-    content: '';
-    position: absolute;
-    inset-block: -30% 20%;
-    inset-inline: -10%;
-    background: radial-gradient(
-      ellipse 55% 60% at 50% 40%,
-      color-mix(in srgb, var(--ltk-violet) 16%, transparent),
-      transparent 70%
-    );
-    pointer-events: none;
-  }
-
-  /* The wash is a sibling in flow order, so everything after it needs its own
-     stacking position to paint on top. */
-  .ltk-hero > * {
-    position: relative;
   }
 
   .ltk-hero h1 {
     margin: 0;
     font-family: var(--ltk-font-display);
-    font-size: clamp(2.5rem, 7vw, 4.5rem);
+    font-size: clamp(2.75rem, 6vw, 4.5rem);
     font-weight: var(--ltk-weight-bold);
-    line-height: 1.03;
+    line-height: 1;
     letter-spacing: -0.035em;
     color: var(--sl-color-white);
     text-wrap: balance;
   }
 
-  /* Set by index.mdx on the part of the headline that carries the brand
-     gradient. The ramp itself lives in styles/custom.css, shared with the
-     header wordmark. */
   .ltk-hero h1 :global(.accent) {
     background: var(--ltk-wordmark);
     -webkit-background-clip: text;
@@ -98,11 +107,8 @@ const { title = data.title, tagline, actions = [] } = data.hero || {};
     color: transparent;
   }
 
-  /* The line break between the two sentences is authored in index.mdx, so the
-     box is wide enough for the longer of them to hold its own line and the
-     wrapping stays hands-off. */
   .tagline {
-    max-width: 62ch;
+    max-width: 48ch;
     margin: 1.5rem 0 0;
     font-size: clamp(1rem, 1.4vw, 1.125rem);
     line-height: 1.6;
@@ -110,14 +116,38 @@ const { title = data.title, tagline, actions = [] } = data.hero || {};
     color: var(--sl-color-gray-2);
   }
 
+  .note {
+    margin: 1rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--sl-color-gray-3);
+  }
+
+  /* Distance from the content column's end edge to the viewport's. */
+  .capture {
+    --bleed: calc((100vw - min(var(--sl-content-width), 100vw - 2 * var(--sl-content-pad-x))) / 2);
+    margin-inline-end: calc(-1 * var(--bleed));
+  }
+
   /* ── Actions ──────────────────────────────────────────────── */
 
   .actions {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
     gap: 0.75rem;
-    margin-top: 2.25rem;
+    margin-top: 2rem;
+  }
+
+  /* Phone widths: each action takes a full row rather than one wrapping
+     under the other. */
+  @media (max-width: 30rem) {
+    .action {
+      flex: 1 1 100%;
+      justify-content: center;
+    }
+  }
+
+  .ltk-hero:not(.has-capture) .actions {
+    justify-content: center;
   }
 
   .action {
@@ -176,5 +206,14 @@ const { title = data.title, tagline, actions = [] } = data.hero || {};
   .action:focus-visible {
     outline: 2px solid var(--sl-color-accent-high);
     outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .action,
+    .action:hover,
+    .arrow,
+    .action:hover .arrow {
+      transform: none;
+    }
   }
 </style>

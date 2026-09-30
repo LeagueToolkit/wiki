@@ -1,0 +1,107 @@
+---
+/**
+ * The home page's backdrop: rounded rays on lanes sloping down at the
+ * isometric 30 degrees, each lane drifting slowly along itself.
+ *
+ * `rays.svg` is a sprite of six seamless 1400px rows. Each lane masks one row
+ * over the backdrop ink and slides one row length per cycle, so the loop never
+ * shows a seam. Lanes are real elements rather than one animated mask because
+ * transform animations stay on the compositor.
+ */
+import rays from '../assets/rays.svg';
+
+/** Row length of the sprite, and so the distance a lane travels per loop. */
+const ROW = 1400;
+/** Enough lanes to cover a 2560 by 1440 viewport once rotated. */
+const LANES = 56;
+
+// Seeded, so every build draws the same backdrop.
+let seed = 1729;
+const random = () => {
+  seed = (seed * 16807) % 2147483647;
+  return (seed - 1) / 2147483646;
+};
+
+const lanes = Array.from({ length: LANES }, (_, index) => ({
+  row: Math.floor(random() * 6),
+  duration: Math.round(260 + random() * 260),
+  delay: Math.round(random() * 520),
+  reverse: random() < 0.5,
+  top: index * 48,
+}));
+---
+
+<div class="ltk-backdrop" aria-hidden="true">
+  <div class="plane">
+    {
+      lanes.map((lane) => (
+        <div
+          class:list={['lane', { reverse: lane.reverse }]}
+          style={`--lane-row: ${lane.row}; --duration: ${lane.duration}s; --delay: -${lane.delay}s; top: ${lane.top}px`}
+        />
+      ))
+    }
+  </div>
+</div>
+
+<style define:vars={{ rays: `url(${rays.src})`, rowLength: `${ROW}px` }}>
+  .ltk-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    margin: 0;
+    overflow: hidden;
+    pointer-events: none;
+    mask: linear-gradient(
+      90deg,
+      var(--sl-color-white) 0%,
+      color-mix(in srgb, var(--sl-color-white) 35%, transparent) 30% 70%,
+      var(--sl-color-white) 100%
+    );
+  }
+
+  /* The rotated field, sized to cover the viewport at 30 degrees. */
+  .plane {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(100vw * 0.866 + 100vh * 0.5);
+    height: calc(100vw * 0.5 + 100vh * 0.866);
+    transform: translate(-50%, -50%) rotate(30deg);
+  }
+
+  /* One row of the sprite, one row length wider on each side than the plane so
+     the slide never uncovers an end. */
+  .lane {
+    position: absolute;
+    left: calc(-1 * var(--rowLength));
+    width: calc(100% + 2 * var(--rowLength));
+    height: 24px;
+    background-color: var(--ltk-backdrop-ink);
+    mask: var(--rays) 0 calc(-24px * var(--lane-row)) / var(--rowLength) 144px repeat-x;
+    animation: ltk-drift var(--duration) linear var(--delay) infinite;
+    will-change: transform;
+  }
+
+  .lane.reverse {
+    animation-direction: reverse;
+  }
+
+  @keyframes ltk-drift {
+    to {
+      transform: translateX(calc(-1 * var(--rowLength)));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lane {
+      animation: none;
+    }
+  }
+
+  @media print {
+    .ltk-backdrop {
+      display: none;
+    }
+  }
+</style>
