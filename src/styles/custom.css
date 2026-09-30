@@ -130,6 +130,19 @@
   }
 }
 
+/* ── Shadows ────────────────────────────────────────────────── */
+
+/* Offset shadows for surfaces that float or press; flat at rest otherwise.
+
+   - float: tooltips and other floating panels.
+   - glow-brand: gradient primary actions only, deepening toward violet on hover. */
+:root {
+  --ltk-shadow-float: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --ltk-glow-brand: 0 0.5rem 1.5rem -0.5rem color-mix(in srgb, var(--ltk-blue) 70%, transparent);
+  --ltk-glow-brand-hover: 0 0.75rem 2rem -0.5rem
+    color-mix(in srgb, var(--ltk-violet) 85%, transparent);
+}
+
 /* ── Typography Refinements ─────────────────────────────────── */
 
 :root {
@@ -1067,7 +1080,7 @@ body:has(.ltk-hero) .sl-markdown-content h2::before {
 /* ── Blockquotes ────────────────────────────────────────────── */
 
 .sl-markdown-content blockquote {
-  border-left: 3px solid var(--sl-color-accent);
+  border-left: 1px solid var(--sl-color-gray-4);
   padding-left: 1rem;
   color: var(--sl-color-gray-2);
 }

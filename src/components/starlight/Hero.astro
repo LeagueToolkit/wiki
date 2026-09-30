@@ -77,26 +77,6 @@ const { title = data.title, tagline, actions = [] } = data.hero || {};
     position: relative;
   }
 
-  .eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 0 0 1.5rem;
-    font-family: var(--sl-font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--sl-color-gray-3);
-  }
-
-  .dot {
-    width: 0.4rem;
-    height: 0.4rem;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--ltk-violet), var(--ltk-blue));
-    box-shadow: 0 0 0.5rem var(--ltk-blue);
-  }
-
   .ltk-hero h1 {
     margin: 0;
     font-family: var(--ltk-font-display);
@@ -176,11 +156,11 @@ const { title = data.title, tagline, actions = [] } = data.hero || {};
   .primary {
     background: linear-gradient(135deg, var(--ltk-violet), var(--ltk-blue));
     color: var(--ltk-on-brand);
-    box-shadow: 0 0.5rem 1.5rem -0.5rem rgba(75, 125, 250, 0.7);
+    box-shadow: var(--ltk-glow-brand);
   }
 
   .primary:hover {
-    box-shadow: 0 0.75rem 2rem -0.5rem rgba(125, 75, 250, 0.85);
+    box-shadow: var(--ltk-glow-brand-hover);
   }
 
   .ghost {

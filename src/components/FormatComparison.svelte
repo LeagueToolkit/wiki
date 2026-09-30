@@ -16,9 +16,9 @@
     {
       name: 'modpkg',
       extension: '.modpkg',
-      accent: '#4B7DFA',
+      accent: 'var(--ltk-blue)',
       badge: 'Recommended',
-      badgeColor: '#4B7DFA',
+      badgeColor: 'var(--ltk-blue)',
       tagline: 'Modern binary container, built for the launcher.',
       bestFor: 'Authoring new mods that take full advantage of the project format.',
       features: [
@@ -37,9 +37,9 @@
     {
       name: 'fantome',
       extension: '.fantome',
-      accent: '#7D4BFA',
+      accent: 'var(--ltk-violet)',
       badge: 'Compatibility',
-      badgeColor: '#7D4BFA',
+      badgeColor: 'var(--ltk-violet)',
       tagline: 'First-class support for the community standard.',
       bestFor: 'Sharing mods across the wider ecosystem, including cslol-manager users.',
       features: [
