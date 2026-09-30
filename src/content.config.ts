@@ -27,6 +27,8 @@ export const collections = {
           tags: tags.optional(),
           titleIcon: titleIcon.optional(),
           ogImage: image().optional(),
+          // Fine print under the splash hero's actions, such as what the download is.
+          heroNote: z.string().optional(),
         }),
     }),
   }),

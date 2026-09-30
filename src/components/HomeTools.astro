@@ -1,0 +1,185 @@
+---
+/**
+ * The home page's closing chapter for tool authors: the libraries and
+ * standards, a real artifact of the mod project standard, and the file format
+ * reference as a plain list of links.
+ */
+import CaptureFrame from './home/CaptureFrame.astro';
+import RouteList, { type Route } from './home/RouteList.astro';
+
+/** One row of a directory tree, with its drawing prefix and an optional note. */
+export interface TreeLine {
+  text: string;
+  note?: string;
+}
+
+interface Props {
+  id: string;
+  title: string;
+  lead: string;
+  routes: Route[];
+  formats: Route[];
+  tree: {
+    caption: string;
+    lines: TreeLine[];
+  };
+}
+
+const { id, title, lead, routes, formats, tree } = Astro.props;
+---
+
+<section class="tools not-content" aria-labelledby={id}>
+  <div class="text">
+    <h2 id={id}>{title}</h2>
+    <p class="lead">{lead}</p>
+    <RouteList routes={routes} />
+    <nav class="formats" aria-labelledby={`${id}-formats`}>
+      <p id={`${id}-formats`}>File formats</p>
+      <ul>
+        {
+          formats.map((format) => (
+            <li>
+              <a href={format.href}>{format.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+  <CaptureFrame>
+    <figcaption>{tree.caption}</figcaption>
+    <code class="tree">
+      {
+        tree.lines.map((line) => (
+          <span class="line">
+            <span class="path">{line.text}</span>
+            {line.note && <span class="note">{line.note}</span>}
+          </span>
+        ))
+      }
+    </code>
+  </CaptureFrame>
+</section>
+
+<style>
+  .tools {
+    display: grid;
+    gap: 2.5rem;
+    align-items: start;
+    margin-block: clamp(4.5rem, 10vw, 7.5rem) clamp(3rem, 6vw, 4.5rem);
+  }
+
+  @media (min-width: 60rem) {
+    .tools {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+      gap: 3.5rem;
+    }
+  }
+
+  h2 {
+    margin: 0;
+    font-family: var(--ltk-font-display);
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    font-weight: var(--ltk-weight-bold);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--sl-color-white);
+  }
+
+  .lead {
+    max-width: 42ch;
+    margin: 1rem 0 1.75rem;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--sl-color-gray-2);
+  }
+
+  .formats {
+    margin-block-start: 1.5rem;
+  }
+
+  .formats p {
+    margin: 0 0 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: var(--ltk-weight-medium);
+    color: var(--sl-color-gray-3);
+  }
+
+  .formats ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.125rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .formats a {
+    font-family: var(--sl-font-mono);
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-1);
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
+    text-underline-offset: 0.2em;
+    transition:
+      color 0.15s ease,
+      text-decoration-color 0.15s ease;
+  }
+
+  .formats a:hover {
+    color: var(--sl-color-accent-high);
+    text-decoration-color: currentColor;
+  }
+
+  .formats a:focus-visible {
+    outline: 2px solid var(--sl-color-accent-high);
+    outline-offset: 2px;
+  }
+
+  figcaption {
+    padding: 0.875rem 1.25rem;
+    border-block-end: 1px solid var(--sl-color-gray-5);
+    font-size: 0.8125rem;
+    font-weight: var(--ltk-weight-medium);
+    color: var(--sl-color-gray-3);
+  }
+
+  /* Only the tree prefix keeps `pre` whitespace, so formatter newlines between
+     the spans collapse instead of rendering. */
+  .tree {
+    display: block;
+    margin: 0;
+    padding: 1.25rem 1.25rem 1.5rem;
+    overflow-x: auto;
+    background: transparent;
+    font-family: var(--sl-font-mono);
+    font-size: clamp(0.8125rem, 1.2vw, 0.9375rem);
+    line-height: 1.8;
+    color: var(--sl-color-gray-1);
+    font-feature-settings:
+      'calt' 0,
+      'liga' 0;
+  }
+
+  .line {
+    display: block;
+    white-space: nowrap;
+  }
+
+  .path {
+    white-space: pre;
+  }
+
+  .note {
+    margin-inline-start: 1rem;
+    color: var(--sl-color-gray-3);
+  }
+
+  /* Notes restate the tree's docs page; on a phone they would push the tree
+     past the frame. */
+  @media (max-width: 30rem) {
+    .note {
+      display: none;
+    }
+  }
+</style>

@@ -602,12 +602,12 @@ header.header .social-icons a:hover {
   --sl-color-border-badge: var(--sl-badge-danger-border);
 }
 
-/* Search rides the top of the sidebar (mounted by the Sidebar override) as
-   a full-width pill of panel glass - solid fill first, upgraded under
-   @supports, per the Glass Surfaces contract. Starlight styles this button
-   for its header slot (borderless icon below 50rem), so every rule here
-   rebuilds the pill unconditionally for the sidebar and drawer context. */
-.sidebar-pane button[data-open-modal] {
+/* Search rides the top of the sidebar (mounted by the Sidebar override), and
+   the header's end group on splash pages, as a pill of panel glass - solid
+   fill first, upgraded under @supports, per the Glass Surfaces contract.
+   Starlight styles this button for its header slot (borderless icon below
+   50rem), so every rule here rebuilds the pill unconditionally. */
+:is(.sidebar-pane, .splash-search) button[data-open-modal] {
   width: 100%;
   border: 1px solid var(--sl-color-gray-5);
   border-radius: 999px;
@@ -621,38 +621,55 @@ header.header .social-icons a:hover {
 }
 
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-  .sidebar-pane button[data-open-modal] {
+  :is(.sidebar-pane, .splash-search) button[data-open-modal] {
     background-color: var(--ltk-glass-panel-fill);
     -webkit-backdrop-filter: var(--ltk-glass-panel-blur);
     backdrop-filter: var(--ltk-glass-panel-blur);
   }
 }
 
-.sidebar-pane button[data-open-modal]:hover {
+:is(.sidebar-pane, .splash-search) button[data-open-modal]:hover {
   border-color: color-mix(in srgb, var(--sl-color-accent) 55%, transparent);
   color: var(--sl-color-white);
 }
 
 /* Starlight hides the button's label below 50rem for its header slot; in
    the drawer it must show. */
-.sidebar-pane button[data-open-modal] > span {
+:is(.sidebar-pane, .splash-search) button[data-open-modal] > span {
   display: block;
 }
 
 /* Keycap hint pushed to the pill's end; the wrapper goes naked so the pill
    shows through, and the key glyphs become tiny keycaps on the radius
    scale. */
-.sidebar-pane button[data-open-modal] > kbd {
+:is(.sidebar-pane, .splash-search) button[data-open-modal] > kbd {
   margin-inline-start: auto;
   background-color: transparent;
   padding: 0;
 }
 
-.sidebar-pane button[data-open-modal] kbd kbd {
+:is(.sidebar-pane, .splash-search) button[data-open-modal] kbd kbd {
   border: 1px solid var(--sl-color-gray-4);
   border-radius: var(--ltk-radius-sm);
   background-color: var(--sl-color-gray-5);
   padding-inline: 0.35rem;
+}
+
+/* Splash search below 72rem: a bare icon, so the header never crowds the
+   section nav. */
+@media (max-width: 71.99rem) {
+  .splash-search button[data-open-modal] {
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    font-size: var(--sl-text-xl);
+  }
+
+  .splash-search button[data-open-modal] > :is(span, kbd) {
+    display: none;
+  }
 }
 
 /* Group headers are `summary`, not links, but need the same hover affordance. */
@@ -888,27 +905,11 @@ header.header .social-icons a:hover {
     drop-shadow(0 0 1.5rem color-mix(in srgb, var(--ltk-blue) 12%, transparent));
 }
 
-/* ── Splash Page ────────────────────────────────────────────── */
+/* ── Splash Backdrop ────────────────────────────────────────── */
 
-/* Scoped on the hero so these only ever affect the landing page. */
-
-body:has(.ltk-hero) .sl-markdown-content h2 {
-  font-family: var(--ltk-font-display);
-  font-size: clamp(1.5rem, 3vw, 1.875rem);
-  font-weight: var(--ltk-weight-bold);
-  letter-spacing: -0.03em;
-  margin-top: 4rem;
-}
-
-/* Short accent rule above each section title. */
-body:has(.ltk-hero) .sl-markdown-content h2::before {
-  content: '';
-  display: block;
-  width: 2.25rem;
-  height: 2px;
-  margin-bottom: 0.875rem;
-  border-radius: 1px;
-  background: linear-gradient(90deg, var(--ltk-violet), var(--ltk-blue));
+/* Ink for the home page's drifting rays (HomeBackdrop.astro). */
+:root {
+  --ltk-backdrop-ink: var(--sl-color-gray-6);
 }
 
 /* ── Content Width ──────────────────────────────────────────── */

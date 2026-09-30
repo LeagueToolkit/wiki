@@ -1,0 +1,96 @@
+---
+/**
+ * A column of onward links between hairlines, each row one whole link. Rows
+ * take the sidebar's hover wash so the home page and the nav read as one
+ * system.
+ */
+export interface Route {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  routes: Route[];
+}
+
+const { routes } = Astro.props;
+---
+
+<ul class="routes">
+  {
+    routes.map((route) => (
+      <li>
+        <a href={route.href}>
+          {route.label}
+          <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+            <path
+              d="M2 8h11M9 4l4 4-4 4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .routes {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-block-end: 1px solid var(--sl-color-gray-5);
+  }
+
+  li {
+    border-block-start: 1px solid var(--sl-color-gray-5);
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.7rem 0.625rem;
+    border-radius: var(--ltk-radius-sm);
+    color: var(--sl-color-gray-1);
+    font-weight: var(--ltk-weight-medium);
+    text-decoration: none;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
+  }
+
+  a:hover {
+    background: var(--ltk-nav-hover);
+    color: var(--sl-color-white);
+  }
+
+  a:focus-visible {
+    outline: 2px solid var(--sl-color-accent-high);
+    outline-offset: -2px;
+  }
+
+  svg {
+    flex-shrink: 0;
+    color: var(--sl-color-gray-3);
+    transition:
+      transform 0.15s ease,
+      color 0.15s ease;
+  }
+
+  a:hover svg {
+    transform: translateX(3px);
+    color: var(--sl-color-accent-high);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    a:hover svg {
+      transform: none;
+    }
+  }
+</style>

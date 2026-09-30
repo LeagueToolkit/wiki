@@ -80,20 +80,20 @@ components`. A component never reaches back into another page's frontmatter.
    page-entry component stays at `components/` root; its parts live in the
    subdirectory.
 
-8. **One parameterized component beats near-duplicate ones.** `TopicCards.astro`
-   renders both the "New to League modding?" and "Building tools?" grids from a
-   `topics` array. If two blocks differ only by label, colour, or icon, unify
+8. **One parameterized component beats near-duplicate ones.** `HomeChapter.astro`
+   renders both the LTK Manager and LTK Editor chapters on the home page from
+   props. If two blocks differ only by label, colour, or icon, unify
    them behind a prop.
 
 9. **Replace repeated conditional branches with a keyed lookup.**
-   `TopicCards.astro` picks its glyph from a static `icons` map rather than a
-   branch per icon. Reach for a lookup object when you see parallel `if`s.
+   `PageTitle.astro` picks its title icon from a static `icons` map rather than
+   a branch per icon. Reach for a lookup object when you see parallel `if`s.
 
 10. **Icons come from Phosphor (`@phosphor-icons/core`), applied as CSS masks.**
     A masked icon takes its container's `color` and hover state for free, so
     there is no second set of rules per state. Import the SVG (Vite resolves the
     URL at build time), pass it through a custom property, and mask it - see
-    `TopicCards.astro` and the sidebar section icons in `custom.css`. Inline
+    `PageTags.astro` and the sidebar section icons in `custom.css`. Inline
     `<svg>` is acceptable only for a one-off glyph that is part of a component's
     own structure, such as the trailing arrow on a link.
 
@@ -103,7 +103,7 @@ components`. A component never reaches back into another page's frontmatter.
 
 11. **Every component declares `interface Props`.** Never destructure an untyped
     `Astro.props`. Export the types a page needs in order to build its props, as
-    `TopicCards.astro` exports `Topic` and `TopicIcon`.
+    `HomeChapter.astro` exports `Route`.
 
 12. **No `any`.** Strict mode is on project-wide and the build fails on type
     errors. Unavoidable third-party gaps get a narrow local type, not an escape
@@ -163,7 +163,7 @@ components`. A component never reaches back into another page's frontmatter.
 
 21. **Respect `prefers-reduced-motion`.** `custom.css` neutralises durations
     globally, but a component that animates transforms should also disable them
-    in its own scoped block, as `PathCards.astro` does.
+    in its own scoped block, as `HomeTools.astro` does.
 
 ---
 

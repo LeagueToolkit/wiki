@@ -1,0 +1,397 @@
+---
+/**
+ * The home page's mechanism band: a file read travelling from League through
+ * the patcher, forking to the overlay while the game files stay dark.
+ *
+ * The lit path charges as the band scrolls into view, where scroll-driven
+ * animation exists and motion is allowed; everywhere else it renders lit.
+ * `file` is one real archive name, shown on each node that holds a copy.
+ */
+import type { Route } from './home/RouteList.astro';
+
+interface Stage {
+  name: string;
+  detail: string;
+}
+
+interface Props {
+  id: string;
+  title: string;
+  lead: string;
+  link: Route;
+  file: string;
+  stages: {
+    request: Stage;
+    patcher: Stage;
+    overlay: Stage;
+    game: Stage;
+  };
+}
+
+const { id, title, lead, link, file, stages } = Astro.props;
+---
+
+<section class="redirect not-content" aria-labelledby={id}>
+  <div class="head">
+    <h2 id={id}>{title}</h2>
+    <div>
+      <p class="lead">{lead}</p>
+      <a class="more" href={link.href}>
+        {link.label}
+        <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+          <path
+            d="M2 8h11M9 4l4 4-4 4"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"></path>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <ol class="track">
+    <li class="node request">
+      <strong>{stages.request.name}</strong>
+      <span>{stages.request.detail}</span>
+      <code class="file">{file}</code>
+    </li>
+    <li class="node patcher">
+      <strong>{stages.patcher.name}</strong>
+      <span>{stages.patcher.detail}</span>
+    </li>
+    <li class="fork">
+      <div class="node overlay">
+        <strong>{stages.overlay.name}</strong>
+        <span>{stages.overlay.detail}</span>
+        <code class="file">{file}</code>
+      </div>
+      <div class="node game">
+        <strong>{stages.game.name}</strong>
+        <span>{stages.game.detail}</span>
+        <code class="file">{file}</code>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<style>
+  .redirect {
+    --gap: 3rem;
+    --lit: linear-gradient(90deg, var(--ltk-blue), var(--ltk-violet));
+    --lit-y: linear-gradient(0deg, var(--ltk-blue), var(--ltk-violet));
+    margin-block-start: clamp(5rem, 11vw, 8rem);
+    padding-block: clamp(2.5rem, 5vw, 3.5rem);
+    border-block: 1px solid var(--sl-color-gray-5);
+  }
+
+  .head {
+    display: grid;
+    gap: 1rem;
+    margin-block-end: 2.5rem;
+  }
+
+  @media (min-width: 50rem) {
+    .head {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: 3rem;
+      align-items: start;
+    }
+  }
+
+  h2 {
+    margin: 0;
+    font-family: var(--ltk-font-display);
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    font-weight: var(--ltk-weight-bold);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--sl-color-white);
+    text-wrap: balance;
+  }
+
+  .lead {
+    max-width: 52ch;
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--sl-color-gray-2);
+  }
+
+  .more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--sl-color-white);
+    font-size: 0.875rem;
+    font-weight: var(--ltk-weight-semibold);
+    text-decoration: none;
+  }
+
+  .more svg {
+    transition: transform 0.15s ease;
+  }
+
+  .more:hover svg {
+    transform: translateX(3px);
+  }
+
+  .more:focus-visible {
+    outline: 2px solid var(--sl-color-accent-high);
+    outline-offset: 3px;
+  }
+
+  /* ── Track ────────────────────────────────────────────────── */
+
+  .track {
+    display: grid;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Side by side when stacked, so the fork still reads as a fork. */
+  .fork {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: 0.75rem;
+  }
+
+  .node {
+    position: relative;
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: var(--ltk-radius-md);
+    background: var(--sl-color-gray-6);
+  }
+
+  .node strong {
+    color: var(--sl-color-white);
+    font-weight: var(--ltk-weight-semibold);
+  }
+
+  .node span {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--sl-color-gray-2);
+  }
+
+  .file {
+    justify-self: start;
+    margin-block-start: 0.35rem;
+    padding: 0.1rem 0.4rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: var(--ltk-radius-sm);
+    font-family: var(--sl-font-mono);
+    font-size: 0.75rem;
+    color: var(--sl-color-gray-1);
+  }
+
+  .overlay .file {
+    border-color: color-mix(in srgb, var(--ltk-violet) 50%, transparent);
+    color: var(--sl-color-accent-high);
+  }
+
+  .game .file {
+    border-style: dashed;
+    border-color: var(--sl-color-gray-4);
+    color: var(--sl-color-gray-3);
+  }
+
+  .overlay {
+    border-color: color-mix(in srgb, var(--ltk-violet) 60%, transparent);
+    background: color-mix(in srgb, var(--ltk-violet) 10%, var(--sl-color-gray-6));
+  }
+
+  .game {
+    border-style: dashed;
+    border-color: var(--sl-color-gray-4);
+    background: transparent;
+  }
+
+  .game strong {
+    color: var(--sl-color-gray-2);
+  }
+
+  .game span {
+    color: var(--sl-color-gray-3);
+  }
+
+  /* Connectors, stacked: vertical runs over the overlay's column, plus a
+     dashed run from the patcher down to the game files. */
+  .request::after,
+  .patcher::after,
+  .patcher::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 100%;
+    inset-inline-start: calc((100% - 0.75rem) / 4 - 1px);
+    width: 2px;
+    height: 1.5rem;
+    background: var(--lit-y);
+  }
+
+  .patcher::before {
+    inset-inline-start: calc(75% + 0.75rem / 4);
+    width: 0;
+    border-inline-start: 1px dashed var(--sl-color-gray-4);
+    background: none;
+  }
+
+  @media (min-width: 50rem) {
+    .patcher::before {
+      content: none;
+    }
+
+    /* One height for every stage, so the row reads level whether or not a
+       stage carries a file chip. */
+    .node {
+      min-height: 7.375rem;
+      align-content: start;
+    }
+
+    .fork {
+      grid-template-columns: none;
+      gap: 1rem;
+    }
+
+    .track {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--gap);
+      align-items: center;
+    }
+
+    /* Connectors, in a row: each stage reaches across the gap to the next. */
+    .request::after,
+    .patcher::after {
+      inset-block-start: calc(50% - 1px);
+      inset-inline-start: 100%;
+      width: var(--gap);
+      height: 2px;
+      background: var(--lit);
+    }
+
+    .patcher::after {
+      width: calc(var(--gap) / 2);
+    }
+
+    /* The fork's spine: lit up to the overlay, dashed down to the game files.
+       Ends sit on the centres of two equal rows split by the 1rem gap. */
+    .fork::before,
+    .fork::after {
+      content: '';
+      position: absolute;
+      inset-inline-start: calc(var(--gap) / -2);
+      width: 1px;
+    }
+
+    .fork {
+      position: relative;
+    }
+
+    .fork::before {
+      inset-block: calc(25% - 0.25rem - 1px) calc(50% - 1px);
+      width: 2px;
+      background: var(--lit-y);
+    }
+
+    .fork::after {
+      inset-block: 50% calc(25% - 0.25rem);
+      border-inline-start: 1px dashed var(--sl-color-gray-4);
+    }
+
+    .fork .node::before {
+      content: '';
+      position: absolute;
+      inset-block-start: 50%;
+      inset-inline-start: calc(var(--gap) / -2 - 1px);
+      width: calc(var(--gap) / 2);
+    }
+
+    .overlay::before {
+      margin-block-start: -1px;
+      height: 2px;
+      background: var(--ltk-violet);
+    }
+
+    .game::before {
+      border-block-start: 1px dashed var(--sl-color-gray-4);
+    }
+  }
+
+  /* The signal: each lit piece charges in turn as the track crosses the viewport. */
+  @supports (animation-timeline: view()) {
+    @media (min-width: 50rem) and (prefers-reduced-motion: no-preference) {
+      .track {
+        view-timeline: --ltk-redirect block;
+      }
+
+      .request::after,
+      .patcher::after,
+      .overlay::before {
+        animation: ltk-charge-x linear both;
+        animation-timeline: --ltk-redirect;
+      }
+
+      .fork::before {
+        animation: ltk-charge-y linear both;
+        animation-timeline: --ltk-redirect;
+        animation-range: cover 36% cover 40%;
+      }
+
+      .overlay {
+        animation: ltk-arrive linear both;
+        animation-timeline: --ltk-redirect;
+        animation-range: cover 44% cover 48%;
+      }
+
+      .request::after {
+        animation-range: cover 22% cover 32%;
+      }
+
+      .patcher::after {
+        animation-range: cover 32% cover 36%;
+      }
+
+      .overlay::before {
+        animation-range: cover 40% cover 44%;
+      }
+    }
+  }
+
+  @keyframes ltk-charge-x {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0);
+    }
+  }
+
+  @keyframes ltk-charge-y {
+    from {
+      clip-path: inset(100% 0 0 0);
+    }
+    to {
+      clip-path: inset(0);
+    }
+  }
+
+  @keyframes ltk-arrive {
+    from {
+      border-color: var(--sl-color-gray-5);
+      background: var(--sl-color-gray-6);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .more:hover svg {
+      transform: none;
+    }
+  }
+</style>

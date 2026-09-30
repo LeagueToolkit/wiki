@@ -1,0 +1,51 @@
+---
+/**
+ * Frame for a real app capture on the home page: a hairline border closed by
+ * the brand ramp along the top edge. `bleed` drops the end-side border and
+ * corners for a capture that runs off the viewport.
+ */
+interface Props {
+  bleed?: boolean;
+}
+
+const { bleed = false } = Astro.props;
+---
+
+<figure class:list={['capture-frame', { bleed }]}>
+  <slot />
+</figure>
+
+<style>
+  .capture-frame {
+    position: relative;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--sl-color-gray-4);
+    border-radius: var(--ltk-radius-lg);
+    background: var(--sl-color-gray-6);
+  }
+
+  .capture-frame.bleed {
+    border-inline-end: 0;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+  }
+
+  .capture-frame::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--ltk-blue), var(--ltk-violet) 60%, transparent);
+    pointer-events: none;
+  }
+
+  .capture-frame :global(img),
+  .capture-frame :global(video) {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 0;
+  }
+</style>
