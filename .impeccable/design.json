@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-30T19:06:54.275Z",
+  "generatedAt": "2026-09-30T19:37:19.574Z",
   "title": "Design System: LTK Wiki",
   "extensions": {
     "colorMeta": {
@@ -398,11 +398,15 @@
     "typographyMeta": {
       "display": {
         "displayName": "Display",
-        "purpose": "Splash hero headline only."
+        "purpose": "Splash hero headline only, filled with the wordmark gradient."
       },
-      "display-section": {
-        "displayName": "Display section",
-        "purpose": "Landing-page section titles, topped by a short gradient rule."
+      "display-chapter": {
+        "displayName": "Display chapter",
+        "purpose": "Home page chapter and band titles; nothing sits above them."
+      },
+      "lead": {
+        "displayName": "Lead",
+        "purpose": "The paragraph under a home page chapter title, 42ch to 52ch."
       },
       "headline": {
         "displayName": "Headline",
@@ -502,6 +506,11 @@
         "name": "wordmark-sweep",
         "value": "0.7s ease",
         "purpose": "Header wordmark highlight sweep and glow."
+      },
+      {
+        "name": "signal-charge",
+        "value": "clip-path reveal on animation-timeline: view(), linear",
+        "purpose": "Redirect band lit wires charging in sequence as the track crosses the viewport; only under @supports, above 50rem, and with motion allowed. Otherwise the band renders lit."
       }
     ],
     "breakpoints": [
@@ -512,6 +521,10 @@
       {
         "name": "header-nav",
         "value": "50rem"
+      },
+      {
+        "name": "home-split",
+        "value": "60rem"
       },
       {
         "name": "toc-column",
@@ -540,7 +553,7 @@
       "name": "Search Pill",
       "kind": "input",
       "refersTo": "search-pill",
-      "description": "Full-width search trigger at the top of the sidebar, panel glass with a keycap hint.",
+      "description": "Search trigger at the top of the sidebar, and in the header end group on splash pages at 72rem and up; panel glass with a keycap hint.",
       "html": "<button class=\"ds-search\" type=\"button\"><span>Search</span><kbd><kbd>Ctrl</kbd><kbd>K</kbd></kbd></button>",
       "css": ".ds-search { display: flex; align-items: center; gap: 0.5rem; width: 16rem; padding: 0.5rem 0.875rem; border: 1px solid var(--sl-color-gray-5, #1e2035); border-radius: 999px; background-color: var(--sl-color-gray-6, #14152a); color: var(--sl-color-gray-2, #aeb4ca); font: inherit; font-size: 0.875rem; cursor: pointer; transition: border-color 0.15s ease, color 0.15s ease; } .ds-search > kbd { display: flex; gap: 0.2rem; margin-inline-start: auto; } .ds-search kbd kbd { border: 1px solid var(--sl-color-gray-4, #33364a); border-radius: var(--ltk-radius-sm, 0.25rem); background-color: var(--sl-color-gray-5, #1e2035); padding-inline: 0.35rem; font-family: var(--sl-font-mono, monospace); font-size: 0.75rem; } .ds-search:hover { border-color: color-mix(in srgb, var(--sl-color-accent, #4b7dfa) 55%, transparent); color: var(--sl-color-white, #f0f2f8); } .ds-search:focus-visible { outline: 2px solid var(--sl-color-accent-high, #b9e5fb); outline-offset: 2px; }"
     },
@@ -561,20 +574,36 @@
       "css": ".ds-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; } .ds-tag { display: inline-flex; align-items: center; padding: 0.15rem 0.55rem; border: 1px solid var(--sl-color-gray-5, #1e2035); border-radius: var(--ltk-radius-sm, 0.25rem); font-size: 0.75rem; font-weight: var(--ltk-weight-medium, 500); line-height: 1.5; color: var(--sl-color-gray-2, #aeb4ca); text-decoration: none; transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease; } .ds-tag:hover { border-color: var(--sl-color-gray-4, #33364a); color: var(--sl-color-white, #f0f2f8); } .ds-tag[data-facet=\"subject\"] { border-color: color-mix(in srgb, var(--sl-color-accent, #4b7dfa) 40%, transparent); color: var(--sl-color-accent-high, #b9e5fb); } .ds-tag[data-facet=\"subject\"]:hover { border-color: var(--sl-color-accent, #4b7dfa); background-color: color-mix(in srgb, var(--sl-color-accent, #4b7dfa) 12%, transparent); } .ds-tag[data-facet=\"status\"] { border-color: color-mix(in srgb, var(--ltk-warning, #f59e0b) 45%, transparent); color: var(--ltk-warning-text, #f59e0b); text-transform: uppercase; letter-spacing: 0.03em; font-weight: var(--ltk-weight-semibold, 600); } .ds-tag[data-slug=\"wip\"] { --tape: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--ltk-warning-text, #f59e0b) 34%, transparent) 0 6px, transparent 6px 12px); background-image: var(--tape), var(--tape); background-repeat: repeat-x; background-clip: padding-box; background-origin: padding-box; background-position: top left, bottom left; background-size: 100% 5px; } .ds-tag:focus-visible { outline: 2px solid var(--sl-color-accent, #4b7dfa); outline-offset: 2px; }"
     },
     {
-      "name": "Topic Card",
-      "kind": "card",
-      "refersTo": "card-topic",
-      "description": "Landing-page link card: muted glyph and arrow at rest, accent border, panel fill, and Frost Blue glyph on hover.",
-      "html": "<a class=\"ds-topic\" href=\"#\"><span class=\"ds-topic-head\"><span class=\"ds-glyph\"><svg viewBox=\"0 0 256 256\" width=\"18\" height=\"18\" aria-hidden=\"true\"><circle cx=\"128\" cy=\"128\" r=\"40\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"20\"/><path d=\"M128 24v32M128 200v32M24 128h32M200 128h32M54 54l23 23M179 179l23 23M54 202l23-23M179 77l23-23\" stroke=\"currentColor\" stroke-width=\"20\" stroke-linecap=\"round\"/></svg></span><span class=\"ds-topic-title\">How Modding Works</span><span class=\"ds-arrow\"><svg viewBox=\"0 0 16 16\" width=\"14\" height=\"14\" aria-hidden=\"true\"><path d=\"M2 8h11M9 4l4 4-4 4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></span><span class=\"ds-topic-desc\">What a mod actually does to your game - WAD archives, the overlay, and the patcher.</span></a>",
-      "css": ".ds-topic { display: flex; flex-direction: column; gap: 0.5rem; width: 22rem; padding: 1.25rem 1.375rem; border: 1px solid var(--sl-color-gray-5, #1e2035); border-radius: var(--ltk-radius-lg, 0.5rem); text-decoration: none; transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease; } .ds-topic-head { display: flex; align-items: center; gap: 0.625rem; } .ds-glyph { display: grid; color: var(--sl-color-gray-3, #8189a6); transition: color 0.2s ease; } .ds-topic-title { font-weight: var(--ltk-weight-semibold, 600); color: var(--sl-color-white, #f0f2f8); } .ds-arrow { display: grid; margin-inline-start: auto; color: var(--sl-color-gray-3, #8189a6); transition: transform 0.15s ease, color 0.2s ease; } .ds-topic-desc { font-size: 0.875rem; line-height: 1.6; color: var(--sl-color-gray-2, #aeb4ca); } .ds-topic:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--sl-color-accent, #4b7dfa) 50%, transparent); background-color: color-mix(in srgb, var(--sl-color-gray-6, #14152a) 55%, transparent); } .ds-topic:hover .ds-glyph, .ds-topic:hover .ds-arrow { color: var(--sl-color-accent-high, #b9e5fb); } .ds-topic:hover .ds-arrow { transform: translateX(3px); } .ds-topic:focus-visible { outline: 2px solid var(--sl-color-accent, #4b7dfa); outline-offset: 3px; }"
-    },
-    {
       "name": "Link Card Ring",
       "kind": "card",
-      "refersTo": "card-path",
+      "refersTo": "card-link",
       "description": "Gradient-ring card: brand ramp on the border box under an opaque fill, ring strengthens on hover.",
       "html": "<a class=\"ds-ring\" href=\"#\"><strong>Mod library</strong><span>Install, order, and organize your mods.</span></a>",
       "css": ".ds-ring { display: flex; flex-direction: column; gap: 0.25rem; width: 22rem; padding: 1rem 1.25rem; border: 1px solid transparent; border-radius: var(--ltk-radius-lg, 0.5rem); background: linear-gradient(var(--sl-color-black, #0c0d18) 0 0) padding-box, linear-gradient(135deg, color-mix(in srgb, var(--ltk-blue, #4b7dfa) 40%, transparent), color-mix(in srgb, var(--ltk-violet, #7d4bfa) 40%, transparent)) border-box; color: var(--sl-color-gray-2, #aeb4ca); text-decoration: none; transition: transform 0.2s ease; } .ds-ring strong { color: var(--sl-color-white, #f0f2f8); font-weight: var(--ltk-weight-semibold, 600); } .ds-ring:hover { transform: translateY(-2px); background: linear-gradient(color-mix(in srgb, var(--sl-color-gray-6, #14152a) 55%, var(--sl-color-black, #0c0d18)) 0 0) padding-box, linear-gradient(135deg, var(--ltk-blue, #4b7dfa), var(--ltk-violet, #7d4bfa)) border-box; } .ds-ring:focus-visible { outline: 2px solid var(--sl-color-accent-high, #b9e5fb); outline-offset: 3px; }"
+    },
+    {
+      "name": "Capture Frame",
+      "kind": "card",
+      "refersTo": "capture-frame",
+      "description": "Frame for a real capture: hairline border, large corners, closed by a brand-ramp top edge. The bleed variant drops its end-side border and corners.",
+      "html": "<div class=\"ds-demo\"><figure class=\"ds-capture\"><div class=\"ds-shot\"></div></figure><figure class=\"ds-capture ds-bleed\"><figcaption>A mod project, the standard every tool builds from</figcaption><code class=\"ds-tree\"><span>my-mod/</span><span>├── mod.config.json <i>the manifest</i></span><span>└── content/</span></code></figure></div>",
+      "css": ".ds-demo { display: grid; gap: 1.5rem; width: 26rem; } .ds-capture { position: relative; margin: 0; overflow: hidden; border: 1px solid var(--sl-color-gray-4, #33364a); border-radius: var(--ltk-radius-lg, 0.5rem); background: var(--sl-color-gray-6, #14152a); } .ds-capture::before { content: \"\"; position: absolute; inset: 0 0 auto; z-index: 1; height: 1px; background: linear-gradient(90deg, var(--ltk-blue, #4b7dfa), var(--ltk-violet, #7d4bfa) 60%, transparent); pointer-events: none; } .ds-bleed { border-inline-end: 0; border-start-end-radius: 0; border-end-end-radius: 0; } .ds-shot { aspect-ratio: 16 / 9; background: linear-gradient(160deg, var(--sl-color-gray-5, #1e2035), var(--sl-color-black, #0c0d18)); } .ds-capture figcaption { padding: 0.875rem 1.25rem; border-block-end: 1px solid var(--sl-color-gray-5, #1e2035); font-size: 0.8125rem; font-weight: var(--ltk-weight-medium, 500); color: var(--sl-color-gray-3, #8189a6); } .ds-tree { display: block; padding: 1.25rem 1.25rem 1.5rem; font-family: var(--sl-font-mono, monospace); font-size: 0.875rem; line-height: 1.8; color: var(--sl-color-gray-1, #d3d7e4); font-feature-settings: \"calt\" 0, \"liga\" 0; } .ds-tree span { display: block; white-space: pre; } .ds-tree i { font-style: normal; margin-inline-start: 1rem; color: var(--sl-color-gray-3, #8189a6); }"
+    },
+    {
+      "name": "Route List",
+      "kind": "nav",
+      "refersTo": "route-row",
+      "description": "Onward links as hairline-separated rows, never cards; rows take the sidebar hover wash and a Frost Blue arrow nudge.",
+      "html": "<ul class=\"ds-routes\"><li><a href=\"#\">Quick start <svg viewBox=\"0 0 16 16\" width=\"14\" height=\"14\" aria-hidden=\"true\"><path d=\"M2 8h11M9 4l4 4-4 4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></a></li><li><a href=\"#\">Install mods <svg viewBox=\"0 0 16 16\" width=\"14\" height=\"14\" aria-hidden=\"true\"><path d=\"M2 8h11M9 4l4 4-4 4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></a></li><li><a href=\"#\">Manage profiles <svg viewBox=\"0 0 16 16\" width=\"14\" height=\"14\" aria-hidden=\"true\"><path d=\"M2 8h11M9 4l4 4-4 4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></a></li></ul>",
+      "css": ".ds-routes { width: 20rem; margin: 0; padding: 0; list-style: none; border-block-end: 1px solid var(--sl-color-gray-5, #1e2035); } .ds-routes li { border-block-start: 1px solid var(--sl-color-gray-5, #1e2035); } .ds-routes a { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.7rem 0.625rem; border-radius: var(--ltk-radius-sm, 0.25rem); color: var(--sl-color-gray-1, #d3d7e4); font-weight: var(--ltk-weight-medium, 500); text-decoration: none; transition: background 0.15s ease, color 0.15s ease; } .ds-routes svg { flex-shrink: 0; color: var(--sl-color-gray-3, #8189a6); transition: transform 0.15s ease, color 0.15s ease; } .ds-routes a:hover { background: linear-gradient(90deg, color-mix(in srgb, var(--ltk-blue, #4b7dfa) 14%, transparent), color-mix(in srgb, var(--ltk-violet, #7d4bfa) 9%, transparent) 55%, transparent); color: var(--sl-color-white, #f0f2f8); } .ds-routes a:hover svg { transform: translateX(3px); color: var(--sl-color-accent-high, #b9e5fb); } .ds-routes a:focus-visible { outline: 2px solid var(--sl-color-accent-high, #b9e5fb); outline-offset: -2px; }"
+    },
+    {
+      "name": "Redirect Band Node",
+      "kind": "custom",
+      "refersTo": "redirect-node",
+      "description": "Stage nodes of the redirect band: a lit overlay branch in violet and a dashed, muted game-files branch, joined by 2px lit and 1px dashed wires, each holding a mono file chip.",
+      "html": "<div class=\"ds-fork\"><div class=\"ds-node ds-lit\"><strong>Overlay</strong><span>Our modded copy of the game</span><code class=\"ds-file\">Ahri.wad.client</code></div><div class=\"ds-node ds-dark\"><strong>Game files</strong><span>Riot's copy stays on disk, unedited</span><code class=\"ds-file\">Ahri.wad.client</code></div></div>",
+      "css": ".ds-fork { position: relative; display: grid; gap: 1rem; width: 18rem; margin-inline-start: 1.5rem; } .ds-fork::before { content: \"\"; position: absolute; inset-inline-start: -1.5rem; inset-block: calc(25% - 0.25rem - 1px) calc(50% - 1px); width: 2px; background: linear-gradient(0deg, var(--ltk-blue, #4b7dfa), var(--ltk-violet, #7d4bfa)); } .ds-fork::after { content: \"\"; position: absolute; inset-inline-start: -1.5rem; inset-block: 50% calc(25% - 0.25rem); border-inline-start: 1px dashed var(--sl-color-gray-4, #33364a); } .ds-node { position: relative; display: grid; gap: 0.25rem; padding: 0.875rem 1rem; border: 1px solid var(--sl-color-gray-5, #1e2035); border-radius: var(--ltk-radius-md, 0.375rem); background: var(--sl-color-gray-6, #14152a); } .ds-node::before { content: \"\"; position: absolute; inset-block-start: 50%; inset-inline-start: calc(-1.5rem - 1px); width: 1.5rem; } .ds-node strong { color: var(--sl-color-white, #f0f2f8); font-weight: var(--ltk-weight-semibold, 600); } .ds-node span { font-size: 0.875rem; line-height: 1.5; color: var(--sl-color-gray-2, #aeb4ca); } .ds-file { justify-self: start; margin-block-start: 0.35rem; padding: 0.1rem 0.4rem; border: 1px solid var(--sl-color-gray-5, #1e2035); border-radius: var(--ltk-radius-sm, 0.25rem); font-family: var(--sl-font-mono, monospace); font-size: 0.75rem; color: var(--sl-color-gray-1, #d3d7e4); } .ds-lit { border-color: color-mix(in srgb, var(--ltk-violet, #7d4bfa) 60%, transparent); background: color-mix(in srgb, var(--ltk-violet, #7d4bfa) 10%, var(--sl-color-gray-6, #14152a)); } .ds-lit::before { margin-block-start: -1px; height: 2px; background: var(--ltk-violet, #7d4bfa); } .ds-lit .ds-file { border-color: color-mix(in srgb, var(--ltk-violet, #7d4bfa) 50%, transparent); color: var(--sl-color-accent-high, #b9e5fb); } .ds-dark { border-style: dashed; border-color: var(--sl-color-gray-4, #33364a); background: transparent; } .ds-dark::before { border-block-start: 1px dashed var(--sl-color-gray-4, #33364a); } .ds-dark strong { color: var(--sl-color-gray-2, #aeb4ca); } .ds-dark span, .ds-dark .ds-file { color: var(--sl-color-gray-3, #8189a6); } .ds-dark .ds-file { border-style: dashed; border-color: var(--sl-color-gray-4, #33364a); }"
     },
     {
       "name": "Where Box",
@@ -587,7 +616,7 @@
   ],
   "narrative": {
     "northStar": "Signal on Slate",
-    "overview": "Deep Graphite surfaces carry the reading. The logo's Cobalt Current to Arc Violet ramp is a signal: it marks where you are, what you can press, and where the site's name sits. It shows on edges, hairlines, washes, and current state, and almost never as a filled area. A reader spends most of the page in calm cool-grey prose at a 48rem measure. The brand color shows up at the header hairline, the current sidebar row, a card's ring on hover, and the one primary action.\n\nThe site is dark-first and both themes are first-class. Every value either comes from a theme-aware Starlight token or has an explicit light counterpart. The system is built on Starlight, not in place of it: it overrides Starlight's own components and tokens, and does not ship a parallel theme. Density is documentation density: compact type (0.9375rem body), generous line height (1.7), small radii, hairline borders.\n\nRejected directions, confirmed: gamer RGB (neon glows, aggressive angles, esports-overlay chrome), imitating the League client or Riot's official branding, stock Starlight with only the accent swapped, and SaaS marketing tropes (gradient hero blobs, feature grids, testimonial carousels).",
+    "overview": "Deep Graphite surfaces carry the reading. The logo's Cobalt Current to Arc Violet ramp is a signal: it marks where you are, what you can press, and where the site's name sits. It shows on edges, hairlines, washes, and current state, and almost never as a filled area. A reader spends most of the page in calm cool-grey prose at a 48rem measure. The brand color shows up at the header hairline, the current sidebar row, a card's ring on hover, the top edge of a capture frame, and the one primary action.\n\nThe site is dark-first and both themes are first-class. Every value either comes from a theme-aware Starlight token or has an explicit light counterpart. The system is built on Starlight, not in place of it: it overrides Starlight's own components and tokens, and does not ship a parallel theme. Density is documentation density: compact type (0.9375rem body), generous line height (1.7), small radii, hairline borders.\n\nRejected directions, confirmed: gamer RGB (neon glows, aggressive angles, esports-overlay chrome), imitating the League client or Riot's official branding, stock Starlight with only the accent swapped, and SaaS marketing tropes (gradient hero blobs, feature grids, testimonial carousels).",
     "keyCharacteristics": [
       "The brand ramp as an edge and state signal, never a background field.",
       "Quiet at rest, lit on intent: neutral outlines and muted glyphs until hover or current state.",
@@ -614,7 +643,7 @@
       {
         "name": "The Rare Display Rule",
         "section": "typography",
-        "body": "Bricolage Grotesque appears only on the hero headline, the header wordmark, landing section titles, and path card titles. Page content headings stay in Geist."
+        "body": "Bricolage Grotesque appears only on the hero headline, the header wordmark, and home page chapter and band titles. Page content headings stay in Geist."
       },
       {
         "name": "The Copy-What-You-See Rule",
@@ -646,7 +675,8 @@
       "Don't imitate the League client or Riot's official branding (gold and teal client chrome, Riot marks).",
       "Don't ship stock Starlight with only the accent swapped; new surfaces get the site's own treatments (glass chrome, gradient hairlines, card rings).",
       "Don't use SaaS marketing tropes: gradient hero blobs, feature grids, testimonial carousels.",
-      "Don't put a supporting graphic beside the hero headline; the cards below it are the real entry points.",
+      "Don't put an illustration or decorative graphic beside the hero headline; the only thing that sits there is a real capture of the product.",
+      "Don't set onward routes as cards; they are hairline-separated link rows.",
       "Don't use Bricolage Grotesque for content headings or body text.",
       "Don't fill large areas with the brand gradient or use it as prose text color.",
       "Don't use pill radii for rectangular containers; pills are for round-by-nature shapes only."

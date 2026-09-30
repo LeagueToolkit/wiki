@@ -40,14 +40,15 @@ colors:
 typography:
   display:
     fontFamily: 'Bricolage Grotesque, Geist, system-ui, sans-serif'
-    fontSize: 'clamp(2.5rem, 7vw, 4.5rem)'
+    fontSize: 'clamp(2.75rem, 6vw, 4.5rem)'
     fontWeight: 700
-    lineHeight: 1.03
+    lineHeight: 1
     letterSpacing: '-0.035em'
-  display-section:
+  display-chapter:
     fontFamily: 'Bricolage Grotesque, Geist, system-ui, sans-serif'
-    fontSize: 'clamp(1.5rem, 3vw, 1.875rem)'
+    fontSize: 'clamp(1.75rem, 3.5vw, 2.5rem)'
     fontWeight: 700
+    lineHeight: 1.1
     letterSpacing: '-0.03em'
   headline:
     fontFamily: 'Geist, system-ui, sans-serif'
@@ -67,6 +68,11 @@ typography:
     fontWeight: 600
     lineHeight: 1.2
     letterSpacing: '-0.02em'
+  lead:
+    fontFamily: 'Geist, system-ui, sans-serif'
+    fontSize: '1rem'
+    fontWeight: 400
+    lineHeight: 1.65
   body:
     fontFamily: 'Geist, system-ui, sans-serif'
     fontSize: '0.9375rem'
@@ -117,17 +123,34 @@ components:
     textColor: '{colors.on-brand}'
     rounded: '{rounded.md}'
     padding: '0.85rem 1.6rem'
-  card-path:
-    backgroundColor: '{colors.graphite-panel}'
+  card-link:
     textColor: '{colors.graphite-soft}'
     rounded: '{rounded.lg}'
-    padding: '1.75rem'
-  card-topic:
-    textColor: '{colors.graphite-soft}'
-    rounded: '{rounded.lg}'
-    padding: '1.25rem 1.375rem'
-  card-topic-hover:
+  card-link-hover:
     backgroundColor: '{colors.graphite-panel}'
+  capture-frame:
+    backgroundColor: '{colors.graphite-panel}'
+    rounded: '{rounded.lg}'
+  route-row:
+    textColor: '{colors.graphite-text}'
+    rounded: '{rounded.sm}'
+    padding: '0.7rem 0.625rem'
+  route-row-hover:
+    textColor: '{colors.graphite-bright}'
+  redirect-node:
+    backgroundColor: '{colors.graphite-panel}'
+    textColor: '{colors.graphite-soft}'
+    rounded: '{rounded.md}'
+    padding: '0.875rem 1rem'
+  redirect-node-dark:
+    textColor: '{colors.graphite-muted}'
+    rounded: '{rounded.md}'
+    padding: '0.875rem 1rem'
+  file-chip:
+    textColor: '{colors.graphite-text}'
+    typography: '{typography.mono}'
+    rounded: '{rounded.sm}'
+    padding: '0.1rem 0.4rem'
   chip-tag:
     textColor: '{colors.graphite-soft}'
     typography: '{typography.label}'
@@ -177,7 +200,7 @@ components:
 
 **Creative North Star: "Signal on Slate"**
 
-Deep Graphite surfaces carry the reading. The logo's Cobalt Current to Arc Violet ramp is a signal: it marks where you are, what you can press, and where the site's name sits. It shows on edges, hairlines, washes, and current state, and almost never as a filled area. A reader spends most of the page in calm cool-grey prose at a 48rem measure. The brand color shows up at the header hairline, the current sidebar row, a card's ring on hover, and the one primary action.
+Deep Graphite surfaces carry the reading. The logo's Cobalt Current to Arc Violet ramp is a signal: it marks where you are, what you can press, and where the site's name sits. It shows on edges, hairlines, washes, and current state, and almost never as a filled area. A reader spends most of the page in calm cool-grey prose at a 48rem measure. The brand color shows up at the header hairline, the current sidebar row, a card's ring on hover, the top edge of a capture frame, and the one primary action.
 
 The site is dark-first and both themes are first-class. Every value either comes from a theme-aware Starlight token or has an explicit light counterpart. The system is built on Starlight, not in place of it: it overrides Starlight's own components and tokens, and does not ship a parallel theme. Density is documentation density: compact type (0.9375rem body), generous line height (1.7), small radii, hairline borders.
 
@@ -203,7 +226,7 @@ Cool blue-violet graphite neutrals with a two-stop brand ramp taken from the log
 
 ### Secondary
 
-- **Arc Violet** (`arc-violet`): the trailing half of the ramp. It never appears alone as a state color; it always travels with Cobalt Current in a gradient (primary buttons run violet to blue at 135deg, hairlines run blue to violet at 90deg). The violet path card uses it as its tone.
+- **Arc Violet** (`arc-violet`): the trailing half of the ramp. It never appears alone as a state color; it always travels with Cobalt Current in a gradient (primary buttons run violet to blue at 135deg, hairlines run blue to violet at 90deg). The one place it stands alone is the redirect band's overlay node, where the blue-to-violet signal arrives: its border, fill wash, file chip, and final wire take the violet end.
 
 ### Neutral
 
@@ -241,11 +264,12 @@ Text on a solid accent fill (active filter chips, the active pipeline step) uses
 
 ### Hierarchy
 
-- **Display** (700, clamp(2.5rem, 7vw, 4.5rem), 1.03, -0.035em): the splash hero headline only, balanced wrap, part of it filled with the wordmark gradient.
-- **Display section** (700, clamp(1.5rem, 3vw, 1.875rem), -0.03em): landing-page section titles, each topped by a short 2.25rem violet-to-blue rule.
+- **Display** (700, clamp(2.75rem, 6vw, 4.5rem), 1, -0.035em): the splash hero headline only, balanced wrap, filled with the wordmark gradient.
+- **Display chapter** (700, clamp(1.75rem, 3.5vw, 2.5rem), 1.1, -0.03em): home page chapter and band titles. Nothing sits above them; the product chapters set the LTK mark beside the title at 0.8em.
 - **Headline** (700, clamp(1.75rem, 4vw, 2.25rem), 1.2, -0.02em): page titles (h1).
 - **Title** (600, clamp(1.375rem, 3vw, 1.625rem), 1.2, -0.02em): h2 in prose.
 - **Subtitle** (600, clamp(1.125rem, 2.5vw, 1.25rem), 1.2, -0.02em): h3 in prose.
+- **Lead** (400, 1rem, 1.65): the paragraph under a home page chapter title, capped at 42ch to 52ch. The hero tagline is the same role one step up (clamp(1rem, 1.4vw, 1.125rem), 1.6, 48ch).
 - **Body** (400, 0.9375rem, 1.7): paragraphs and list items. The 1.7 line height applies to unclassed prose only; component parts set their own. Measure is capped by the 48rem content column.
 - **Body small** (400, 0.875rem, 1.6): card descriptions, tables, component prose.
 - **Caption** (500, 0.8125rem): control labels and secondary lines inside interactive components.
@@ -256,7 +280,7 @@ The weight scale is three tokens: medium 500 (labels, secondary emphasis), semib
 
 ### Named Rules
 
-**The Rare Display Rule.** Bricolage Grotesque appears only on the hero headline, the header wordmark, landing section titles, and path card titles. Page content headings stay in Geist.
+**The Rare Display Rule.** Bricolage Grotesque appears only on the hero headline, the header wordmark, and home page chapter and band titles. Page content headings stay in Geist.
 
 **The Copy-What-You-See Rule.** Code ligatures are off (`calt` and `liga` 0) on every code surface, because readers copy what they see.
 
@@ -264,9 +288,13 @@ The weight scale is three tokens: medium 500 (labels, secondary emphasis), semib
 
 A Starlight three-column docs layout: sidebar, a 48rem content column, and a narrowed 14rem table-of-contents column (Starlight's default ties the TOC to the sidebar width; the site restates the formulas with `--ltk-toc-width`). The TOC column appears at 72rem and wider.
 
-- **Breakpoints observed:** 45rem (card grids go from one column to two), 50rem (header section nav appears; below it the mobile chrome hides on scroll), 72rem (TOC column).
+- **Breakpoints observed:** 45rem (card grids go from one column to two), 50rem (header section nav appears; below it the mobile chrome hides on scroll; the redirect band turns from a stack into a row), 60rem (home hero and chapters split into two columns), 72rem (TOC column; the splash header search becomes a pill).
 - **Card grids** are two equal columns with a 1rem gap above 45rem, one column below. Pagination cards stay side by side down to 11rem tracks.
-- **Splash page** has no sidebar: a centered hero column, then path cards set close under it (short hero bottom padding, so the cards read as the hero's real call to action), then 4rem-spaced sections.
+- **Splash page** has no sidebar and uses Starlight's wider splash container. The home page is told as chapters, not grids:
+  - **Split hero:** above 60rem a 5fr / 7fr grid with a 3.5rem gap. Headline, tagline, actions, and a small caption note sit in the start column; a real capture sits in the end column and bleeds past the container to the viewport edge. The page clips horizontal overflow so the bleed never scrolls. Without a capture the hero falls back to a centered column.
+  - **Product chapters:** a 4fr text column beside a 7fr capture, spaced clamp(4.5rem, 10vw, 7.5rem) apart. The capture's side alternates from chapter to chapter so the page reads as a sequence. Below 60rem the text stacks above the capture.
+  - **Band:** the redirect band breaks the chapter rhythm with a full-container section between 1px line-step rules top and bottom, its head on a 5fr / 7fr grid above the track.
+  - **Backdrop:** drifting rays behind the whole splash page (`HomeBackdrop.astro`): rounded pills (24px tall, fully rounded ends, 200 to 640px long, from a seeded random layout) on lanes 48px apart, sloping down at the isometric 30 degrees, at full, 60% or 35% of `--ltk-backdrop-ink` (the panel step). Each lane masks one seamless 1400px row of `src/assets/rays.svg` and slides one row length per 260 to 520s loop, in a direction and phase of its own, as a compositor transform animation; under `prefers-reduced-motion` the lanes hold still. A horizontal fade drops the field to about a third under the reading column. It is neutral, never the brand ramp, and never appears on doc pages.
 - **Mobile chrome:** below 50rem the header and the "On this page" bar slide fully off-screen when scrolling down and return on any scroll up. Keyboard focus inside the header pins it in place.
 - **Tables** are their own horizontal scroll container, hugging their content width, never forcing the page to scroll.
 - Spacing has no token scale. Values are local (1rem grid gaps, 1.25rem to 1.75rem card padding, 2.5rem around rules), which is deliberate: incidental sizes stay inline.
@@ -319,8 +347,6 @@ Borders are 1px hairlines in the line or raised step. Asides carry a 3px accent 
 
 ### Cards / Containers
 
-- **Path cards** (landing only, two of them): the most important choice on the site, so they get their own component. Panel fill at 70%, line border, 1.75rem padding, a Bricolage title with an icon chip on the same line. Each card has a tone (Cobalt or Violet) shown as a top-edge hairline at rest. On hover: 3px lift, border tinted to the tone, a tone wash bleeding down from the top.
-- **Topic cards:** transparent with a line border, 1.25rem by 1.375rem padding, a masked Phosphor glyph, a semibold title, and a trailing arrow. At rest the glyph and arrow are muted; on hover the border tints to the accent, the panel fill arrives, and the glyph and arrow turn Frost Blue.
 - **Link cards** (Starlight's): a gradient ring (blue to violet) at 40% on dark, 55% on light, rising to 100% with a panel fill on hover. The ring is painted on the border box under an opaque padding-box fill, so the card must sit on the page background.
 - **Asides:** a card, not Starlight's flat panel: a tinted border at 30%, a fill of 8% of the aside color over the panel step, and a 3px left stripe. Note and tip hues are shifted to the logo's blue (223) and violet (257).
 
@@ -337,10 +363,28 @@ Mono labels. Quiet at rest (no fill, variant border at 50%, soft text), full var
 
 ### Navigation
 
+- **Header search on splash pages:** splash pages have no sidebar, so the search sits at the start of the header's end group. At 72rem and up it is the sidebar's panel-glass search pill (12.5rem wide); below 72rem it is a bare icon so the header never crowds the section nav.
 - **Header:** chrome glass over a faint Cobalt wash from the leading edge, closed by a blue-to-violet hairline that doubles as the reading-progress bar (a 2px gradient fill revealed by clip-path). The wordmark is the gradient-filled site title; hover sweeps a highlight band across it and blooms a split blue and violet glow.
 - **Section nav:** medium-weight small labels in soft text; hover and current go bright, and the current section gets a 2px brand-gradient underline.
 - **Sidebar rows:** small corners. Hover is a light gradient wash (`--ltk-nav-hover`); current is a stronger wash (`--ltk-nav-current`) with semibold bright text. Nested lists have indent guides that turn accent at the current page. Top-level sections carry masked Phosphor icons at 70% opacity, full on hover. The Manager and Editor sections use the full-color logo instead.
 - **Group expand and collapse** animates height and opacity (0.2s), armed only after first paint so groups don't animate shut on every navigation.
+
+### Capture frame (signature)
+
+The frame for every real capture on the home page, and for artifacts shown as captures (the mod project tree). Panel fill, 1px line-step border, large corners, flat at rest, the image or video edge to edge inside. A 1px brand-ramp hairline closes the top edge, running blue to violet and fading out past 60% of the width. The **bleed** variant drops the end-side border and corners for a capture that runs off the viewport. A frame may carry a caption strip above its content: caption type in muted text over a line-step rule. A directory tree inside a frame is mono (clamp(0.8125rem, 1.2vw, 0.9375rem), 1.8) with muted notes that drop below 30rem.
+
+### Route list
+
+Onward links as a plain column, never cards. Each row is one whole link between 1px line-step hairlines: medium-weight text in the text step, a trailing arrow muted at rest. Hover takes the sidebar's hover wash (`--ltk-nav-hover`), brightens the text, turns the arrow Frost Blue, and nudges it 3px. Focus is an inset 2px Frost Blue outline. A secondary set of short links (the file formats) runs inline instead: mono small text with a faint underline that strengthens and turns Frost Blue on hover, under a small muted caption naming the set.
+
+### Redirect band (signature)
+
+The home page's one mechanism drawing: a file read travelling from League through the patcher and forking.
+
+- **Nodes:** medium corners, panel fill, line-step border, a semibold name over a small soft detail line. Nodes that hold a copy of the file carry a **file chip**: mono label type in a small-cornered line-step outline.
+- **The fork:** the lit branch (overlay) takes a violet border at 60%, a 10% violet wash over the panel step, and a violet-outlined chip in Frost Blue. The dark branch (game files) is dashed, unfilled, and muted, chip included.
+- **Wires:** lit connectors are 2px brand-ramp runs (horizontal in the row, vertical when stacked); the dark branch's wire is a 1px dashed line-step rule. Stacked below 50rem, the fork stays side by side so it still reads as a fork.
+- **The charge:** where `animation-timeline: view()` is supported, above 50rem, and motion is allowed, each lit wire reveals by clip-path in sequence as the track crosses the viewport, and the overlay node's lit border and wash arrive last. Everywhere else the band renders fully lit.
 
 ### Where box (signature)
 
@@ -372,7 +416,8 @@ Inline code is a pill with a line-step border and small corners (the border take
 - **Don't** imitate the League client or Riot's official branding (gold and teal client chrome, Riot marks).
 - **Don't** ship stock Starlight with only the accent swapped; new surfaces get the site's own treatments (glass chrome, gradient hairlines, card rings).
 - **Don't** use SaaS marketing tropes: gradient hero blobs, feature grids, testimonial carousels.
-- **Don't** put a supporting graphic beside the hero headline; the cards below it are the real entry points.
+- **Don't** put an illustration or decorative graphic beside the hero headline; the only thing that sits there is a real capture of the product.
+- **Don't** set onward routes as cards; they are hairline-separated link rows.
 - **Don't** use Bricolage Grotesque for content headings or body text.
 - **Don't** fill large areas with the brand gradient or use it as prose text color.
 - **Don't** use pill radii for rectangular containers; pills are for round-by-nature shapes only.
