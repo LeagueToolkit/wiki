@@ -1,0 +1,655 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-30T19:06:54.275Z",
+  "title": "Design System: LTK Wiki",
+  "extensions": {
+    "colorMeta": {
+      "cobalt-current": {
+        "role": "primary",
+        "displayName": "Cobalt Current",
+        "canonical": "oklch(62.2% 0.194 264.9)",
+        "tonalRamp": [
+          "oklch(15% 0.068 264.9)",
+          "oklch(25% 0.116 264.9)",
+          "oklch(35% 0.165 264.9)",
+          "oklch(45% 0.194 264.9)",
+          "oklch(55% 0.194 264.9)",
+          "oklch(65% 0.175 264.9)",
+          "oklch(80% 0.097 264.9)",
+          "oklch(95% 0.029 264.9)"
+        ]
+      },
+      "arc-violet": {
+        "role": "secondary",
+        "displayName": "Arc Violet",
+        "canonical": "oklch(57.3% 0.243 289.5)",
+        "tonalRamp": [
+          "oklch(15% 0.085 289.5)",
+          "oklch(25% 0.146 289.5)",
+          "oklch(35% 0.207 289.5)",
+          "oklch(45% 0.243 289.5)",
+          "oklch(55% 0.243 289.5)",
+          "oklch(65% 0.219 289.5)",
+          "oklch(80% 0.121 289.5)",
+          "oklch(95% 0.036 289.5)"
+        ]
+      },
+      "on-brand": {
+        "role": "neutral",
+        "displayName": "On Brand White"
+      },
+      "accent-low": {
+        "role": "primary",
+        "displayName": "Accent Low (dark)",
+        "canonical": "oklch(23.3% 0.077 282.9)"
+      },
+      "accent-high": {
+        "role": "primary",
+        "displayName": "Frost Blue",
+        "canonical": "oklch(89.8% 0.055 229.7)",
+        "tonalRamp": [
+          "oklch(15% 0.019 229.7)",
+          "oklch(25% 0.033 229.7)",
+          "oklch(35% 0.047 229.7)",
+          "oklch(45% 0.055 229.7)",
+          "oklch(55% 0.055 229.7)",
+          "oklch(65% 0.050 229.7)",
+          "oklch(80% 0.028 229.7)",
+          "oklch(95% 0.008 229.7)"
+        ]
+      },
+      "accent-light": {
+        "role": "primary",
+        "displayName": "Cobalt Ink",
+        "canonical": "oklch(51.3% 0.165 266.1)",
+        "tonalRamp": [
+          "oklch(15% 0.058 266.1)",
+          "oklch(25% 0.099 266.1)",
+          "oklch(35% 0.140 266.1)",
+          "oklch(45% 0.165 266.1)",
+          "oklch(55% 0.165 266.1)",
+          "oklch(65% 0.149 266.1)",
+          "oklch(80% 0.083 266.1)",
+          "oklch(95% 0.025 266.1)"
+        ]
+      },
+      "accent-low-light": {
+        "role": "primary",
+        "displayName": "Accent Low (light)"
+      },
+      "accent-high-light": {
+        "role": "primary",
+        "displayName": "Accent High (light)"
+      },
+      "success": {
+        "role": "status",
+        "displayName": "Success Green",
+        "canonical": "oklch(72.3% 0.192 149.6)",
+        "tonalRamp": [
+          "oklch(15% 0.067 149.6)",
+          "oklch(25% 0.115 149.6)",
+          "oklch(35% 0.163 149.6)",
+          "oklch(45% 0.192 149.6)",
+          "oklch(55% 0.192 149.6)",
+          "oklch(65% 0.173 149.6)",
+          "oklch(80% 0.096 149.6)",
+          "oklch(95% 0.029 149.6)"
+        ]
+      },
+      "warning": {
+        "role": "status",
+        "displayName": "Warning Amber",
+        "canonical": "oklch(76.9% 0.165 70.1)",
+        "tonalRamp": [
+          "oklch(15% 0.058 70.1)",
+          "oklch(25% 0.099 70.1)",
+          "oklch(35% 0.140 70.1)",
+          "oklch(45% 0.165 70.1)",
+          "oklch(55% 0.165 70.1)",
+          "oklch(65% 0.149 70.1)",
+          "oklch(80% 0.083 70.1)",
+          "oklch(95% 0.025 70.1)"
+        ]
+      },
+      "danger": {
+        "role": "status",
+        "displayName": "Danger Red",
+        "canonical": "oklch(63.7% 0.208 25.3)",
+        "tonalRamp": [
+          "oklch(15% 0.073 25.3)",
+          "oklch(25% 0.125 25.3)",
+          "oklch(35% 0.177 25.3)",
+          "oklch(45% 0.208 25.3)",
+          "oklch(55% 0.208 25.3)",
+          "oklch(65% 0.187 25.3)",
+          "oklch(80% 0.104 25.3)",
+          "oklch(95% 0.031 25.3)"
+        ]
+      },
+      "required": {
+        "role": "status",
+        "displayName": "Required Rose (dark)",
+        "canonical": "oklch(76.6% 0.116 5)",
+        "tonalRamp": [
+          "oklch(15% 0.041 5)",
+          "oklch(25% 0.070 5)",
+          "oklch(35% 0.099 5)",
+          "oklch(45% 0.116 5)",
+          "oklch(55% 0.116 5)",
+          "oklch(65% 0.104 5)",
+          "oklch(80% 0.058 5)",
+          "oklch(95% 0.017 5)"
+        ]
+      },
+      "required-light": {
+        "role": "status",
+        "displayName": "Required Rose (light)",
+        "canonical": "oklch(52.1% 0.151 8.2)"
+      },
+      "wordmark-frost": {
+        "role": "primary",
+        "displayName": "Wordmark Frost"
+      },
+      "wordmark-periwinkle": {
+        "role": "primary",
+        "displayName": "Wordmark Periwinkle"
+      },
+      "wordmark-lilac": {
+        "role": "primary",
+        "displayName": "Wordmark Lilac"
+      },
+      "wordmark-navy-light": {
+        "role": "primary",
+        "displayName": "Wordmark Navy (light)"
+      },
+      "wordmark-cobalt-light": {
+        "role": "primary",
+        "displayName": "Wordmark Cobalt (light)"
+      },
+      "wordmark-violet-light": {
+        "role": "primary",
+        "displayName": "Wordmark Violet (light)"
+      },
+      "graphite-page": {
+        "role": "neutral",
+        "displayName": "Deep Graphite page",
+        "tonalRamp": [
+          "#0c0d18",
+          "#14152a",
+          "#1e2035",
+          "#33364a",
+          "#8189a6",
+          "#aeb4ca",
+          "#d3d7e4",
+          "#f0f2f8"
+        ]
+      },
+      "paper-page": {
+        "role": "neutral",
+        "displayName": "Paper page",
+        "tonalRamp": [
+          "#1a1c2e",
+          "#33364a",
+          "#5a5e72",
+          "#8b8fa3",
+          "#c4c8d4",
+          "#e0e3ea",
+          "#f0f2f5",
+          "#fafbfc"
+        ]
+      },
+      "graphite-panel": {
+        "role": "neutral",
+        "displayName": "Deep Graphite panel",
+        "tonalRamp": [
+          "#0c0d18",
+          "#14152a",
+          "#1e2035",
+          "#33364a",
+          "#8189a6",
+          "#aeb4ca",
+          "#d3d7e4",
+          "#f0f2f8"
+        ]
+      },
+      "paper-panel": {
+        "role": "neutral",
+        "displayName": "Paper panel",
+        "tonalRamp": [
+          "#1a1c2e",
+          "#33364a",
+          "#5a5e72",
+          "#8b8fa3",
+          "#c4c8d4",
+          "#e0e3ea",
+          "#f0f2f5",
+          "#fafbfc"
+        ]
+      },
+      "graphite-raised": {
+        "role": "neutral",
+        "displayName": "Deep Graphite raised",
+        "tonalRamp": [
+          "#0c0d18",
+          "#14152a",
+          "#1e2035",
+          "#33364a",
+          "#8189a6",
+          "#aeb4ca",
+          "#d3d7e4",
+          "#f0f2f8"
+        ]
+      },
+      "paper-raised": {
+        "role": "neutral",
+        "displayName": "Paper raised",
+        "tonalRamp": [
+          "#1a1c2e",
+          "#33364a",
+          "#5a5e72",
+          "#8b8fa3",
+          "#c4c8d4",
+          "#e0e3ea",
+          "#f0f2f5",
+          "#fafbfc"
+        ]
+      },
+      "graphite-line": {
+        "role": "neutral",
+        "displayName": "Deep Graphite line",
+        "tonalRamp": [
+          "#0c0d18",
+          "#14152a",
+          "#1e2035",
+          "#33364a",
+          "#8189a6",
+          "#aeb4ca",
+          "#d3d7e4",
+          "#f0f2f8"
+        ]
+      },
+      "paper-line": {
+        "role": "neutral",
+        "displayName": "Paper line",
+        "tonalRamp": [
+          "#1a1c2e",
+          "#33364a",
+          "#5a5e72",
+          "#8b8fa3",
+          "#c4c8d4",
+          "#e0e3ea",
+          "#f0f2f5",
+          "#fafbfc"
+        ]
+      },
+      "graphite-muted": {
+        "role": "neutral",
+        "displayName": "Deep Graphite muted",
+        "tonalRamp": [
+          "#0c0d18",
+          "#14152a",
+          "#1e2035",
+          "#33364a",
+          "#8189a6",
+          "#aeb4ca",
+          "#d3d7e4",
+          "#f0f2f8"
+        ]
+      },
+      "paper-muted": {
+        "role": "neutral",
+        "displayName": "Paper muted",
+        "tonalRamp": [
+          "#1a1c2e",
+          "#33364a",
+          "#5a5e72",
+          "#8b8fa3",
+          "#c4c8d4",
+          "#e0e3ea",
+          "#f0f2f5",
+          "#fafbfc"
+        ]
+      },
+      "graphite-soft": {
+        "role": "neutral",
+        "displayName": "Deep Graphite soft",
+        "tonalRamp": [
+          "#0c0d18",
+          "#14152a",
+          "#1e2035",
+          "#33364a",
+          "#8189a6",
+          "#aeb4ca",
+          "#d3d7e4",
+          "#f0f2f8"
+        ]
+      },
+      "paper-soft": {
+        "role": "neutral",
+        "displayName": "Paper soft",
+        "tonalRamp": [
+          "#1a1c2e",
+          "#33364a",
+          "#5a5e72",
+          "#8b8fa3",
+          "#c4c8d4",
+          "#e0e3ea",
+          "#f0f2f5",
+          "#fafbfc"
+        ]
+      },
+      "graphite-text": {
+        "role": "neutral",
+        "displayName": "Deep Graphite text",
+        "tonalRamp": [
+          "#0c0d18",
+          "#14152a",
+          "#1e2035",
+          "#33364a",
+          "#8189a6",
+          "#aeb4ca",
+          "#d3d7e4",
+          "#f0f2f8"
+        ]
+      },
+      "paper-text": {
+        "role": "neutral",
+        "displayName": "Paper text",
+        "tonalRamp": [
+          "#1a1c2e",
+          "#33364a",
+          "#5a5e72",
+          "#8b8fa3",
+          "#c4c8d4",
+          "#e0e3ea",
+          "#f0f2f5",
+          "#fafbfc"
+        ]
+      },
+      "graphite-bright": {
+        "role": "neutral",
+        "displayName": "Deep Graphite bright",
+        "tonalRamp": [
+          "#0c0d18",
+          "#14152a",
+          "#1e2035",
+          "#33364a",
+          "#8189a6",
+          "#aeb4ca",
+          "#d3d7e4",
+          "#f0f2f8"
+        ]
+      },
+      "paper-bright": {
+        "role": "neutral",
+        "displayName": "Paper bright",
+        "tonalRamp": [
+          "#1a1c2e",
+          "#33364a",
+          "#5a5e72",
+          "#8b8fa3",
+          "#c4c8d4",
+          "#e0e3ea",
+          "#f0f2f5",
+          "#fafbfc"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Splash hero headline only."
+      },
+      "display-section": {
+        "displayName": "Display section",
+        "purpose": "Landing-page section titles, topped by a short gradient rule."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles (h1)."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "h2 in prose."
+      },
+      "subtitle": {
+        "displayName": "Subtitle",
+        "purpose": "h3 in prose."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Paragraphs and list items; 1.7 line height on unclassed prose only."
+      },
+      "body-small": {
+        "displayName": "Body small",
+        "purpose": "Card descriptions, tables, component prose."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Control labels and secondary lines in interactive components."
+      },
+      "micro": {
+        "displayName": "Micro",
+        "purpose": "Smallest step: chip counts, segment labels, dense diagram labels."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Page tags, tooltips, table code, small UI labels."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Code, keycaps, sidebar badges. Ligatures off."
+      }
+    },
+    "shadows": [
+      {
+        "name": "brand-glow",
+        "token": "--ltk-glow-brand",
+        "value": "0 0.5rem 1.5rem -0.5rem color-mix(in srgb, var(--ltk-blue) 70%, transparent)",
+        "purpose": "Primary gradient actions at rest."
+      },
+      {
+        "name": "brand-glow-hover",
+        "token": "--ltk-glow-brand-hover",
+        "value": "0 0.75rem 2rem -0.5rem color-mix(in srgb, var(--ltk-violet) 85%, transparent)",
+        "purpose": "Primary gradient actions on hover."
+      },
+      {
+        "name": "float",
+        "token": "--ltk-shadow-float",
+        "value": "0 4px 12px rgba(0, 0, 0, 0.3)",
+        "purpose": "Tooltips and other floating panels."
+      }
+    ],
+    "glass": [
+      {
+        "name": "chrome",
+        "fill": "color-mix(in srgb, var(--sl-color-black) 65%, transparent)",
+        "fallbackFill": "color-mix(in srgb, var(--sl-color-black) 97%, transparent)",
+        "blur": "blur(24px) saturate(140%)",
+        "purpose": "Header bar."
+      },
+      {
+        "name": "panel",
+        "fill": "color-mix(in srgb, var(--sl-color-gray-5) 70%, transparent)",
+        "blur": "blur(10px)",
+        "purpose": "Tooltips, sidebar search pill; always behind @supports with a solid fallback."
+      },
+      {
+        "name": "scrim",
+        "fill": "rgba(0, 0, 0, 0.6)",
+        "blur": "blur(4px)",
+        "purpose": "Chips on imagery; theme-invariant."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-fast",
+        "value": "0.15s ease",
+        "purpose": "Color, border, and arrow nudges on hover."
+      },
+      {
+        "name": "state",
+        "value": "0.2s ease",
+        "purpose": "Card lift, ring and fill, sidebar group expand (ease-out)."
+      },
+      {
+        "name": "chrome-slide",
+        "value": "transform 0.25s ease",
+        "purpose": "Mobile header hide-on-scroll."
+      },
+      {
+        "name": "wordmark-sweep",
+        "value": "0.7s ease",
+        "purpose": "Header wordmark highlight sweep and glow."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "cards-two-up",
+        "value": "45rem"
+      },
+      {
+        "name": "header-nav",
+        "value": "50rem"
+      },
+      {
+        "name": "toc-column",
+        "value": "72rem"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one gradient action per surface: hero primary and download links.",
+      "html": "<a class=\"ds-btn-primary\" href=\"#\">Download LTK Manager <svg viewBox=\"0 0 16 16\" width=\"14\" height=\"14\" aria-hidden=\"true\"><path d=\"M2 8h11M9 4l4 4-4 4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></a>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.35rem; border-radius: var(--ltk-radius-md, 0.375rem); background: linear-gradient(135deg, var(--ltk-violet, #7d4bfa), var(--ltk-blue, #4b7dfa)); color: var(--ltk-on-brand, #fff); font-size: 0.9375rem; font-weight: var(--ltk-weight-semibold, 600); text-decoration: none; box-shadow: 0 0.5rem 1.5rem -0.5rem color-mix(in srgb, var(--ltk-blue, #4b7dfa) 70%, transparent); transition: transform 0.15s ease, box-shadow 0.2s ease; } .ds-btn-primary svg { transition: transform 0.15s ease; } .ds-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0.75rem 2rem -0.5rem color-mix(in srgb, var(--ltk-violet, #7d4bfa) 85%, transparent); } .ds-btn-primary:hover svg { transform: translateX(2px); } .ds-btn-primary:focus-visible { outline: 2px solid var(--sl-color-accent-high, #b9e5fb); outline-offset: 3px; }"
+    },
+    {
+      "name": "Ghost Action",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary hero actions: outline only, fills with the panel step on hover.",
+      "html": "<a class=\"ds-btn-ghost\" href=\"#\">Quick start <svg viewBox=\"0 0 16 16\" width=\"14\" height=\"14\" aria-hidden=\"true\"><path d=\"M2 8h11M9 4l4 4-4 4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></a>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1.35rem; border: 1px solid var(--sl-color-gray-4, #33364a); border-radius: var(--ltk-radius-md, 0.375rem); color: var(--sl-color-white, #f0f2f8); font-size: 0.9375rem; font-weight: var(--ltk-weight-semibold, 600); text-decoration: none; transition: transform 0.15s ease, border-color 0.2s ease, background-color 0.2s ease; } .ds-btn-ghost svg { color: var(--sl-color-gray-3, #8189a6); transition: transform 0.15s ease; } .ds-btn-ghost:hover { transform: translateY(-1px); border-color: var(--sl-color-gray-3, #8189a6); background-color: var(--sl-color-gray-6, #14152a); } .ds-btn-ghost:hover svg { transform: translateX(2px); } .ds-btn-ghost:focus-visible { outline: 2px solid var(--sl-color-accent-high, #b9e5fb); outline-offset: 3px; }"
+    },
+    {
+      "name": "Search Pill",
+      "kind": "input",
+      "refersTo": "search-pill",
+      "description": "Full-width search trigger at the top of the sidebar, panel glass with a keycap hint.",
+      "html": "<button class=\"ds-search\" type=\"button\"><span>Search</span><kbd><kbd>Ctrl</kbd><kbd>K</kbd></kbd></button>",
+      "css": ".ds-search { display: flex; align-items: center; gap: 0.5rem; width: 16rem; padding: 0.5rem 0.875rem; border: 1px solid var(--sl-color-gray-5, #1e2035); border-radius: 999px; background-color: var(--sl-color-gray-6, #14152a); color: var(--sl-color-gray-2, #aeb4ca); font: inherit; font-size: 0.875rem; cursor: pointer; transition: border-color 0.15s ease, color 0.15s ease; } .ds-search > kbd { display: flex; gap: 0.2rem; margin-inline-start: auto; } .ds-search kbd kbd { border: 1px solid var(--sl-color-gray-4, #33364a); border-radius: var(--ltk-radius-sm, 0.25rem); background-color: var(--sl-color-gray-5, #1e2035); padding-inline: 0.35rem; font-family: var(--sl-font-mono, monospace); font-size: 0.75rem; } .ds-search:hover { border-color: color-mix(in srgb, var(--sl-color-accent, #4b7dfa) 55%, transparent); color: var(--sl-color-white, #f0f2f8); } .ds-search:focus-visible { outline: 2px solid var(--sl-color-accent-high, #b9e5fb); outline-offset: 2px; }"
+    },
+    {
+      "name": "Sidebar Rows",
+      "kind": "nav",
+      "refersTo": "nav-row-current",
+      "description": "Sidebar links: gradient wash on hover, stronger wash and semibold on the current page, with indent guides.",
+      "html": "<ul class=\"ds-nav\"><li><a href=\"#\">Install mods</a></li><li><a href=\"#\" aria-current=\"page\">Manage profiles</a></li><li><a href=\"#\">Export mods <span class=\"ds-badge\">WIP</span></a></li></ul>",
+      "css": ".ds-nav { list-style: none; margin: 0; padding: 0; width: 16rem; } .ds-nav li { border-inline-start: 1px solid var(--sl-color-gray-4, #33364a); padding-inline-start: 0.5rem; } .ds-nav li:has([aria-current=\"page\"]) { border-inline-start-color: var(--sl-color-accent, #4b7dfa); } .ds-nav a { display: flex; align-items: center; padding: 0.3rem 0.5rem; border-radius: var(--ltk-radius-sm, 0.25rem); color: var(--sl-color-gray-2, #aeb4ca); font-size: 0.875rem; text-decoration: none; transition: background 0.15s ease, color 0.15s ease; } .ds-nav a:hover { background: linear-gradient(90deg, color-mix(in srgb, var(--ltk-blue, #4b7dfa) 14%, transparent), color-mix(in srgb, var(--ltk-violet, #7d4bfa) 9%, transparent) 55%, transparent); color: var(--sl-color-white, #f0f2f8); } .ds-nav a[aria-current=\"page\"] { font-weight: var(--ltk-weight-semibold, 600); background: linear-gradient(90deg, color-mix(in srgb, var(--ltk-blue, #4b7dfa) 30%, transparent), color-mix(in srgb, var(--ltk-violet, #7d4bfa) 18%, transparent) 55%, transparent); color: var(--sl-color-white, #f0f2f8); } .ds-badge { margin-inline-start: auto; padding: 0.2em 0.45em; border: 1px solid color-mix(in srgb, var(--ltk-warning, #f59e0b) 50%, transparent); border-radius: 999px; font-family: var(--sl-font-mono, monospace); font-size: 0.6875rem; line-height: 1.15; color: var(--sl-color-gray-2, #aeb4ca); transition: background-color 0.15s ease, color 0.15s ease; } .ds-nav a:hover .ds-badge { background-color: color-mix(in srgb, var(--ltk-warning, #f59e0b) 20%, transparent); color: var(--ltk-warning, #f59e0b); }"
+    },
+    {
+      "name": "Page Tags",
+      "kind": "chip",
+      "refersTo": "chip-tag-subject",
+      "description": "Tag row under the page title: quiet type and audience, accented subject, warning status, hazard-tape WIP.",
+      "html": "<nav class=\"ds-tags\"><a class=\"ds-tag\" href=\"#\">Guide</a><a class=\"ds-tag\" data-facet=\"subject\" href=\"#\">ltk-manager</a><a class=\"ds-tag\" data-facet=\"status\" data-slug=\"wip\" href=\"#\">WIP</a></nav>",
+      "css": ".ds-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; } .ds-tag { display: inline-flex; align-items: center; padding: 0.15rem 0.55rem; border: 1px solid var(--sl-color-gray-5, #1e2035); border-radius: var(--ltk-radius-sm, 0.25rem); font-size: 0.75rem; font-weight: var(--ltk-weight-medium, 500); line-height: 1.5; color: var(--sl-color-gray-2, #aeb4ca); text-decoration: none; transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease; } .ds-tag:hover { border-color: var(--sl-color-gray-4, #33364a); color: var(--sl-color-white, #f0f2f8); } .ds-tag[data-facet=\"subject\"] { border-color: color-mix(in srgb, var(--sl-color-accent, #4b7dfa) 40%, transparent); color: var(--sl-color-accent-high, #b9e5fb); } .ds-tag[data-facet=\"subject\"]:hover { border-color: var(--sl-color-accent, #4b7dfa); background-color: color-mix(in srgb, var(--sl-color-accent, #4b7dfa) 12%, transparent); } .ds-tag[data-facet=\"status\"] { border-color: color-mix(in srgb, var(--ltk-warning, #f59e0b) 45%, transparent); color: var(--ltk-warning-text, #f59e0b); text-transform: uppercase; letter-spacing: 0.03em; font-weight: var(--ltk-weight-semibold, 600); } .ds-tag[data-slug=\"wip\"] { --tape: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--ltk-warning-text, #f59e0b) 34%, transparent) 0 6px, transparent 6px 12px); background-image: var(--tape), var(--tape); background-repeat: repeat-x; background-clip: padding-box; background-origin: padding-box; background-position: top left, bottom left; background-size: 100% 5px; } .ds-tag:focus-visible { outline: 2px solid var(--sl-color-accent, #4b7dfa); outline-offset: 2px; }"
+    },
+    {
+      "name": "Topic Card",
+      "kind": "card",
+      "refersTo": "card-topic",
+      "description": "Landing-page link card: muted glyph and arrow at rest, accent border, panel fill, and Frost Blue glyph on hover.",
+      "html": "<a class=\"ds-topic\" href=\"#\"><span class=\"ds-topic-head\"><span class=\"ds-glyph\"><svg viewBox=\"0 0 256 256\" width=\"18\" height=\"18\" aria-hidden=\"true\"><circle cx=\"128\" cy=\"128\" r=\"40\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"20\"/><path d=\"M128 24v32M128 200v32M24 128h32M200 128h32M54 54l23 23M179 179l23 23M54 202l23-23M179 77l23-23\" stroke=\"currentColor\" stroke-width=\"20\" stroke-linecap=\"round\"/></svg></span><span class=\"ds-topic-title\">How Modding Works</span><span class=\"ds-arrow\"><svg viewBox=\"0 0 16 16\" width=\"14\" height=\"14\" aria-hidden=\"true\"><path d=\"M2 8h11M9 4l4 4-4 4\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></span></span><span class=\"ds-topic-desc\">What a mod actually does to your game - WAD archives, the overlay, and the patcher.</span></a>",
+      "css": ".ds-topic { display: flex; flex-direction: column; gap: 0.5rem; width: 22rem; padding: 1.25rem 1.375rem; border: 1px solid var(--sl-color-gray-5, #1e2035); border-radius: var(--ltk-radius-lg, 0.5rem); text-decoration: none; transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease; } .ds-topic-head { display: flex; align-items: center; gap: 0.625rem; } .ds-glyph { display: grid; color: var(--sl-color-gray-3, #8189a6); transition: color 0.2s ease; } .ds-topic-title { font-weight: var(--ltk-weight-semibold, 600); color: var(--sl-color-white, #f0f2f8); } .ds-arrow { display: grid; margin-inline-start: auto; color: var(--sl-color-gray-3, #8189a6); transition: transform 0.15s ease, color 0.2s ease; } .ds-topic-desc { font-size: 0.875rem; line-height: 1.6; color: var(--sl-color-gray-2, #aeb4ca); } .ds-topic:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--sl-color-accent, #4b7dfa) 50%, transparent); background-color: color-mix(in srgb, var(--sl-color-gray-6, #14152a) 55%, transparent); } .ds-topic:hover .ds-glyph, .ds-topic:hover .ds-arrow { color: var(--sl-color-accent-high, #b9e5fb); } .ds-topic:hover .ds-arrow { transform: translateX(3px); } .ds-topic:focus-visible { outline: 2px solid var(--sl-color-accent, #4b7dfa); outline-offset: 3px; }"
+    },
+    {
+      "name": "Link Card Ring",
+      "kind": "card",
+      "refersTo": "card-path",
+      "description": "Gradient-ring card: brand ramp on the border box under an opaque fill, ring strengthens on hover.",
+      "html": "<a class=\"ds-ring\" href=\"#\"><strong>Mod library</strong><span>Install, order, and organize your mods.</span></a>",
+      "css": ".ds-ring { display: flex; flex-direction: column; gap: 0.25rem; width: 22rem; padding: 1rem 1.25rem; border: 1px solid transparent; border-radius: var(--ltk-radius-lg, 0.5rem); background: linear-gradient(var(--sl-color-black, #0c0d18) 0 0) padding-box, linear-gradient(135deg, color-mix(in srgb, var(--ltk-blue, #4b7dfa) 40%, transparent), color-mix(in srgb, var(--ltk-violet, #7d4bfa) 40%, transparent)) border-box; color: var(--sl-color-gray-2, #aeb4ca); text-decoration: none; transition: transform 0.2s ease; } .ds-ring strong { color: var(--sl-color-white, #f0f2f8); font-weight: var(--ltk-weight-semibold, 600); } .ds-ring:hover { transform: translateY(-2px); background: linear-gradient(color-mix(in srgb, var(--sl-color-gray-6, #14152a) 55%, var(--sl-color-black, #0c0d18)) 0 0) padding-box, linear-gradient(135deg, var(--ltk-blue, #4b7dfa), var(--ltk-violet, #7d4bfa)) border-box; } .ds-ring:focus-visible { outline: 2px solid var(--sl-color-accent-high, #b9e5fb); outline-offset: 3px; }"
+    },
+    {
+      "name": "Where Box",
+      "kind": "custom",
+      "refersTo": "where-box",
+      "description": "Location box under an Editor page lead: UI path, shortcut keycaps, and files.",
+      "html": "<dl class=\"ds-where\"><dt>Where</dt><dd><strong>Project</strong> &gt; <strong>Bin editor</strong></dd><dt>Shortcut</dt><dd><kbd>Ctrl</kbd>+<kbd>B</kbd></dd><dt>Files</dt><dd>.bin</dd></dl>",
+      "css": ".ds-where { display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 1rem; width: 22rem; margin: 0; padding: 0.75rem 1rem; border: 1px solid var(--sl-color-gray-5, #1e2035); border-radius: var(--ltk-radius-lg, 0.5rem); background: var(--sl-color-gray-6, #14152a); font-size: 0.875rem; } .ds-where dt { color: var(--sl-color-gray-3, #8189a6); font-weight: var(--ltk-weight-medium, 500); } .ds-where dd { margin: 0; color: var(--sl-color-white, #f0f2f8); } .ds-where kbd { font-family: var(--sl-font-mono, monospace); font-size: 0.85em; border: 1px solid var(--sl-color-gray-4, #33364a); border-bottom-width: 2px; border-radius: var(--ltk-radius-sm, 0.25rem); padding: 0.05em 0.35em; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Signal on Slate",
+    "overview": "Deep Graphite surfaces carry the reading. The logo's Cobalt Current to Arc Violet ramp is a signal: it marks where you are, what you can press, and where the site's name sits. It shows on edges, hairlines, washes, and current state, and almost never as a filled area. A reader spends most of the page in calm cool-grey prose at a 48rem measure. The brand color shows up at the header hairline, the current sidebar row, a card's ring on hover, and the one primary action.\n\nThe site is dark-first and both themes are first-class. Every value either comes from a theme-aware Starlight token or has an explicit light counterpart. The system is built on Starlight, not in place of it: it overrides Starlight's own components and tokens, and does not ship a parallel theme. Density is documentation density: compact type (0.9375rem body), generous line height (1.7), small radii, hairline borders.\n\nRejected directions, confirmed: gamer RGB (neon glows, aggressive angles, esports-overlay chrome), imitating the League client or Riot's official branding, stock Starlight with only the accent swapped, and SaaS marketing tropes (gradient hero blobs, feature grids, testimonial carousels).",
+    "keyCharacteristics": [
+      "The brand ramp as an edge and state signal, never a background field.",
+      "Quiet at rest, lit on intent: neutral outlines and muted glyphs until hover or current state.",
+      "Frosted chrome (the header) over flat, opaque content surfaces.",
+      "One display face (Bricolage Grotesque) for rare, loud moments; Geist for everything read.",
+      "Colors and weights are always tokens; no raw literals in stylesheet rules."
+    ],
+    "rules": [
+      {
+        "name": "The Signal Budget Rule",
+        "section": "colors",
+        "body": "The Cobalt to Violet ramp appears only on edges (hairlines, rings, underlines), current-state washes, the wordmark, and primary actions. Never as a section background, a prose text color, or a decorative blob."
+      },
+      {
+        "name": "The Theme Pair Rule",
+        "section": "colors",
+        "body": "Every color decision has a `:root[data-theme='light']` counterpart or uses a `--sl-color-*` token that already inverts. A value that only works on dark is not finished."
+      },
+      {
+        "name": "The Token-Only Rule",
+        "section": "colors",
+        "body": "Stylesheet colors are a token reference (`--sl-color-*`, `--ltk-*`) or a `color-mix()` of tokens, never a raw hex or rgba. Mint a token in the matching `custom.css` section when none fits. Script-side color data (the Mermaid theme, BinaryStructure's categorical palette) is exempt."
+      },
+      {
+        "name": "The Rare Display Rule",
+        "section": "typography",
+        "body": "Bricolage Grotesque appears only on the hero headline, the header wordmark, landing section titles, and path card titles. Page content headings stay in Geist."
+      },
+      {
+        "name": "The Copy-What-You-See Rule",
+        "section": "typography",
+        "body": "Code ligatures are off (`calt` and `liga` 0) on every code surface, because readers copy what they see."
+      },
+      {
+        "name": "The Flat-at-Rest Rule",
+        "section": "elevation",
+        "body": "Surfaces are flat at rest. Lift (translateY -1px to -3px) and colored glow appear only in response to hover on something pressable, and lift is disabled under `prefers-reduced-motion`."
+      },
+      {
+        "name": "The Same-Tier Glass Rule",
+        "section": "elevation",
+        "body": "A frosted surface takes both its fill and its blur from one glass tier, and lists `-webkit-backdrop-filter` before `backdrop-filter`."
+      }
+    ],
+    "dos": [
+      "Do take every color and font weight from a token (`--sl-color-*`, `--ltk-*`) or a `color-mix()` of tokens.",
+      "Do spend the Cobalt to Violet ramp on edges, rings, underlines, current state, and the one primary action per surface.",
+      "Do keep surfaces quiet at rest (neutral border, muted glyph) and let hover or current state bring the accent in.",
+      "Do check every visual change in both themes and at mobile width.",
+      "Do disable transform-based motion in a component's own `prefers-reduced-motion` block, on top of the global duration override.",
+      "Do apply Phosphor icons as CSS masks so they inherit color and state; inline SVG only for a component's own structural glyph, such as the trailing arrow.",
+      "Do keep Starlight overrides unlayered instead of reaching for `!important`."
+    ],
+    "donts": [
+      "Don't use gamer RGB styling: neon glows, aggressive angles, esports-overlay chrome.",
+      "Don't imitate the League client or Riot's official branding (gold and teal client chrome, Riot marks).",
+      "Don't ship stock Starlight with only the accent swapped; new surfaces get the site's own treatments (glass chrome, gradient hairlines, card rings).",
+      "Don't use SaaS marketing tropes: gradient hero blobs, feature grids, testimonial carousels.",
+      "Don't put a supporting graphic beside the hero headline; the cards below it are the real entry points.",
+      "Don't use Bricolage Grotesque for content headings or body text.",
+      "Don't fill large areas with the brand gradient or use it as prose text color.",
+      "Don't use pill radii for rectangular containers; pills are for round-by-nature shapes only."
+    ]
+  }
+}
