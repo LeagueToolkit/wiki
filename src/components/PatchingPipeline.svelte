@@ -301,7 +301,7 @@
   .step.active .step-circle {
     border-color: var(--sl-color-accent);
     background: var(--sl-color-accent);
-    color: white;
+    color: var(--sl-color-text-invert);
   }
 
   .step.completed .step-circle {

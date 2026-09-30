@@ -152,7 +152,7 @@
   .version-chip.active {
     background: var(--sl-color-accent);
     border-color: var(--sl-color-accent);
-    color: white;
+    color: var(--sl-color-text-invert);
   }
 
   .summary {

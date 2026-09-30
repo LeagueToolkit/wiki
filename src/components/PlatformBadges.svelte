@@ -13,9 +13,9 @@
   let { platforms }: Props = $props();
 
   const statusConfig: Record<string, { label: string; color: string }> = {
-    supported: { label: 'Supported', color: '#22c55e' },
-    'coming-soon': { label: 'Coming Soon', color: '#f59e0b' },
-    unsupported: { label: 'Not Supported', color: '#ef4444' },
+    supported: { label: 'Supported', color: 'var(--ltk-success)' },
+    'coming-soon': { label: 'Coming Soon', color: 'var(--ltk-warning)' },
+    unsupported: { label: 'Not Supported', color: 'var(--ltk-danger)' },
   };
 </script>
 

@@ -204,8 +204,8 @@
         to right,
         transparent 0%,
         transparent calc(var(--tick-interval) - 1px),
-        rgba(255, 255, 255, 0.08) calc(var(--tick-interval) - 1px),
-        rgba(255, 255, 255, 0.08) var(--tick-interval)
+        color-mix(in srgb, var(--sl-color-white) 8%, transparent) calc(var(--tick-interval) - 1px),
+        color-mix(in srgb, var(--sl-color-white) 8%, transparent) var(--tick-interval)
       ),
       color-mix(in srgb, var(--segment-color) 25%, transparent);
     border: none;
@@ -231,8 +231,8 @@
         to right,
         transparent 0%,
         transparent calc(var(--tick-interval) - 1px),
-        rgba(255, 255, 255, 0.12) calc(var(--tick-interval) - 1px),
-        rgba(255, 255, 255, 0.12) var(--tick-interval)
+        color-mix(in srgb, var(--sl-color-white) 12%, transparent) calc(var(--tick-interval) - 1px),
+        color-mix(in srgb, var(--sl-color-white) 12%, transparent) var(--tick-interval)
       ),
       color-mix(in srgb, var(--segment-color) 50%, transparent);
   }

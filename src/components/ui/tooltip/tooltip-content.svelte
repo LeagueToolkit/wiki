@@ -32,7 +32,7 @@
     padding: 0.5rem 0.75rem;
     font-size: 0.75rem;
     color: var(--sl-color-white);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--ltk-shadow-float);
     animation: tooltip-in 0.15s ease;
   }
 
