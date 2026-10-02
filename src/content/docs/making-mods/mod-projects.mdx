@@ -129,11 +129,19 @@ A `LICENSE` file at the project root travels the same way, into the `.modpkg` or
 
 The thumbnail follows the `thumbnail` manifest field, or `thumbnail.webp` at the project root when the field is absent. A `.modpkg` embeds the image directly; a `.fantome` build converts it to `META/image.png`.
 
-## <HeadingIcon icon="eye-slash" />Ignore Files
+## <HeadingIcon icon="eye-slash" />Ignore Rules
 
-A `.modignore` file at the project root keeps working files out of builds. Entries use `.gitignore`-style patterns; whatever matches is skipped when the project is packed. That lets editable sources - a `.psd` next to the textures exported from it, or a tool's scratch data - live in the project without shipping in the package.
+A `.modignore` file at the project root keeps working files out of builds. Entries use [`.gitignore` syntax](https://git-scm.com/docs/gitignore); whatever matches is skipped when the project is packed. That lets editable sources - a `.psd` next to the textures exported from it, or a tool's scratch data - live in the project without shipping in the package.
 
-Matching follows gitignore semantics exactly - the builder uses the same matcher as [ripgrep](https://github.com/BurntSushi/ripgrep) (the [`ignore`](https://crates.io/crates/ignore) crate) - so existing `.gitignore` knowledge carries over: `#` comments, `!` negation to re-include files, directory-only patterns (`cache/`), and last-match-wins precedence all behave as they do in Git.
+Patterns in the root file start at `content/`, not at the project root: `/base/notes.txt` is a file in the `base` layer, and `/content/base/notes.txt` matches nothing. Any folder under `content/` can hold its own `.modignore`, whose patterns start at that folder. Where two files disagree, the deeper one wins for its own subtree. `.modignore` files are never packed.
+
+Nothing is excluded by default. Without a rule, `Thumbs.db`, `.DS_Store` and every other file under `content/` ships. LTK Manager writes a starter `.modignore` when it creates a project or imports a `.fantome` or `.modpkg`: common source formats (Photoshop, Blender, Maya, FBX and others), operating system files, and a commented header with examples. A project imported from Git keeps whatever the repository holds, and `league-mod init` writes no `.modignore`.
+
+The builder uses the same matcher as [ripgrep](https://github.com/BurntSushi/ripgrep) (the [`ignore`](https://crates.io/crates/ignore) crate), so `#` comments, `!` negation to re-include files, directory-only patterns (`cache/`), and last-match-wins precedence all behave as they do in Git. It differs from Git in three ways:
+
+- **Letter case never matters**, on every platform. The game resolves packed paths case-insensitively, so `thumbs.db` also matches `Thumbs.db`.
+- **The glob dialect is globset's, not Git's.** `{a,b}` is alternation, so a `{` with no closing `}`, as in `a{b`, is an error; write `\{` for a literal brace. An unclosed `[`, as in `a[`, matches the literal name, where Git matches nothing.
+- **A pattern that does not parse fails the pack.** The error names the file and the line, and the pattern is never silently dropped.
 
 Its scope is `content/` and nothing else. The ignore file filters which files inside the content directory the builder considers for packaging; the rest of the project is out of its reach. That also means nothing outside `content/` needs an entry: the manifest, readme, and thumbnail are picked up by declaration, and other root-level files - build output, editor state, a tool's dot-files - are never packing candidates to begin with.
 
