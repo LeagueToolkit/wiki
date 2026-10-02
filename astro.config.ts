@@ -176,6 +176,10 @@ export default defineConfig({
                   badge: { text: 'WIP', variant: 'caution' },
                 },
                 {
+                  label: 'Integrations',
+                  slug: 'manager/settings/integrations',
+                },
+                {
                   label: 'Cache',
                   slug: 'manager/settings/cache',
                   badge: { text: 'WIP', variant: 'caution' },
