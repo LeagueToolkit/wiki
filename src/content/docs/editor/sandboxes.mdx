@@ -36,12 +36,12 @@ ships.
 
 ## Which copy a tab opens
 
-| File                       | In the project sandbox                                                                          | In the game sandbox        |
-| -------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------- |
-| A file in a layer          | The layer's file, editable                                                                      | The layer's file           |
-| A game file a layer ships  | The layer's file, editable                                                                      | The game's copy, read-only |
-| A game file no layer ships | The game's copy, edited through [game data declarations](/editor/bin-editor/declare-game-data/) | The game's copy, read-only |
-| A file outside a project   | Read-only                                                                                       | Read-only                  |
+| File                       | In the project sandbox                                                                  | In the game sandbox        |
+| -------------------------- | --------------------------------------------------------------------------------------- | -------------------------- |
+| A file in a layer          | The layer's file, editable                                                              | The layer's file           |
+| A game file a layer ships  | The layer's file, editable                                                              | The game's copy, read-only |
+| A game file no layer ships | The game's copy, edited through [game data declarations](/editor/bin-editor/game-data/) | The game's copy, read-only |
+| A file outside a project   | Read-only                                                                               | Read-only                  |
 
 When two layers ship the same file, the tab opens the copy of the layer that the build applies
 last.
@@ -72,6 +72,6 @@ renamed layer's file follows the new name.
 ## Related pages
 
 - [Bin editor](/editor/bin-editor/)
-- [Declare edits to a game bin](/editor/bin-editor/declare-game-data/)
+- [Game data declarations](/editor/bin-editor/game-data/)
 - [Layers](/making-mods/layers/)
 - [Projects](/editor/projects/)
