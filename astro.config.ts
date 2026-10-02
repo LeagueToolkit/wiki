@@ -200,8 +200,28 @@ export default defineConfig({
           items: [
             { label: 'Overview', slug: 'editor', badge: { text: 'WIP', variant: 'caution' } },
             {
-              label: 'Create your first mod',
+              label: 'Quick start',
               slug: 'editor/quick-start',
+              badge: { text: 'WIP', variant: 'caution' },
+            },
+            {
+              label: 'Workflow',
+              slug: 'editor/workflow',
+              badge: { text: 'WIP', variant: 'caution' },
+            },
+            {
+              label: 'Interface',
+              slug: 'editor/interface',
+              badge: { text: 'WIP', variant: 'caution' },
+            },
+            {
+              label: 'Command palette',
+              slug: 'editor/command-palette',
+              badge: { text: 'WIP', variant: 'caution' },
+            },
+            {
+              label: 'Keyboard shortcuts',
+              slug: 'editor/keyboard-shortcuts',
               badge: { text: 'WIP', variant: 'caution' },
             },
             {
@@ -215,8 +235,133 @@ export default defineConfig({
               badge: { text: 'WIP', variant: 'caution' },
             },
             {
-              label: 'LTK Editor interface',
-              slug: 'editor/interface',
+              label: 'Game browser',
+              slug: 'editor/game-browser',
+              badge: { text: 'WIP', variant: 'caution' },
+            },
+            {
+              label: 'Objects browser',
+              slug: 'editor/objects-browser',
+              badge: { text: 'WIP', variant: 'caution' },
+            },
+            {
+              label: 'Bin editor',
+              collapsed: true,
+              items: [
+                {
+                  label: 'Overview',
+                  slug: 'editor/bin-editor',
+                  badge: { text: 'WIP', variant: 'caution' },
+                },
+                {
+                  label: 'Interface',
+                  slug: 'editor/bin-editor/interface',
+                  badge: { text: 'WIP', variant: 'caution' },
+                },
+                {
+                  label: 'Editing',
+                  slug: 'editor/bin-editor/editing',
+                  badge: { text: 'WIP', variant: 'caution' },
+                },
+                {
+                  label: 'Game Data Declarations',
+                  slug: 'editor/bin-editor/game-data',
+                  badge: { text: 'WIP', variant: 'caution' },
+                },
+                {
+                  label: 'Declarations view',
+                  slug: 'editor/bin-editor/declarations',
+                  badge: { text: 'WIP', variant: 'caution' },
+                },
+              ],
+            },
+            {
+              label: 'VFX editor',
+              collapsed: true,
+              items: [
+                {
+                  label: 'Overview',
+                  slug: 'editor/vfx-editor',
+                  badge: { text: 'WIP', variant: 'caution' },
+                },
+                {
+                  label: 'Reference',
+                  slug: 'editor/vfx-editor/reference',
+                  badge: { text: 'WIP', variant: 'caution' },
+                },
+              ],
+            },
+            {
+              label: 'Material editor',
+              collapsed: true,
+              items: [
+                {
+                  label: 'Overview',
+                  slug: 'editor/material-editor',
+                  badge: { text: 'WIP', variant: 'caution' },
+                },
+                {
+                  label: 'Reference',
+                  slug: 'editor/material-editor/reference',
+                  badge: { text: 'WIP', variant: 'caution' },
+                },
+              ],
+            },
+            {
+              label: 'Skin editor',
+              collapsed: true,
+              items: [
+                {
+                  label: 'Overview',
+                  slug: 'editor/skin-editor',
+                  badge: { text: 'WIP', variant: 'caution' },
+                },
+                {
+                  label: 'Reference',
+                  slug: 'editor/skin-editor/reference',
+                  badge: { text: 'WIP', variant: 'caution' },
+                },
+              ],
+            },
+            {
+              label: 'Animation graph',
+              slug: 'editor/animation-graph',
+              badge: { text: 'WIP', variant: 'caution' },
+            },
+            {
+              label: 'Map viewer',
+              slug: 'editor/map-viewer',
+              badge: { text: 'WIP', variant: 'caution' },
+            },
+            {
+              label: 'Atlas UI editor',
+              collapsed: true,
+              items: [
+                {
+                  label: 'Overview',
+                  slug: 'editor/ui-editor',
+                  badge: { text: 'WIP', variant: 'caution' },
+                },
+                {
+                  label: 'Reference',
+                  slug: 'editor/ui-editor/reference',
+                  badge: { text: 'WIP', variant: 'caution' },
+                },
+              ],
+            },
+            {
+              label: 'Strings editor',
+              slug: 'editor/strings-editor',
+              badge: { text: 'WIP', variant: 'caution' },
+            },
+            {
+              label: 'File previews',
+              slug: 'editor/file-previews',
+              badge: { text: 'WIP', variant: 'caution' },
+            },
+            {
+              label: 'Hexshade',
+              slug: 'editor/hexshade',
               badge: { text: 'WIP', variant: 'caution' },
             },
             {
@@ -225,75 +370,13 @@ export default defineConfig({
               badge: { text: 'WIP', variant: 'caution' },
             },
             {
-              label: 'Editors',
-              collapsed: true,
-              items: [
-                {
-                  label: 'Bin editor',
-                  collapsed: true,
-                  items: [
-                    {
-                      label: 'Overview',
-                      slug: 'editor/bin-editor',
-                      badge: { text: 'WIP', variant: 'caution' },
-                    },
-                    {
-                      label: 'Bin editor interface',
-                      slug: 'editor/bin-editor/interface',
-                      badge: { text: 'WIP', variant: 'caution' },
-                    },
-                    {
-                      label: 'Edit a bin file',
-                      slug: 'editor/bin-editor/edit-a-bin',
-                      badge: { text: 'WIP', variant: 'caution' },
-                    },
-                    {
-                      label: 'Declare edits to a game bin',
-                      slug: 'editor/bin-editor/declare-game-data',
-                      badge: { text: 'WIP', variant: 'caution' },
-                    },
-                  ],
-                },
-                {
-                  label: 'VFX editor',
-                  slug: 'editor/vfx-editor',
-                  badge: { text: 'WIP', variant: 'caution' },
-                },
-                {
-                  label: 'Material editor',
-                  slug: 'editor/material-editor',
-                  badge: { text: 'WIP', variant: 'caution' },
-                },
-                {
-                  label: 'Skin editor',
-                  slug: 'editor/skin-editor',
-                  badge: { text: 'WIP', variant: 'caution' },
-                },
-                {
-                  label: 'Animation graph',
-                  slug: 'editor/animation-graph',
-                  badge: { text: 'WIP', variant: 'caution' },
-                },
-                {
-                  label: 'Map viewer',
-                  slug: 'editor/map-viewer',
-                  badge: { text: 'WIP', variant: 'caution' },
-                },
-              ],
-            },
-            {
-              label: 'Hexshade',
-              slug: 'editor/hexshade',
+              label: 'Testing',
+              slug: 'editor/testing',
               badge: { text: 'WIP', variant: 'caution' },
             },
             {
-              label: 'Test a project',
-              slug: 'editor/test-a-project',
-              badge: { text: 'WIP', variant: 'caution' },
-            },
-            {
-              label: 'Pack a project',
-              slug: 'editor/pack-a-project',
+              label: 'Packaging',
+              slug: 'editor/packaging',
               badge: { text: 'WIP', variant: 'caution' },
             },
           ],
