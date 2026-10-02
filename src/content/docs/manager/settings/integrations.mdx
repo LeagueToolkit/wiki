@@ -1,0 +1,179 @@
+---
+title: Integrations settings
+description: Open .fantome and .modpkg files with LTK Manager, and install wadtools and ltk-tex-utils with their File Explorer menus.
+tags:
+  type: reference
+  audience: [mod-user, mod-creator]
+  subject: [ltk-manager, wadtools, ltk-tex-utils]
+---
+
+import Screenshot from '@components/Screenshot.astro';
+
+The Integrations tab of **Settings** connects LTK Manager to Windows File Explorer and to the
+command-line tools it can install.
+
+## Mod files
+
+The **Mod files** section makes `.fantome` and `.modpkg` files open with LTK Manager. File Explorer
+then shows them as **Fantome mod** and **Mod package**, each with its own icon. Double-click one to
+install it. See [Install mods](/manager/library/install-mods/#open-a-mod-file-from-file-explorer).
+
+<Screenshot
+  file="manager/settings-integrations-mod-files.webp"
+  alt="Mod files section with the Open mod files with LTK Manager switch and a row for each file type"
+/>
+
+<dl>
+  <dt id="open-mod-files">Open mod files with LTK Manager</dt>
+  <dd>
+    Registers `.fantome` and `.modpkg` with File Explorer for your Windows account. LTK Manager
+    becomes the program that opens a type only when no other program opens it yet. Turn the switch
+    off to remove the registration. Entries that belong to other programs stay. Default: on.
+
+    <dl>
+      <dt id="file-type-rows">Fantome mods (.fantome), Mod packages (.modpkg)</dt>
+      <dd>
+        The program that Windows opens each type with. Shows only when **Open mod files with LTK
+        Manager** is on.
+
+        - **Opens with LTK Manager**: double-clicking the file installs it.
+        - **Opens with** _program_: another program opens the file. You chose that program, so
+          only you can change it.
+        - **Windows asks which program to use**: no program opens the file yet.
+
+        When another program opens a type, select **Choose in Windows**. The page for LTK Manager
+        opens in **Default apps** in Windows Settings. Choose LTK Manager for the type there. The
+        row updates when you return to LTK Manager.
+      </dd>
+    </dl>
+
+  </dd>
+</dl>
+
+## Wad Tools
+
+The **Wad Tools** section installs [wadtools](/tools/wadtools/overview/), which extracts WAD
+archives. Its context menu adds a **wad toolz** submenu to File Explorer.
+
+<Screenshot
+  file="manager/settings-integrations-wad-tools.webp"
+  alt="Wad Tools section with Not installed by Manager, the Install button, Locations with 2 elsewhere and the Windows Explorer context menu options"
+/>
+
+| Right-click               | Menu items                                                                     |
+| ------------------------- | ------------------------------------------------------------------------------ |
+| A `.wad` or `.wad.*` file | **Extract**, **Get CDragon Hashtable (.txt)**, **Get Mimir Hashtable (.lhdb)** |
+| A folder                  | **Extract all WADs**                                                           |
+
+## Tex Tools
+
+The **Tex Tools** section installs [ltk-tex-utils](/tools/ltk-tex-utils/), which converts
+textures. Its context menu adds a **tex toolz** submenu to File Explorer.
+
+<Screenshot
+  file="manager/settings-integrations-tex-tools.webp"
+  alt="Tex Tools section with Not installed by Manager, the Install button, Locations, the Windows Explorer context menu options and the Thumbnails, previews and file details row"
+/>
+
+| Right-click             | Menu items                                               |
+| ----------------------- | -------------------------------------------------------- |
+| A `.tex` file           | **Convert to PNG**, **Convert to DDS**                   |
+| A `.dds` or `.png` file | **Convert to TEX**                                       |
+| A folder                | **Convert all .tex to PNG**, **Convert all .tex to DDS** |
+
+<dl>
+  <dt id="thumbnails">Thumbnails, previews and file details</dt>
+  <dd>
+    The File Explorer handlers that draw `.tex` thumbnails and previews and show their details. They
+    are a separate bundle that an administrator installs with ltk-tex-utils itself. LTK Manager does
+    not install, change or remove them. It shows **Managed externally** when the handlers are
+    installed.
+  </dd>
+</dl>
+
+## Tool installation
+
+Both tool sections work the same way. LTK Manager installs a tool for your Windows account only,
+from the tool's latest release on GitHub. It checks each download against the SHA-256 digest of
+the release and installs nothing that does not match. Installing a tool does not add it to `PATH`.
+
+<dl>
+  <dt id="tool-status">Status</dt>
+  <dd>
+    **Not installed by Manager** before you install the tool, even when another copy of it is on
+    the PC. **Managed** with the **Installed version** after you install it. When a newer release
+    exists, the section shows **Available release:** and the version.
+  </dd>
+
+<dt id="tool-install">Install</dt>
+<dd>
+  Downloads and installs the tool. The **Install** dialog asks to confirm. Before you install, clear
+  **Enable context menus on installation** to install the tool without its context menu. While the
+  download runs, the section shows its progress and **Cancel download**.
+</dd>
+
+<dt id="tool-update">Update, Check for updates</dt>
+<dd>
+  **Update** installs the available release and keeps your context menu choice. **Check for
+  updates** looks for a newer release. When the check fails, the installed version and the removal
+  actions stay available.
+</dd>
+
+<dt id="tool-repair">Repair</dt>
+<dd>
+  Restores the installed release when files are missing or an earlier operation stopped partway. The
+  section asks for it with a warning.
+</dd>
+
+<dt id="tool-uninstall">Uninstall</dt>
+<dd>
+  Removes the tool's program files and restores the context menu entries it replaced. Its
+  configuration, the files it wrote and the texture handlers stay. When a file is still in use,
+  close the tool and select **Uninstall** again to finish.
+</dd>
+
+  <dt id="tool-locations">Locations</dt>
+  <dd>
+    The folders that hold the tool. **Manager** is the copy LTK Manager installed. **Elsewhere**
+    lists other copies on the PC, and the count shows next to **Locations**. Hover over a path to
+    show a button that opens its folder.
+  </dd>
+</dl>
+
+An operation keeps running when you leave the tab. LTK Manager installs tools on Windows x64 only.
+
+## Context menus
+
+The **Windows Explorer** part of each tool section controls the tool's context menu. On Windows
+11, the entries appear under **Show more options**.
+
+<dl>
+  <dt id="context-menu">Context menu</dt>
+  <dd>
+    The state of the tool's menu entries:
+
+    - **Enabled**: the entries open the copy that LTK Manager installed.
+    - **Not registered**: File Explorer has no entries for the tool.
+    - **Registered by another installation**: the entries open another copy of the tool.
+    - **Registrations changed or incomplete**: the entries no longer match what LTK Manager wrote.
+
+    Select **Enable** or **Disable** to add or remove the entries after you install the tool.
+    When another copy holds the entries, LTK Manager shows the **Replace context menus** dialog
+    with the path they point to, and keeps a backup to restore later. **Disable** puts back the
+    entries LTK Manager replaced, as long as nothing else has changed them since.
+
+  </dd>
+</dl>
+
+## Limitations
+
+- LTK Manager registers the file types for the Windows account that runs it. On a PC with several
+  accounts, each account gets the registration the first time it starts LTK Manager.
+- The uninstaller removes the registration from one account only. In another account, File
+  Explorer then asks which program to open the files with.
+
+## Related pages
+
+- [Install mods](/manager/library/install-mods/)
+- [wadtools](/tools/wadtools/overview/)
+- [ltk-tex-utils](/tools/ltk-tex-utils/)
