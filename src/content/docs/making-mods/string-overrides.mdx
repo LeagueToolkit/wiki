@@ -1,10 +1,10 @@
 ---
-title: String Overrides
-description: Edit the game's stringtables - rename champions, items, and abilities or rewrite descriptions with per-layer, per-locale string overrides in the Creator Workshop.
+title: String overrides
+description: Edit the game's stringtables - rename champions, items, and abilities or rewrite descriptions with per-layer, per-locale string overrides in a mod project.
 tags:
   type: guide
   audience: [mod-creator]
-  subject: [string-overrides, layers, creator-workshop]
+  subject: [string-overrides, layers, ltk-editor]
 ---
 
 import {
@@ -43,7 +43,7 @@ String overrides let your mod replace individual entries in these tables without
   </Card>
 </CardGrid>
 
-## How It Works
+## How it works
 
 An override is a key-value pair: the **field name** of a stringtable entry and the **new text** it should display. Overrides are saved per layer and per locale in your project, and applied while LTK Manager builds the overlay:
 
@@ -59,33 +59,16 @@ An override is a key-value pair: the **field name** of a stringtable entry and t
 
 Because the game's current table is always the starting point, overrides survive game patches - only the entries you changed differ, and everything Riot adds or reworks stays up to date. The status bar shows **Applying string overrides...** during this build stage.
 
-## Editing Overrides
+## Editing overrides
 
-<Steps>
+Edit overrides in the [strings editor](/editor/strings-editor/) of LTK Editor, or write them into
+the manifest by hand as [Storage and distribution](#storage-and-distribution) shows.
 
-1. Open your project in the Workshop and go to the **Strings** tab.
-
-2. **Pick a layer** - overrides belong to a layer and are only active when that layer is enabled. Tabs show a badge with each layer's override count.
-
-3. **Pick a locale** - start with **Default (All Locales)** unless you're writing language-specific text.
-
-4. Click **Add Override** and enter a field name and its new value.
-
-5. Click **Save Changes**.
-
-</Steps>
-
-### Finding Field Names
-
-The field name input searches every known string in the game as you type. Each suggestion shows the current in-game text underneath, so you can confirm you found the right entry before overriding it. Picking a suggestion prefills the value with the current text, letting you edit it instead of writing from scratch.
+### Field names
 
 Field names are matched case-insensitively, so `game_character_displayname_ahri` and `game_character_displayname_Ahri` target the same entry.
 
-:::note
-The first search after installing may take a moment - the list of known field names is downloaded from [CommunityDragon](https://communitydragon.org/) and cached locally.
-:::
-
-### Targeting Unknown Entries by Hash
+### Targeting unknown entries by hash
 
 Stringtables index entries by the **XXH3** hash of their field name, and not every hash has a known plaintext name. To override an entry whose name is unknown, use its full 64-bit hash as the field name, written as exactly 16 hex digits - pad shorter hashes with leading zeros:
 
@@ -110,10 +93,10 @@ Each layer has one override bucket per locale, plus **Default (All Locales)**:
 | Locale-specific (e.g. `ko_kr`) | Only that language - beats the Default entry for the same field |
 
 :::tip[Patching every installed language]
-By default, overrides are only patched into the language your League client is set to. If you switch game languages often, enable **Apply string overrides to all locales** under **Settings → Patching** to patch every installed language instead.
+By default, overrides are only patched into the language your League client is set to. If you switch game languages often, turn on **Apply string overrides to all locales** in **Settings** > **Patching** to patch every installed language instead.
 :::
 
-## Conflict Resolution
+## Conflict resolution
 
 When several enabled mods or layers override the same field, string conflicts resolve exactly like file conflicts:
 
@@ -125,7 +108,7 @@ When several enabled mods or layers override the same field, string conflicts re
 
 Mod priority dominates locale specificity: a higher-priority mod's Default entry still beats a lower-priority mod's locale-specific entry.
 
-## Storage and Distribution
+## Storage and distribution
 
 Overrides are stored in your project config under each layer, keyed by locale (`default`, `en_us`, `ko_kr`, ...):
 
@@ -177,14 +160,18 @@ Both distribution formats carry overrides, so they survive packing and re-import
 Including a whole `lol.stringtable` file in your mod's content is not supported - the overlay builder rejects such files and always patches the game's own table. A shipped table would go stale on the next game patch, silently reverting every string Riot changed. Use string overrides instead; they only touch the entries you actually want to change.
 :::
 
-## Related Pages
+## Related pages
 
 <CardGrid>
   <LinkCard title="Layers" href="/making-mods/layers/" description="Layer system and priorities" />
   <LinkCard
-    title="Workshop Overview"
-    href="/making-mods/workshop/"
-    description="Project-based mod development"
+    title="Strings editor"
+    href="/editor/strings-editor/"
+    description="Edit overrides in LTK Editor"
   />
-  <LinkCard title="Packaging" href="/making-mods/packaging/" description="Distribution formats" />
+  <LinkCard
+    title="Package formats"
+    href="/making-mods/packaging/"
+    description="Distribution formats"
+  />
 </CardGrid>

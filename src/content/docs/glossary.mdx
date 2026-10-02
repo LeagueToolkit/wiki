@@ -66,7 +66,7 @@ A reference of common terms and definitions used throughout the League of Legend
       name: 'league-mod',
       category: 'Tool',
       description:
-        'CLI toolkit for creating, packing, extracting, and inspecting .modpkg mod projects. The engine the Creator Workshop is built on.',
+        'CLI toolkit for creating, packing, extracting, and inspecting .modpkg mod projects. Built on the same libraries as LTK Editor.',
       link: '/making-mods/command-line/',
     },
     {
@@ -82,6 +82,13 @@ A reference of common terms and definitions used throughout the League of Legend
       description:
         "Toolchain that extracts League's metaclass schema per game version and tracks it in a diff-friendly database.",
       link: '/tools/lol-meta-classes/',
+    },
+    {
+      name: 'LTK Editor',
+      category: 'Tool',
+      description:
+        'The part of LTK Manager where you make mods. Opens your League installation, edits game files in a mod project, and tests and packs the result.',
+      link: '/editor/',
     },
     {
       name: 'LTK Manager',
@@ -199,13 +206,6 @@ A reference of common terms and definitions used throughout the League of Legend
         "High-performance CLI utility for extracting, listing, and diffing WAD archive files. Built on league-toolkit's ltk_wad crate.",
       link: '/tools/wadtools/overview/',
     },
-    {
-      name: 'Workshop',
-      category: 'Tool',
-      description:
-        'Integrated mod creation environment in LTK Manager. Provides a project-based workflow for building, editing, validating, and packaging mods.',
-      link: '/making-mods/workshop/',
-    },
   ]}
 />
 
@@ -238,6 +238,10 @@ A mod archive format (`.fantome`) based on ZIP, designed by the LeagueToolkit or
 ### Layer
 
 A named group of files within a mod project. Layers let mod creators offer optional components (e.g. high-res textures, alternate colors) that users can toggle independently. See [Layers](/making-mods/layers/).
+
+### LTK Editor
+
+The part of [LTK Manager](#ltk-manager) where you make mods. Opens your League installation, edits game files in a [mod project](/making-mods/mod-projects/), and tests and packs the result. See [LTK Editor overview](/editor/).
 
 ### LTK Manager
 
@@ -308,7 +312,3 @@ The primary archive format (magic `RW`) used by League of Legends to bundle game
 ### wadtools
 
 A high-performance CLI utility for extracting, listing, and diffing [WAD](#wad) archive files. Built in Rust on [league-toolkit](/tools/league-toolkit/overview/)'s `ltk_wad` crate. Supports parallel extraction, multiple output formats, and community-maintained hashtable files for resolving path hashes to human-readable filenames. See [wadtools overview](/tools/wadtools/overview/).
-
-### Workshop
-
-The integrated mod creation environment in LTK Manager. Provides a project-based workflow for building, editing, validating, and packaging mods. See [Workshop overview](/making-mods/workshop/).

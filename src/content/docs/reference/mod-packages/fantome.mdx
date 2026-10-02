@@ -19,7 +19,7 @@ For guidance on when to package as fantome versus modpkg, see [Choosing a format
 
 The format was designed by the Fantome organization - known today as LeagueToolkit - for [Fantome](https://github.com/LeagueToolkit/Fantome), its mod manager of the time, and the format carries that manager's name. The [original specification](https://github.com/LeagueToolkit/Fantome/wiki/Mod-File-Format) still lives on the deprecated repository's wiki; it describes the same `META/`, `WAD/`, and `RAW/` layout documented here, distributed as a plain `.zip` archive. cslol-manager kept the format when it became the community's primary manager, and that continuity made `.fantome` the de facto packaging standard - mod distribution sites host it, and every manager since has read it.
 
-LTK Manager supports the format fully: install, [import](/making-mods/project/#from-fantome), export, and library management all work the same as for `.modpkg`. It also defines [an official extension](#the-leaguetoolkit-extension) - the format's original designers extending their own spec - so modern project features degrade gracefully instead of disappearing when a project targets legacy tooling. `.modpkg` has superseded fantome as the format to author against ([why?](#why-ditch-the-format)), but fantome remains the one to publish to mod sites.
+LTK Manager supports the format fully: install, [import](/editor/projects/#import-a-mod), export, and library management all work the same as for `.modpkg`. It also defines [an official extension](#the-leaguetoolkit-extension) - the format's original designers extending their own spec - so modern project features degrade gracefully instead of disappearing when a project targets legacy tooling. `.modpkg` has superseded fantome as the format to author against ([why?](#why-ditch-the-format)), but fantome remains the one to publish to mod sites.
 
 ## Archive Layout
 
@@ -160,7 +160,7 @@ Readers should treat an unrecognized identifier as an opaque display string rath
 
 ### Layers
 
-The fantome format itself stays single-layer: only the `base` layer's WAD content is packed, and the Workshop warns when other layers would be left out. The `Layers` field preserves layer _metadata_ - names, priorities, and [string overrides](/making-mods/string-overrides/) - so string overrides still apply and the structure survives a round trip through import.
+The fantome format itself stays single-layer: only the `base` layer's WAD content is packed, and LTK Editor warns when other layers would be left out. The `Layers` field preserves layer _metadata_ - names, priorities, and [string overrides](/making-mods/string-overrides/) - so string overrides still apply and the structure survives a round trip through import.
 
 Each entry in the `Layers` object maps a layer name to:
 
@@ -225,10 +225,10 @@ None of this makes existing fantomes a problem to keep using - the format stays 
 
 ## Related Pages
 
-- [Packaging](/making-mods/packaging/) - choosing between `.fantome` and `.modpkg`
-- [Mod Projects](/making-mods/mod-projects/) - the source format both packages are built from
-- [Creating a Project](/making-mods/project/#from-fantome) - importing a fantome into the Workshop
-- [Migrating to Projects](/making-mods/migrating/) - bringing legacy fantomes into the project standard
+- [Package formats](/making-mods/packaging/) - choosing between `.fantome` and `.modpkg`
+- [Mod projects](/making-mods/mod-projects/) - the source format both packages are built from
+- [Projects in LTK Editor](/editor/projects/#import-a-mod) - importing a fantome as a project
+- [Migration](/making-mods/migrating/) - bringing legacy fantomes into the project standard
 - [WAD Archives](/reference/file-formats/wad/) - the archive format packed WADs use
 
 ## Implementation References

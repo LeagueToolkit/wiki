@@ -1,10 +1,10 @@
 ---
 title: Layers
-description: Understanding the layer system in the Creator Workshop for composing and organizing mod changes into discrete, stackable units.
+description: The layers of a mod project, which split a mod into stackable content groups that users turn on and off.
 tags:
-  type: guide
+  type: concept
   audience: [mod-creator]
-  subject: [layers, creator-workshop, load-order]
+  subject: [layers, ltk-editor, load-order]
 ---
 
 import { FileTree } from '@astrojs/starlight/components';
@@ -19,7 +19,7 @@ Every mod has at least one layer (usually called "base"). Additional layers are 
 
 Each layer has a priority number. When multiple layers modify the same file, the layer with the **higher priority** wins. This determines which content takes precedence.
 
-### String Overrides
+### String overrides
 
 Layers can include string overrides - key-value pairs that replace in-game text. This is useful for:
 
@@ -27,13 +27,13 @@ Layers can include string overrides - key-value pairs that replace in-game text.
 - Renaming items or spells
 - Adding custom flavor text
 
-String overrides are layer-specific, so different layers can provide different text. See [String Overrides](/making-mods/string-overrides/) for the full editing guide.
+String overrides are layer-specific, so different layers can provide different text. See [String overrides](/making-mods/string-overrides/).
 
-## Common Layer Patterns
+## Common layer patterns
 
-### Base + Optional Extras
+### Base and optional extras
 
-```
+```text
 base (priority: 0)       - Core skin files
 high-res (priority: 1)   - High-resolution textures
 particles (priority: 1)  - Custom particle effects
@@ -41,9 +41,9 @@ particles (priority: 1)  - Custom particle effects
 
 Users get the base skin by default and can opt into high-res textures or custom particles.
 
-### Multiple Variants
+### Multiple variants
 
-```
+```text
 base (priority: 0)       - Shared files
 variant-a (priority: 1)  - Color variant A
 variant-b (priority: 1)  - Color variant B
@@ -51,16 +51,12 @@ variant-b (priority: 1)  - Color variant B
 
 Users pick one variant. Since both have the same priority and modify the same files, only one should be active at a time.
 
-## Managing Layers
+## Managing layers
 
-In the project editor:
+Add, rename, reorder and delete layers in the **Explorer** view of LTK Editor. See
+[Layers](/editor/projects/#layers) in the LTK Editor pages.
 
-- **Create** - Add a new layer with a name and optional description
-- **Reorder** - Drag layers to change their priority order
-- **Edit** - Update the layer's description
-- **Delete** - Remove a layer and its content directory
-
-## Layer Content Directory
+## Layer content directory
 
 Each layer maps to a directory under `content/` in the project:
 
@@ -86,3 +82,9 @@ Each layer maps to a directory under `content/` in the project:
 </FileTree>
 
 Each layer contains `.wad.client` folders that assign raw files to their target WAD. Place your mod files inside the appropriate `.wad.client` directory using the game's file path structure.
+
+## Related pages
+
+- [Mod projects](/making-mods/mod-projects/)
+- [String overrides](/making-mods/string-overrides/)
+- [Projects in LTK Editor](/editor/projects/#layers)

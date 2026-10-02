@@ -1,6 +1,6 @@
 ---
 title: league-mod
-description: The command-line toolkit for creating, packing, and inspecting League of Legends mod projects - the engine behind the Creator Workshop.
+description: The command-line toolkit for creating, packing, and inspecting League of Legends mod projects, built on the same libraries as LTK Editor.
 tags:
   type: reference
   audience: [mod-creator]
@@ -10,28 +10,25 @@ tags:
 
 import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 
-`league-mod` is the CLI for working with `.modpkg` mod projects. It is the same
-engine the [Creator Workshop](/making-mods/workshop/) in LTK Manager is built
-on, exposed as a terminal tool.
+`league-mod` is the CLI for working with `.modpkg` mod projects. It is built on the same
+libraries as [LTK Editor](/editor/), the mod editor in LTK Manager.
 
-That means the two are interchangeable. A project created in the Workshop packs
-with `league-mod pack`; a project scaffolded with `league-mod init` opens in the
-Workshop. Use whichever fits what you are doing.
+That means the two are interchangeable. A project created in LTK Editor packs with
+`league-mod pack`, and a project scaffolded with `league-mod init` opens in LTK Editor.
 
 :::caution[Rework planned]
 `league-mod` has not yet caught up with the current
 [mod project](/making-mods/mod-projects/) workflow, and a rework is planned for
 the near future to make working from the terminal easier. Expect the commands
-on this page to change; when in doubt, use the
-[Creator Workshop](/making-mods/workshop/) instead.
+on this page to change. When in doubt, use [LTK Editor](/editor/) instead.
 :::
 
 **Repository:** [LeagueToolkit/league-mod](https://github.com/LeagueToolkit/league-mod)
 
-## When to use the CLI over the Workshop
+## When to use the CLI
 
-The Workshop is the better default - it is visual, it validates as you go, and
-it does not require a terminal. Reach for `league-mod` when you want to:
+LTK Editor is the better default. It is visual, it checks the project as you go, and it does
+not require a terminal. Reach for `league-mod` when you want to:
 
 - **Script or automate** packing, e.g. build a `.modpkg` in CI on every commit
 - **Batch process** many projects at once
@@ -95,8 +92,8 @@ league-mod --help
                └── assets/
    ```
 
-   This is the same layout the Workshop uses - see
-   [Workshop Overview](/making-mods/workshop/) for the full explanation.
+   This is the same layout LTK Editor uses. See
+   [Mod projects](/making-mods/mod-projects/#project-structure) for the full explanation.
 
 3. **Configure.** Edit `mod.config.json` to set metadata and declare
    [layers](/making-mods/layers/).
@@ -171,7 +168,7 @@ Projects are configured by a `mod.config.json` (or `mod.config.toml`) at the
 project root, declaring metadata, authors, license, and layers.
 
 The configuration format is documented in full on
-[Mod Projects](/making-mods/mod-projects/#the-manifest) - it is the same file
+[Mod projects](/making-mods/mod-projects/#the-manifest) - it is the same file
 for both tools.
 
 The format also reserves **transformers**: a planned (WIP, not yet implemented)
@@ -200,11 +197,11 @@ crates are the reusable parts:
 | `ltk_mod_project` | Project configuration files, metadata, layer and transformer definitions                           |
 | `ltk_mod_core`    | Shared utilities, including League installation detection and path handling                        |
 
-For the format itself, see [Packaging](/making-mods/packaging/).
+For the format itself, see [Package formats](/making-mods/packaging/).
 
-## Related
+## Related pages
 
-- [Mod Creation](/making-mods/) - the full authoring workflow
-- [Workshop Overview](/making-mods/workshop/) - the GUI equivalent
-- [Layers](/making-mods/layers/) - how layer priority resolves conflicts
-- [Packaging](/making-mods/packaging/) - the `.modpkg` format specification
+- [Mod Creation](/making-mods/)
+- [LTK Editor](/editor/)
+- [Layers](/making-mods/layers/)
+- [Package formats](/making-mods/packaging/)

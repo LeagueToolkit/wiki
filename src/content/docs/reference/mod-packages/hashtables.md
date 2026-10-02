@@ -224,6 +224,6 @@ For tools that read them:
 
 - [Fantome Package](/reference/mod-packages/fantome/) - the archive layout and the extension the manifest joins
 - [Hashing Algorithms](/reference/hashing/algorithms/) - full parameters for FNV-1a and xxHash64
-- [Mod Projects](/making-mods/mod-projects/) - the project layout and manifest the tables live in
+- [Mod projects](/making-mods/mod-projects/) - the project layout and manifest the tables live in
 - [WAD Archives](/reference/file-formats/wad/) - the chunk format the `game` category resolves
-- [Packaging](/making-mods/packaging/) - choosing between `.fantome` and `.modpkg`
+- [Package formats](/making-mods/packaging/) - choosing between `.fantome` and `.modpkg`
