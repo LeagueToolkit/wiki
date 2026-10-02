@@ -1,12 +1,218 @@
 ---
 title: LTK Editor interface
-description: The regions of the LTK Editor window, what each one does, and how to split, pin, lock and maximize its tabs and panes.
+description: The regions of the LTK Editor window, what each one does, and how to split, pin, lock and maximize its tabs and groups.
 tags:
   type: reference
   audience: [mod-creator]
   subject: [creator-workshop]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+A project opens in the LTK Editor window. The window has a project header, a rail, a side panel
+and an editor area of tabs.
+
+<Where path={['LTK Editor']} />
+
+<Screenshot
+  file="editor/interface-overview.webp"
+  alt="A project open in LTK Editor, with the project header, the rail, the side panel and two editor groups"
+/>
+
+## Project header
+
+<Screenshot
+  file="editor/interface-header.webp"
+  alt="Project header with the Back and Forward arrows, the project bar, the problems badge, the layout button, Test, Pack and the project actions"
+/>
+
+| #   | Name            | Description                                                                                     |
+| --- | --------------- | ----------------------------------------------------------------------------------------------- |
+| 1   | Back, Forward   | Move through the places you opened                                                              |
+| 2   | Project bar     | The project name and version. Select it to open the [command palette](/editor/command-palette/) |
+| 3   | Problems badge  | The count of the most severe problems: crashes, then errors, then warnings. Opens **Problems**  |
+| 4   | Layout          | **Show side panel**, **Side panel position** and **Reset layout**                               |
+| 5   | Test            | Tests the project in the game. The caret opens **Layers to test**                               |
+| 6   | Pack            | Packs the project into a mod file. The caret opens **Pack as**                                  |
+| 7   | Project actions | **Open Location** and **Delete**                                                                |
+
+**Back** and **Forward** also answer <kbd>Alt</kbd>+<kbd>Left</kbd>, <kbd>Alt</kbd>+<kbd>Right</kbd>
+and the fourth and fifth mouse buttons. The problems badge is hidden while the project has no
+problems.
+
+See [Testing](/editor/testing/), [Packaging](/editor/packaging/) and
+[Problems](/editor/problems/).
+
+## Rail
+
+The rail runs down the outer edge of the window. Its upper group chooses what the side panel
+shows. Its lower group opens documents that belong to the whole project.
+
+<Screenshot
+  file="editor/interface-rail.webp"
+  alt="The rail with the view buttons at the top and the project document buttons at the bottom"
+/>
+
+| #   | Name                | Description                                                                                  |
+| --- | ------------------- | -------------------------------------------------------------------------------------------- |
+| 1   | Explorer            | The project's layers, WADs and string overrides. See [Projects](/editor/projects/)           |
+| 2   | Search              | Searches the game files by path. See [Game browser](/editor/game-browser/)                   |
+| 3   | Problems            | The project's problems. See [Problems](/editor/problems/)                                    |
+| 4   | Objects             | The bin objects of the game. See [Objects browser](/editor/objects-browser/)                 |
+| 5   | Declarations        | The game data each layer declares. See [Declarations view](/editor/bin-editor/declarations/) |
+| 6   | Game index          | The files of the installed game as one tree. See [Game browser](/editor/game-browser/)       |
+| 7   | Source control      | Shows only a placeholder. It has no content yet                                              |
+| 8   | Mod details         | Opens the project's name, version, authors and thumbnail                                     |
+| 9   | Readme              | Opens the project's readme                                                                   |
+| 10  | Ignore rules        | Opens the project's `.modignore` rules. See [Packaging](/editor/packaging/)                  |
+| 11  | Open project folder | Opens the project folder in your file manager                                                |
+
+Select the button of the view that is showing to hide the side panel. Select any view button to
+show it again.
+
+## Side panel
+
+The side panel shows the view the rail selects. Drag its edge to resize it. To move it to the
+other side of the window, open **Layout** in the project header and set **Side panel position**.
+
+<Screenshot
+  file="editor/interface-side-panel.webp"
+  alt="Side panel showing the Explorer view, with its title, the View actions menu and the Content, WADs and Strings sections"
+/>
+
+| #   | Name         | Description                                                                |
+| --- | ------------ | -------------------------------------------------------------------------- |
+| 1   | Title        | The name of the view                                                       |
+| 2   | View actions | Opens the view as a tab in the editor area                                 |
+| 3   | Toolbar      | The view's own controls, such as a search box. Shows when the view has any |
+| 4   | Body         | The view's content                                                         |
+
+**View actions** shows on the views that also open as a tab: **Search**, **Problems**,
+**Objects** and **Game index**. On **Game index**, it also holds **Game WADs**, the list of the
+game's archives.
+
+The **Explorer** view has three sections. **Content** lists the project's <Hint as="span" tip="A named group of files within a mod project. Layers let mod creators offer optional components that users can toggle independently." client:visible>[layers](/glossary/)</Hint>, and **WADs** and **Strings** list the WAD files and string override locales of the selected layer.
+See [Projects](/editor/projects/).
+
+## Editor area
+
+The editor area holds one or more groups. Each group has its own tab strip and its own active
+tab.
+
+<Screenshot
+  file="editor/interface-tab-strip.webp"
+  alt="Tab strip with a pinned tab, a preview tab in italic, the off-screen tab list and the lock"
+/>
+
+| #   | Name           | Description                                                                 |
+| --- | -------------- | --------------------------------------------------------------------------- |
+| 1   | Pinned tab     | Stays at the start of the strip, before a divider                           |
+| 2   | Preview tab    | Shows its name in italic. The next file you open replaces it                |
+| 3   | Close or unpin | Closes the tab. On a pinned tab, unpins it                                  |
+| 4   | Tab list       | Lists every tab of the group. Shows when some tabs are off screen           |
+| 5   | Lock           | Locks the group. Shows on hover, and at all times while the group is locked |
+
+Under the tab strip, each document has a toolbar. Controls that do not fit move into the **More**
+menu at its end. When no tab is open, the editor area shows **Nothing open**, with **Browse game
+index** and **Browse objects**. While the side panel is hidden, it also offers **Show sidebar**.
+
+## Tab menu
+
+Right-click a tab to open its menu. Some documents add their own items at the top, such as
+**Reveal in Files** on a file preview.
+
+<dl>
+  <dt id="pin">Pin, Unpin</dt>
+  <dd>Pins the tab at the start of the strip, or unpins it.</dd>
+
+<dt id="close">Close</dt>
+<dd>Closes the tab, pinned or not.</dd>
+
+<dt id="close-others">Close Others</dt>
+<dd>Closes every other tab of the group except the pinned ones.</dd>
+
+<dt id="close-to-the-right">Close to the Right</dt>
+<dd>Closes the tabs to the right of this one, except the pinned ones.</dd>
+
+<dt id="close-all">Close All</dt>
+<dd>Closes every tab of the group except the pinned ones.</dd>
+
+<dt id="copy-path">Copy Path</dt>
+<dd>Copies the path of the file the tab shows. Disabled on a tab with no file.</dd>
+
+<dt id="copy-name">Copy Name</dt>
+<dd>Copies the tab's title.</dd>
+
+<dt id="split">Split Right, Split Down</dt>
+<dd>Moves the tab into a new group to the right of the group or below it.</dd>
+
+  <dt id="lock-group">Lock Group, Unlock Group</dt>
+  <dd>Locks the group, or unlocks it. See [Lock a group](#lock-a-group).</dd>
+</dl>
+
+## Tabs and groups
+
+LTK Editor keeps the tabs, groups, pins and locks of each project in `.ltk/editor.json` in the
+project folder. A project opens the way you left it.
+
+### Preview tabs
+
+With **Preview on a single click** turned on, a single click on a file opens it in a preview tab.
+The next file you open replaces it. Each group has its own preview tab. To keep a preview tab,
+double-click it, pin it, drag it into another group or split it.
+
+Turn the setting off to open every file in a tab of its own. It is in **Settings** >
+**Workshop** > **Project editor**. Default: on.
+
+### Split the editor
+
+To open a tab in a new group, drag it to the top, bottom, left or right edge of a group. Drop it
+in the middle of a group to move it there. You can also right-click a tab and select **Split
+Right** or **Split Down**.
+
+Drag the gap between two groups to resize them. A group closes when its last tab closes.
+
+To drag a tab with the keyboard, focus it and press <kbd>Space</kbd>. Move it with the arrow
+keys, then press <kbd>Space</kbd> to drop it or <kbd>Esc</kbd> to cancel.
+
+### Pin a tab
+
+Right-click a tab and select **Pin**. A pinned tab stays at the start of the strip, and **Close
+Others**, **Close to the Right** and **Close All** leave it open. A middle click closes an
+ordinary tab and does nothing on a pinned one.
+
+To unpin a tab, select the pin at its end.
+
+### Lock a group
+
+Right-click a tab and select **Lock Group**, or select the lock at the end of the tab strip. A
+locked group keeps the tabs it holds. Files you open from a tree, the side panel or the command
+palette open in the next group that is not locked. A tab you drag onto a locked group still lands
+there. **Split Right**, **Split Down** and opening beside also work as usual.
+
+### Maximize a group
+
+Double-click a tab to make its group fill the editor area. Double-click the tab again, or
+press <kbd>Esc</kbd>, to bring back the other groups. On a preview tab, the first double-click keeps the
+tab and the second maximizes the group.
+
+### Reopen a closed tab
+
+Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd> to reopen the last tab you closed. Press it
+again to go further back. LTK Editor remembers the last 20 tabs you closed until you quit, and a
+reopen takes the newest one from the open project.
+
+### Close with unsaved changes
+
+When you close a tab with unsaved changes, LTK Editor asks **Close without saving?**. Select
+**Save**, **Discard changes** or **Cancel**. When you quit with unsaved changes, it asks **Quit
+without saving?** and offers **Save all**.
+
+## Related pages
+
+- [Command palette](/editor/command-palette/)
+- [Keyboard shortcuts](/editor/keyboard-shortcuts/)
+- [Projects](/editor/projects/)
+- [Sandboxes](/editor/sandboxes/)

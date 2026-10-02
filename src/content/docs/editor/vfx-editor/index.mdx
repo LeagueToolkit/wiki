@@ -7,6 +7,337 @@ tags:
   subject: [creator-workshop, bin]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
+import Video from '@components/Video.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+The VFX editor opens a particle system, a `VfxSystemDefinitionData` object of a <Hint as="span" tip="Binary property file format (magic PROP). Stores configuration, game data, and asset metadata." client:visible>[bin file](/glossary/)</Hint>, and plays it in a preview while you edit its emitters.
+
+<Where
+  path={['Bin editor', 'Object tab', 'System']}
+  files="VfxSystemDefinitionData objects in .bin files"
+/>
+
+<Video
+  file="editor/vfx-editor-run"
+  alt="A particle system playing in the preview while the timeline's playhead moves across the emitter lanes"
+/>
+
+## What a particle system holds
+
+A particle system is a list of emitters plus settings for the whole system, such as its audio and
+how far away it stays visible. Each emitter spawns particles over time and sets everything about
+them: when and how fast they spawn, how they start, how they change over their life and what they
+draw as.
+
+A system holds its emitters in two lists, `complexEmitterDefinitionData` and
+`simpleEmitterDefinitionData`. The editor marks an emitter of the second list as simple.
+
+Many emitter fields come in pairs. A birth field, such as `birthScale0`, sets the value a particle
+starts with. Its partner, such as `scale0`, changes the value over the particle's life.
+
+## Open a particle system
+
+A `VfxSystemDefinitionData` object opens in an object tab with the **System** view. Open one from
+the **Objects** view, from a link to it, or with **Open object** on its row in a file tab. Switch
+to **Properties** with the view mode control to see every field as plain rows.
+
+Press <kbd>Alt</kbd>+<kbd>Up</kbd> or <kbd>Alt</kbd>+<kbd>Down</kbd> to open the previous or next
+particle system of the same folder.
+
+Whether you can edit the system depends on its file and the tab's
+[sandbox](/editor/sandboxes/). See [Bin editor](/editor/bin-editor/).
+
+## Panes
+
+<Screenshot
+  file="editor/vfx-editor-panes.webp"
+  alt="A particle system tab with the preview and inspector on top and the timeline and curve panes below"
+/>
+
+The **System** view has six panes. Four open by default. Open **Emitters** and **Graph** from
+the **Panes** menu on the header row.
+
+| Pane          | Description                                                       |
+| ------------- | ----------------------------------------------------------------- |
+| **Preview**   | Plays the system on its rig                                       |
+| **Timeline**  | One lane per emitter under one playhead, with the run's transport |
+| **Inspector** | The fields of the selected emitter, or of the system              |
+| **Curve**     | The curve of the value you aim it at                              |
+| **Emitters**  | The emitters as cards or as a table                               |
+| **Graph**     | The system as a canvas of nodes                                   |
+
+Each pane is a tab, which you arrange like the tabs of the editor:
+
+- Drag a pane's tab onto the edge of another pane to split it.
+- Drag the line between two panes to resize them.
+- Double-click a pane's tab to fill the view with it. Double-click it again, or press
+  <kbd>Esc</kbd>, to restore the panes.
+
+**Reset layout** in the **Panes** menu puts every pane back where it started. LTK Editor keeps
+the arrangement per project, so every particle system you open in the project opens the same way.
+
+The header row also holds the crumb. It names the system, the selected emitter and the group in
+view. Select the system's segment to show the system's own fields in the inspector.
+
+## Preview
+
+The preview plays the system. Select a particle to select its emitter, and the inspector and the
+timeline follow. Drag to orbit, right-drag to pan, and scroll to move the camera in or out.
+
+{/* TODO: screenshot of the preview controls, with a numbered region table. */}
+
+| Control              | Description                                                                       |
+| -------------------- | --------------------------------------------------------------------------------- |
+| **Show**             | **Ground**, **Midlane**, **Gizmo** and **Stats**                                  |
+| **Hexshade**         | Draws with the game's shaders. See [Hexshade](/editor/hexshade/)                  |
+| **View mode**        | **Lit**, **Unshaded**, **Untextured** or **Wireframe**, and **Wireframe overlay** |
+| **Camera**           | **Game**, **Orbit**, **Top**, **Front** or **Side**                               |
+| **Viewport handle**  | Picks the value of the selected emitter that a drag in the preview edits          |
+| **Frame the system** | Moves the camera to fit the system. Press <kbd>F</kbd> for the same               |
+| **Rig**              | How the preview carries the system. See [Rig](#rig)                               |
+
+**Gizmo** draws the selected emitter's origin, its offset and its spawn shape. **Stats** shows the
+live particles, the live child systems and the frame time.
+
+The **Viewport handle** menu offers **Offset**, **Turn**, **Emitter position**, **Emit offset**,
+**Shape size** and **Birth velocity**. A value that animates over the emitter's life is disabled,
+because its curve edits it. Drag the handle to change the value, and release to write it as one
+edit. Press <kbd>Esc</kbd> during the drag to cancel it.
+
+LTK Editor keeps the **Show** toggles, the view mode and the camera for every preview.
+
+### Rig
+
+The rig is how the preview carries the system: standing still, flying or circling. Select the rig
+control to change it.
+
+<dl>
+  <dt id="rig-motion">Motion</dt>
+  <dd>**Ground**, **Flight** or **Orbit**. **Bone** shows while a skin's joint carries the run.</dd>
+
+<dt id="rig-playback">Playback</dt>
+<dd>
+  **Once** plays the run one time. **Replay** starts it over at the end. **Continuous** never starts
+  over.
+</dd>
+
+<dt id="rig-height">Height</dt>
+<dd>How high the system stands or flies.</dd>
+
+<dt id="rig-stop">Stop the system mid-run</dt>
+<dd>Stops the system after the time in **Stop after**, so you see how it lingers.</dd>
+
+  <dt id="rig-seed">Seed</dt>
+  <dd>The seed of the run's random values. **Reroll the seed** picks a new one.</dd>
+</dl>
+
+The system picks its own rig until you change it. A system with an emitter that has no lifetime
+plays **Continuous**, and any other system plays **Replay**. A system with a trail plays on
+**Orbit**, and any other stands on the **Ground**. The rig control says where the rig came from:
+**Auto**, **Custom**, a template or the view that opened the system. **Reset to auto** goes back
+to the rig the system picks.
+
+## Timeline
+
+<Screenshot
+  file="editor/vfx-editor-timeline.webp"
+  alt="The timeline with the transport, the ruler, and one lane per emitter with its emission bar"
+/>
+
+The timeline draws one lane per emitter under one playhead. The transport at its top plays,
+pauses, steps and restarts the run, and sets **Loop** and the **Playback speed**.
+
+A lane's bar is the emitter's timing. The solid bar is when the emitter emits. A faded tail shows
+how long its particles live, and a hatched tail shows its linger. The count at the right edge is
+the emitter's live particles.
+
+### Edit timing
+
+On an emitter's own lane:
+
+- Drag the bar to move when the emitter starts.
+- Drag the left edge to change the start and keep the end.
+- Drag the right edge to change how long the emitter emits.
+- Drag the end of the hatched tail to change how long particles linger.
+
+Each drag is one edit. Hold <kbd>Shift</kbd> to drag free of snapping, and press <kbd>Esc</kbd>
+to cancel the drag.
+
+Double-click a bar to enter exact times: the start delay, the lifetime, **Emits until the system
+stops**, the particle linger, **Repeats in cycles** with its period, and the single burst switch.
+
+### Show, hide and solo
+
+Each lane has an eye and an **S**. The eye hides the emitter in the preview, and **S** solos it.
+Neither changes the file, and the hidden emitter still runs. Hold <kbd>Alt</kbd> and select an
+eye to show that lane alone. Drag down a column of eyes or **S** buttons to set every lane you
+pass.
+
+### Ruler
+
+- Drag along the ruler to scrub.
+- Hold <kbd>Ctrl</kbd> and scroll to zoom, and hold <kbd>Shift</kbd> and scroll to pan.
+- Hold <kbd>Shift</kbd> and drag along the ruler to set a loop range. Double-click inside the range to clear it.
+- Double-click the ruler to fit the run.
+
+### Markers
+
+A marker names a time on the ruler. Select **Add marker**, or press <kbd>Ctrl</kbd>+<kbd>M</kbd>,
+to add one at the playhead. Double-click a marker to name it. Right-click it to rename or delete
+it. Markers are kept in the project and never reach the packed mod.
+
+### Snapping and histogram
+
+**Snapping** makes a dragged time land on nearby times, such as bar edges, markers and the
+playhead. It is on by default. **Histogram** draws each emitter's live particles over its bar.
+
+## Inspector
+
+The inspector shows the selected emitter's fields in groups:
+
+**Emission**, **Birth**, **Initial Motion**, **Motion Over Life**, **Position**, **Scale**,
+**Color**, **Primitive**, **Texture**, **Render**, **Material**, **Effects** and **Other**.
+
+Each field shows a label for its engine name. Hover over a name to see the field's type, its
+default and the meta wiki's description. See
+[VFX editor reference](/editor/vfx-editor/reference/) for every field.
+
+The bar above the fields has these actions:
+
+| Action                           | Description                                                                                              |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Show only defined properties** | Hides the fields the emitter leaves at their default                                                     |
+| **Add property**                 | Replaces the search with a box that adds a field                                                         |
+| **Show emitter preview**         | Draws a preview of the emitter above the fields                                                          |
+| **Changes**                      | Marks the changed fields. See [Bin editor interface](/editor/bin-editor/interface/)                      |
+| Emitter actions                  | **Duplicate emitter**, **Copy emitter**, **Paste emitter**, **Delete emitter** and **Add from template** |
+
+Enter text in **Search emitter properties** to filter the fields by label, engine name or group.
+
+### Primitive
+
+**Render Primitive** sets what each particle draws as. The list groups the choices into
+**Quads**, **Rays and beams**, **Trails**, **Meshes** and **Other**. An emitter that names no
+primitive draws camera quads. A sketch under the list shows what the primitive draws.
+
+### Value modes
+
+A value that can change over time has a mode control next to it:
+
+- **Use constant value** gives the field one value.
+- **Random between two values** gives each particle a value between a **Min** and a **Max**. It
+  shows on the fields that support it.
+- **Animate value** gives the field a curve. When it has one, **Edit curve** aims the
+  **Curve** pane at it.
+
+## Curve
+
+The **Curve** pane edits the curve of the value you aim it at. Select a curve in the inspector or
+a value node in the graph to aim it. When you select another emitter, the pane follows the same
+field.
+
+The pane has two tabs. **Graph** plots the keys, one line per channel. **Table** lists the keys,
+with a time and a value per channel. A color draws as a gradient bar with its keys in a table
+under it.
+
+The time axis runs from `0` to `1`. For a particle value, `0` is the particle's birth and `1` is
+its death.
+
+- Select a key to edit its time and value in the strip under the graph.
+- Hold <kbd>Shift</kbd> and select a key to select a range. Hold <kbd>Ctrl</kbd> and select a key
+  to add or remove it.
+- Drag empty space to box-select keys.
+- Double-click to add a key.
+- Press <kbd>Delete</kbd> to remove the selected keys.
+
+## Emitters
+
+The **Emitters** pane shows the emitters as **Cards** or as a **Table**. A card shows the
+emitter's name, its index, a square of the texture it draws and a chip per group it sets. Select
+the name to open the emitter, and a chip to open it at that group. The **Table** compares one
+field across every emitter.
+
+Enter text in **Filter** to show only the emitters whose name contains it.
+
+## Graph
+
+The **Graph** pane draws the system as nodes. Each emitter is a node, and a value gets a node of
+its own when you edit it as one unit, such as a curve or a spawn shape. You cannot draw or cut a
+connection. A connection changes when you edit the value that holds it.
+
+- Press <kbd>Tab</kbd> or <kbd>Shift</kbd>+<kbd>A</kbd> to open the quick add, which lists the
+  fields, **New emitter** and the templates.
+- Drag out of an empty socket, or select it, to plug in a **Curve** or a **Random range**.
+- Drag a texture or a mesh from your project's files onto an emitter node to use it.
+- Right-click a node for its menu.
+
+{/* TODO: screenshot of the Graph pane once captured. */}
+
+## Copy and duplicate emitters
+
+The inspector's emitter actions hold these four actions. In the **Graph** pane, select an emitter's
+node and press its key.
+
+| Action                | Key                          |
+| --------------------- | ---------------------------- |
+| **Duplicate emitter** | <kbd>Ctrl</kbd>+<kbd>D</kbd> |
+| **Copy emitter**      | <kbd>Ctrl</kbd>+<kbd>C</kbd> |
+| **Paste emitter**     | <kbd>Ctrl</kbd>+<kbd>V</kbd> |
+| **Delete emitter**    | <kbd>Delete</kbd>            |
+
+A duplicate lands right after its source, and a paste lands after the selected emitter. A name
+the system already holds gets `_copy` added. A copy works on a read-only file too, so you can copy
+an emitter from a game file and paste it into your own.
+
+## Templates
+
+A VFX template is a ready-made emitter or system that uses only textures the game ships. Select
+**Add from template** in the inspector's actions or in a node's menu.
+
+| Kind    | Templates                                                                           |
+| ------- | ----------------------------------------------------------------------------------- |
+| Emitter | **Glow**, **Sparks**, **Smoke puff**, **Shockwave ring**, **Trail**, **Distortion** |
+| System  | **Explosion**, **Missile**, **Aura**                                                |
+
+An emitter template lands after the selected emitter. A system template adds all of its emitters
+in one edit, and the preview plays on the template's rig.
+
+To start a new system from a template, add an object of the `VfxSystemDefinitionData` class to a
+declared game bin, and pick a template in **Start from**. **Blank** starts a system with no emitter. See
+[Game data declarations](/editor/bin-editor/game-data/).
+
+## Keyboard shortcuts
+
+These keys work anywhere in the system tab, outside a text field.
+
+| Key                                                                 | Action                           |
+| ------------------------------------------------------------------- | -------------------------------- |
+| <kbd>Space</kbd>                                                    | Play or pause                    |
+| <kbd>Left</kbd>, <kbd>Right</kbd>                                   | One frame back or forward        |
+| <kbd>Shift</kbd>+<kbd>Left</kbd>, <kbd>Shift</kbd>+<kbd>Right</kbd> | Six frames back or forward       |
+| <kbd>Home</kbd>                                                     | Restart and play                 |
+| <kbd>End</kbd>                                                      | Go to the end of the run         |
+| <kbd>L</kbd>                                                        | Turn **Loop** on or off          |
+| <kbd>F</kbd>                                                        | Fit the camera                   |
+| <kbd>S</kbd>                                                        | Solo the selected emitter        |
+| <kbd>M</kbd>                                                        | Hide the selected emitter        |
+| <kbd>[</kbd>, <kbd>]</kbd>                                          | Slower or faster                 |
+| <kbd>Ctrl</kbd>+<kbd>M</kbd>                                        | Add a marker at the playhead     |
+| <kbd>Alt</kbd>+<kbd>Up</kbd>, <kbd>Alt</kbd>+<kbd>Down</kbd>        | Previous or next particle system |
+
+See [Keyboard shortcuts](/editor/keyboard-shortcuts/) for the rest of LTK Editor.
+
+## Limitations
+
+- An emitter with a custom material draws with a static approximation. The preview does not run
+  shader graphs or material drivers.
+
+## Related pages
+
+- [VFX editor reference](/editor/vfx-editor/reference/)
+- [Hexshade](/editor/hexshade/)
+- [Bin editor](/editor/bin-editor/)
+- [Editing bins](/editor/bin-editor/editing/)
+- [Game data declarations](/editor/bin-editor/game-data/)

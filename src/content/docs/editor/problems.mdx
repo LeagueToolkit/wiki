@@ -1,12 +1,136 @@
 ---
 title: Problems
-description: The checks LTK Editor runs on a project and how to fix what they find.
+description: The checks LTK Editor runs on a project's files, what they find, and how to fix it from the Problems list.
 tags:
   type: concept
   audience: [mod-creator]
   subject: [creator-workshop, validation]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Screenshot from '@components/Screenshot.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+Problems lists what LTK Editor's checks find wrong in a project's files, such as a texture size
+that crashes the game. Most problems have a fix that LTK Editor applies for you.
+
+<Where path={['Rail', 'Problems']} />
+
+<Screenshot
+  file="editor/problems-list.webp"
+  alt="The Problems list with a bin file expanded to its objects and two findings"
+/>
+
+## When the checks run
+
+The checks run when you open a project, over every file of every layer, and again after a fix. To
+run them again yourself, select **Check the project again**.
+
+To read the list in a wider tab, select **View actions** > **Open Problems in a tab**. You can also
+run **Open the problems list** from the [command palette](/editor/command-palette/).
+
+## Severities
+
+Each problem has one severity, and the list sorts by it first.
+
+| Severity | Meaning                                              |
+| -------- | ---------------------------------------------------- |
+| Fatal    | The game crashes                                     |
+| Error    | The game rejects the file, and the mod does not work |
+| Warning  | The game accepts the file, and something is wrong    |
+| Info     | Worth knowing, and nothing is wrong                  |
+
+The project header shows the count of the worst severity in the project, next to **Test**. Select
+it to open Problems. The count is hidden when the project has only info problems or none.
+
+## The list
+
+- A **file** row shows the layer, the path and the number of problems in the file.
+- An **object** row groups the problems of one bin object under its file.
+- A **problem** row shows the check's title and where in the file the check found it.
+
+Select a problem to open the file at the property the problem names. Hover over a problem to see
+the check's description, the layer, the file, the object and the value a fix writes.
+
+To narrow the list, enter text in **Filter problems**. The toolbar shows how many problems the
+filter leaves.
+
+## Fix problems
+
+A problem with a fix shows a wrench when you hover over its row. Each level of the list fixes its
+own scope:
+
+<dl>
+  <dt id="fix-one">Fix this problem</dt>
+  <dd>The wrench on a problem row. Applies the fix to that one problem.</dd>
+
+<dt id="fix-object">Fix every problem in _name_</dt>
+<dd>The wrench on an object or a file row. Applies the fixes under that object or file.</dd>
+
+  <dt id="fix-all">Fix _N_ problems across the project</dt>
+  <dd>
+    The wrench in the toolbar. Applies the fix of every listed problem, in every layer. The text
+    filter does not limit it. While coming-patch findings are listed, it fixes those too.
+  </dd>
+</dl>
+
+A fix rewrites the file in its layer, then the checks run again. A toast reports how many problems
+it fixed. A problem whose file changed since the check ran is skipped, and the toast says so.
+
+## Coming patches
+
+Riot changes how bin files store some values from one patch to the next. Some checks find what the
+next patch will break, before your game has that patch.
+
+These findings show dimmed, and the header count leaves them out. To list or hide them, select the
+pill under the filter box. The pill names the patch change the checks wait for, or reads
+**Coming patches** when there is more than one. Its tooltip, **Not broken yet**, says what each
+check waits for.
+
+The pill and **Settings** > **Workshop** > **Project editor** > **Lints for the coming patch**
+change the same setting. Default: on. The pill shows only when the project has such findings.
+
+:::caution[Fix for the patch you play]
+A fix for a coming patch breaks the mod on the patch you play now. Hide these findings before you
+fix the whole project, and fix them once the patch is out.
+:::
+
+## Files not checked
+
+A check can fail to read a file. The list then shows **_N_ files were not checked** above the
+problems. Select **Show files** to list them with the reason, and select a file to open it.
+
+## Checks
+
+Each check has a fix. A problem that its check can't repair shows no wrench.
+
+| Check                          | ID                      | What it finds                                                                  |
+| ------------------------------ | ----------------------- | ------------------------------------------------------------------------------ |
+| Meta property type mismatch    | `bin/property-type`     | A bin property at a type the game no longer reads, so its value drops          |
+| Block-unaligned texture size   | `tex/block-alignment`   | A compressed texture whose size is not a whole number of blocks                |
+| Unsupported audio bank version | `audio/bank-version`    | An audio bank at a version the game drops, so the mod plays no sound           |
+| Unset soundbank id             | `audio/bank-id`         | An audio bank with no id                                                       |
+| Partial resource resolver      | `bin/resolver-key-loss` | A resource resolver that does not define every expected resource               |
+| Per-frame random table         | `vfx/per-frame-random`  | A probability table on a value the game reads each frame, so particles flicker |
+| Unreadable random table set    | `vfx/broken-random`     | A probability table set the game can't read                                    |
+
+## Results
+
+<dl>
+  <dt id="all-good">All good</dt>
+  <dd>The checks found no problems.</dd>
+
+<dt id="no-problems-found">No problems found</dt>
+<dd>The checks found nothing in the files they could read. Some files were not checked.</dd>
+
+  <dt id="could-not-check">Couldn't check this project</dt>
+  <dd>The checks failed to run.</dd>
+</dl>
+
+The checks are separate from the checks Pack runs, and neither Test nor Pack waits for Problems.
+See [Packaging](/editor/packaging/#checks-before-a-pack).
+
+## Related pages
+
+- [Testing](/editor/testing/)
+- [Packaging](/editor/packaging/)
+- [Bin editor](/editor/bin-editor/)

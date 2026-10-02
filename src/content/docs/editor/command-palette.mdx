@@ -7,6 +7,191 @@ tags:
   subject: [creator-workshop]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Screenshot from '@components/Screenshot.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+The command palette searches your project, the game and the commands of LTK Editor from one box.
+It opens from the project bar in the middle of the project header.
+
+<Where path={['LTK Editor', 'Project bar']} keys={['Ctrl', 'P']} />
+
+<Screenshot
+  file="editor/command-palette-open.webp"
+  alt="The command palette open over a project, with the Documents, Layers and Commands groups"
+/>
+
+## Open the palette
+
+| Key                                           | Opens                           |
+| --------------------------------------------- | ------------------------------- |
+| <kbd>Ctrl</kbd>+<kbd>P</kbd>                  | The palette, every source       |
+| <kbd>Ctrl</kbd>+<kbd>K</kbd>                  | The same                        |
+| <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> | The palette, scoped to Commands |
+| <kbd>Ctrl</kbd>+<kbd>R</kbd>                  | The palette, scoped to Projects |
+
+You can also select the project bar. Press <kbd>Esc</kbd> or select outside the palette to close
+it.
+
+Over the project grid, with no project open, the palette searches only projects, commands and
+settings. There, <kbd>Ctrl</kbd>+<kbd>F</kbd> turns the bar into a filter for the grid.
+
+## Empty box
+
+Before you type, the palette lists the open documents, the most recently visited first. Then it
+lists the project's layers and the commands. Files, strings and game files show only once you
+type a term.
+
+Over the project grid, the empty box lists the commands and then the projects.
+
+## Sources
+
+Each source is a group of results. A prefix at the start of the query scopes the palette to one
+source.
+
+| Source    | Prefix     | Searches                                                        |
+| --------- | ---------- | --------------------------------------------------------------- |
+| Projects  | `/` or `~` | Every project in LTK Editor                                     |
+| Documents |            | The open tabs                                                   |
+| Files     |            | Every file of every layer                                       |
+| Layers    |            | The layers of the project                                       |
+| Strings   | `#`        | Every string override key of the project                        |
+| Commands  | `>`        | What LTK Editor can do. See [Commands](#commands)               |
+| Settings  |            | Every setting, by name. A result opens it in the settings       |
+| Game      |            | Every file of the installed game                                |
+| Objects   | `$`        | Every bin object the project and the installed game declare     |
+| Rows      | `@`        | Every row of the active bin tab or object tab, by name or value |
+
+Type `?` to list the prefixes in the palette.
+
+### Game files
+
+The **Game** source reads every file of your League installation. The first search of a session
+builds an index of every archive, so its results take a moment to arrive. To leave game files out
+of the palette, turn off **Search the game** in **Settings** > **Workshop** > **Project editor**.
+Default: on.
+
+### Objects
+
+The **Objects** source shows the project's own objects first, then the game's. In the `$` scope,
+enter `class:` and a class name prefix or a hash to narrow the results to one class.
+
+The game's objects need the object index. With **Search bin objects** turned on, LTK Editor
+builds it in the background when a project opens. With it off, the palette answers only after the
+[objects browser](/editor/objects-browser/) builds it for the session. The setting is in
+**Settings** > **Workshop** > **Project editor**. Default: off.
+
+### Rows
+
+The `@` scope searches the rows of the active bin tab or object tab.
+Press <kbd>Ctrl</kbd>+<kbd>F</kbd> in a bin tab to open the palette in this scope.
+
+## Scopes
+
+A scope shows as a chip before the caret.
+
+- Type a prefix at the start of the query.
+- Highlight a result and press <kbd>Tab</kbd> to scope to its source.
+- Press <kbd>Backspace</kbd> in an empty box, or select the chip, to remove the scope.
+
+## Keys
+
+| Key                              | Action                                            |
+| -------------------------------- | ------------------------------------------------- |
+| <kbd>Up</kbd>, <kbd>Down</kbd>   | Move the highlight                                |
+| <kbd>Home</kbd>, <kbd>End</kbd>  | Move the highlight to the first or last result    |
+| <kbd>Enter</kbd>                 | Open the result or run the command                |
+| <kbd>Ctrl</kbd>+<kbd>Enter</kbd> | Open the result in a group beside the current one |
+| <kbd>Alt</kbd>+<kbd>Enter</kbd>  | Open the result in a permanent tab                |
+| <kbd>Tab</kbd>                   | Scope to the highlighted result's source          |
+| <kbd>Backspace</kbd>             | Remove the scope, in an empty box                 |
+| <kbd>Esc</kbd>                   | Close the palette                                 |
+
+| <kbd>Alt</kbd>+<kbd>Enter</kbd> matters while **Preview on a single click** is on, when a file
+otherwise opens in a preview tab. See [Preview tabs](/editor/interface/#preview-tabs).
+
+## Commands
+
+The palette lists commands by group. A command that cannot run is grayed out and says why, such
+as **No layers** or **Nothing open**.
+
+<Screenshot
+  file="editor/command-palette-commands.webp"
+  alt="The command palette scoped to Commands, with the Project, Go to and View groups"
+/>
+
+### Project
+
+| Command                                                               | Action                                                                                 |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **Test the project**                                                  | Tests the project in the game. See [Testing](/editor/testing/)                         |
+| **Pack the project**                                                  | Packs the project. See [Packaging](/editor/packaging/)                                 |
+| **Open the project folder**                                           | Opens the project folder in your file manager                                          |
+| **Use game data declarations**, **Stop using game data declarations** | Turns declaring on or off. See [Game data declarations](/editor/bin-editor/game-data/) |
+| **Delete the project**                                                | Asks to delete the project                                                             |
+
+### Go to
+
+| Command                      | Opens                                              |
+| ---------------------------- | -------------------------------------------------- |
+| **Open mod details**         | The project's name, version, authors and thumbnail |
+| **Open the game index**      | The installed game's files as one tree             |
+| **Open the game WADs**       | The list of the game's archives                    |
+| **Open the objects browser** | The bin objects of the game                        |
+| **Open the problems list**   | The project's problems                             |
+| **Open the readme**          | The project's readme                               |
+| **Open the license**         | The project's license                              |
+| **Open the ignore rules**    | The project's `.modignore` rules                   |
+| **Open the references**      | The References document                            |
+
+A command for a document that is already open selects its tab.
+
+### View
+
+| Command                                          | Action                                                                         |
+| ------------------------------------------------ | ------------------------------------------------------------------------------ |
+| **Split right**, **Split down**                  | Moves the active tab into a new group                                          |
+| **Pin the tab**, **Unpin the tab**               | Pins or unpins the active tab                                                  |
+| **Lock the group**, **Unlock the group**         | Locks or unlocks the focused group                                             |
+| **Reset the layout**                             | Merges every group into one                                                    |
+| **Close the tab**                                | Closes the active tab                                                          |
+| **Close the other tabs**                         | Closes the other tabs of the group, except pinned ones                         |
+| **Close the tabs to the right**                  | Closes the tabs right of the active one, except pinned ones                    |
+| **Close all the tabs**                           | Closes every tab of the group, except pinned ones                              |
+| **Reopen the closed tab**                        | Reopens the last tab you closed. <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd> |
+| **Maximize the panel**, **Restore the panel**    | Makes the group fill the editor area, or restores the others                   |
+| **Hide the side panel**, **Show the side panel** | Hides or shows the side panel                                                  |
+
+See [Tabs and groups](/editor/interface/#tabs-and-groups).
+
+### Game
+
+| Command                    | Action                                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------ |
+| **Search the game files**  | Opens the **Search** view in the side panel. <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> |
+| **Rebuild the game index** | Reads the installed game's archives again                                                  |
+
+### Workshop
+
+These commands also work over the project grid. **Rebuild the game index** and **Open settings**
+do too.
+
+| Command                          | Action                                                                             |
+| -------------------------------- | ---------------------------------------------------------------------------------- |
+| **New project**                  | Creates a project. <kbd>Ctrl</kbd>+<kbd>N</kbd>. See [Projects](/editor/projects/) |
+| **Open folder...**               | Opens a folder as a project. <kbd>Ctrl</kbd>+<kbd>O</kbd>                          |
+| **Import from Fantome**          | Creates a project from a `.fantome` file                                           |
+| **Import from Modpkg**           | Creates a project from a `.modpkg` file                                            |
+| **Import from a Git repository** | Creates a project from a Git repository                                            |
+
+### Settings
+
+| Command           | Action                                           |
+| ----------------- | ------------------------------------------------ |
+| **Open settings** | Opens the settings. <kbd>Ctrl</kbd>+<kbd>,</kbd> |
+
+## Related pages
+
+- [LTK Editor interface](/editor/interface/)
+- [Keyboard shortcuts](/editor/keyboard-shortcuts/)
+- [Game browser](/editor/game-browser/)
+- [Objects browser](/editor/objects-browser/)

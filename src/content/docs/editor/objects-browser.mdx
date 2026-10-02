@@ -1,12 +1,181 @@
 ---
 title: Objects browser
-description: Find any bin object in the game or your project by path or class, preview it, and list the places that refer to it.
+description: Find any bin object of the game by path or class, preview it, and list the places that refer to it.
 tags:
   type: concept
   audience: [mod-creator]
   subject: [creator-workshop, bin]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
+import Video from '@components/Video.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+The objects browser lists every object that the <Hint as="span" tip="Binary property file format (magic PROP). Stores configuration, game data, and asset metadata." client:visible>[bin files](/glossary/)</Hint>
+of your League installation declare, in one tree over their paths. Use it to find an object without
+knowing which file holds it.
+
+<Where path={['Project views', 'Objects']} files="Every bin file of the installed game" />
+
+<Screenshot
+  file="editor/objects-browser-grid.webp"
+  alt="The Objects tab in the Grid view, with live previews of the particle systems of one champion skin"
+/>
+
+## Open the objects browser
+
+- Select **Objects** on the rail. The side panel shows the tree.
+- To open it as a tab, select **View actions** > **Open Objects in a tab**, or run **Open the
+  objects browser** from the [command palette](/editor/command-palette/).
+- To show an object of an open bin, right-click its row and select **Reveal in Objects**.
+
+## Object index
+
+The objects browser reads the object index, which LTK Editor builds from every bin of the
+installation. The index is built once per session.
+
+The **Search bin objects** setting keeps the index for the [command palette](/editor/command-palette/)
+too. While the setting is off, the browser builds the index for this session only, and says so
+above the grid. Select **Keep it on** to turn the setting on. The setting is under **Settings** >
+**Workshop** > **Project editor**. Default: off.
+
+## Tree and grid
+
+The view control in the toolbar switches between two views of the same objects.
+
+<dl>
+  <dt id="tree">Tree</dt>
+  <dd>
+    One row per path segment. A folder row shows the number of objects under it. An object row
+    shows its name, its class and the file that declares it.
+  </dd>
+
+  <dt id="grid">Grid</dt>
+  <dd>
+    One tile per object or folder. A folder tile shows the number of objects under it. Select a
+    folder tile to open it, and press <kbd>Backspace</kbd> or <kbd>Alt</kbd>+<kbd>Up</kbd> to go
+    to the parent folder. An object that has objects under its path carries a badge. Select the
+    badge to open them.
+  </dd>
+</dl>
+
+The **Sort and view** menu holds **Tile size** and **Thumbnails**. A switch between the views
+keeps the selected folder or object.
+
+Objects that no hash table names group in a folder of their own and show their hash.
+
+## Objects in your project
+
+The tree holds the objects of the installation. When a layer of your project also declares an
+object, the object's row carries the layer's name. An object that only your project declares has
+no row.
+
+In the tree, an object that several files declare shows _n_ **files** in place of its file. Hover over it to
+list the files, and select a file to open it.
+
+## Previews
+
+With **Thumbnails** on, the grid draws a preview on each tile it can preview: a particle system, a
+skin, a material, a UI icon, a UI view, a UI element and a font. Hover over a tile to play its
+preview. A particle system plays its effect, and a skin or a material turns.
+
+To see a preview at full size, focus the tile and press <kbd>Space</kbd>, or select **Large
+preview** on the tile. Press <kbd>Space</kbd> again to close it.
+
+<Video
+  file="editor/objects-browser-hover"
+  alt="Particle system tiles playing their effects as the pointer moves over them"
+/>
+
+A tile whose preview fails shows **Preview unavailable**. Select **Retry** _n_ **previews** in the
+toolbar to try the failed tiles on screen again, or right-click one tile and select **Retry
+preview**.
+
+## Search
+
+The box in the toolbar searches the paths of every object. Press <kbd>Ctrl</kbd>+<kbd>F</kbd> to
+focus it, and select **Use regular expression** to search with a regular expression.
+
+To narrow the search to one class, add a `class:` term with the start of the class name or its
+hash:
+
+```text
+class:VfxSystemDefinitionData aatrox
+```
+
+A search with only a `class:` term lists every object of that class.
+
+The box shows the number of matches. When more objects match than the browser lists, the count
+reads **first** _n_ **of** _total_ **matches**.
+
+## Open an object
+
+Select an object to open it in an object tab of the [bin editor](/editor/bin-editor/).
+Double-click it to keep the tab open. In the grid, press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to open
+the focused object beside the current tab.
+
+In an object tab of a particle system, press <kbd>Alt</kbd>+<kbd>Up</kbd>
+or <kbd>Alt</kbd>+<kbd>Down</kbd> to open the previous or next particle system of the same folder.
+
+In the tree, press <kbd>Enter</kbd> to open the focused object, or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>
+to open it beside the current tab. <kbd>Right</kbd> expands a row and <kbd>Left</kbd> collapses
+it. Hold <kbd>Ctrl</kbd> while you select an object to open it beside the current tab.
+
+## Object menu
+
+Right-click an object to open its menu. A folder's menu has only **Copy path**.
+
+<dl>
+  <dt id="menu-open">Open, Open beside</dt>
+  <dd>Opens the object in an object tab, in the current group or beside it.</dd>
+
+<dt id="menu-retry-preview">Retry preview</dt>
+<dd>Builds the tile's preview again. Shows when the preview failed.</dd>
+
+<dt id="menu-show-in-file">Show in file</dt>
+<dd>Opens the bin file that declares the object, scrolled to it.</dd>
+
+<dt id="menu-find-references">Find references</dt>
+<dd>Lists the places that link to the object. See [References](#references).</dd>
+
+<dt id="menu-copy-path">Copy path</dt>
+<dd>Copies the object's path.</dd>
+
+<dt id="menu-copy-hash">Copy hash</dt>
+<dd>Copies the hash of the object's path.</dd>
+
+  <dt id="menu-copy-class-hash">Copy class hash</dt>
+  <dd>Copies the hash of the object's class. Shows when no hash table names the class.</dd>
+</dl>
+
+## References
+
+**Find references** opens the **References** document, which answers one question at a time.
+A new question replaces the last one.
+
+| Asked from                                                  | Header        | Lists                                       |
+| ----------------------------------------------------------- | ------------- | ------------------------------------------- |
+| **Find class references** on an object row or an object tab | Objects of    | Every object of the class                   |
+| **Find class references** on an embedded value              | Uses of       | Every place that holds a value of the class |
+| **Find references** on an object                            | References to | Every place that links to the object        |
+| **Find references** on a file                               | References to | Every place that names the file             |
+
+The results group by the file that declares them. A row of a link or a use names the property
+path inside the object, and opens the object tab expanded to that row.
+
+A question about links, files or uses reads every bin of your project's layers and then of the
+installation. A bar under the header shows the bins read so far. Select **Cancel** to stop the
+search and keep what it found, and **Run again** to ask the question again.
+
+<Screenshot
+  file="editor/objects-browser-references.webp"
+  alt="The References document listing the links to one object, grouped by file, with the bin count in the header"
+/>
+
+## Related pages
+
+- [Bin editor](/editor/bin-editor/)
+- [Game browser](/editor/game-browser/)
+- [Sandboxes](/editor/sandboxes/)
+- [Command palette](/editor/command-palette/)

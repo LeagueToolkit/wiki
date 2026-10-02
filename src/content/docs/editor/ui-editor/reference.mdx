@@ -1,12 +1,328 @@
 ---
 title: Atlas UI editor reference
-description: Every field of the view and UI element classes the Atlas UI editor opens, and what it does in the game.
+description: The fields the Atlas inspector edits on a UI element, a view controller and a font, and what each does in the game.
 tags:
   type: reference
   audience: [mod-creator]
   subject: [creator-workshop, bin]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+The Atlas **Inspector** edits the selected UI element, a class based on `UiElementIData`. With
+nothing selected, it shows the view controller's own fields. The sections below follow the
+inspector's order. A section shows only when the element has what it edits.
+
+<Where path={['Bin editor', 'View', 'Inspector']} files="UI scene .bin files" />
+
+The game orders scenes by their `Layer`, then the elements of each scene by their own `Layer`. A
+scene is not a container in the file. Each element names its scene in `Scene`, and each scene names
+its parent in `ParentScene`.
+
+## Identity
+
+<dl>
+  <dt id="scene">Scene (`Scene`)</dt>
+  <dd>The scene the element belongs to. Changing it moves the element to another scene of the view.</dd>
+
+<dt id="layer">Layer (`Layer`)</dt>
+<dd>
+  The element's place in its scene's draw order. Scenes carry large layers, such as `90000`, and
+  elements small ones.
+</dd>
+
+  <dt id="enabled">Enabled (`Enabled`)</dt>
+  <dd>
+    Whether the file turns the element on. The toolbar's **Show disabled** draws the elements that
+    the file leaves off.
+  </dd>
+</dl>
+
+## Position
+
+The **Position** section edits the element's `Position`, a `UiPositionRect`. An element with
+`UiPositionFullScreen` reads **Fills the screen**, and an element with no position reads **Takes
+the bounds of its children**.
+
+<dl>
+  <dt id="anchor">Anchor (`Anchors`)</dt>
+  <dd>
+    The point the element is pinned to, which stays fixed when the screen size changes.
+    `AnchorSingle` pins it to a point of the screen. `AnchorDouble` stretches it between two
+    anchors. `AnchorHierarchy` places it inside its parent's rect instead of the screen. Select a
+    point of the anchor diagram to pin the element there, where it stays in place.
+
+    <dl>
+      <dt id="stretch">Stretch X, Stretch Y</dt>
+      <dd>
+        Stretches the element between its parent's edges on that axis, less a margin at each end.
+        Shows only for an element with `AnchorHierarchy`.
+      </dd>
+    </dl>
+
+  </dd>
+
+  <dt id="rect">X, Y, W, H (`UIRect`)</dt>
+  <dd>
+    The element's position and size, in pixels of its design resolution, from the top-left
+    corner. The line under the fields names the design resolution, from
+    `SourceResolutionWidth` and `SourceResolutionHeight`. The game scales the size by the screen
+    height over the design height.
+  </dd>
+</dl>
+
+### Scaling
+
+<dl>
+  <dt id="follows-hud-scale">Follows the HUD scale (`IgnoreGlobalScale`)</dt>
+  <dd>
+    Scales the element with the player's HUD scale setting, around its anchor. Turning it off
+    sets `IgnoreGlobalScale`.
+  </dd>
+
+<dt id="stays-inside-safe-zone">Stays inside the safe zone (`IgnoreSafeZone`)</dt>
+<dd>
+  Places the element's anchor inside the screen's safe zone. Turning it off sets `IgnoreSafeZone`.
+</dd>
+
+<dt id="never-smaller">Never smaller than its design size (`DisableResolutionDownscale`)</dt>
+<dd>
+  Keeps the element at least its design size on a screen smaller than its design resolution. The HUD
+  scale does not apply to it.
+</dd>
+
+  <dt id="snaps-to-pixels">Snaps X to pixels, Snaps Y to pixels (`DisablePixelSnappingX`, `DisablePixelSnappingY`)</dt>
+  <dd>
+    Rounds the element's position to whole screen pixels on that axis. Turning one off sets the
+    matching `DisablePixelSnapping` field.
+  </dd>
+</dl>
+
+## Look
+
+**Look** reads what the element draws. Which rows show depends on its class.
+
+<dl>
+  <dt id="colour">Colour (`Color`)</dt>
+  <dd>The tint of an icon.</dd>
+
+<dt id="particle-system">Particle system (`VfxSystem`)</dt>
+<dd>The particle system a particle element draws in screen space.</dd>
+
+<dt id="children">Children (`Elements`)</dt>
+<dd>The number of elements a group holds.</dd>
+
+  <dt id="layout">Layout (`LayoutStyle`)</dt>
+  <dd>
+    How a managed layout places its children: **Horizontal list**, **Vertical list** or **Grid**.
+    The children move with the layout, so you can't move one on its own.
+  </dd>
+</dl>
+
+A row reads **Set at run time** where the view's code fills the value.
+
+## Sprite
+
+The **Sprite** section shows the sprite that an icon or effect element draws, from its
+`TextureData`. **Export PNG** writes the sprite to a PNG file. **Replace image** puts a PNG on your
+project's own sheet and points the element at it. See
+[Sprites pane](/editor/ui-editor/#sprites-pane).
+
+## Text
+
+<dl>
+  <dt id="text-key">Text key (`TRAKey`)</dt>
+  <dd>
+    The string-table key of the text the element shows. It reads **Set at run time** where the
+    view's code sets the text.
+  </dd>
+
+  <dt id="text-font">Font (`FontDescription`)</dt>
+  <dd>
+    The `GameFontDescription` the element draws its text with. The list holds every font of the
+    scene bin and of the game. See [Font](#font) for the font's own fields.
+  </dd>
+</dl>
+
+## Button
+
+The **Button** section shows on a `UiElementGroupButtonData`. A button is a group whose states each
+list the child elements that draw in that state.
+
+<dl>
+  <dt id="button-enabled">Enabled (`IsEnabled`)</dt>
+  <dd>
+    Shows or hides the button. A button that the file leaves disabled stays hidden until the
+    view's code enables it.
+  </dd>
+
+<dt id="button-active">Active (`IsActive`)</dt>
+<dd>
+  Whether the button reacts to the pointer. An inactive button draws its inactive state, whatever
+  the pointer does. Default: `true`.
+</dd>
+
+<dt id="button-selected">Selected (`IsSelected`)</dt>
+<dd>Draws the selected form of each state. A click never changes it. Only the view's code does.</dd>
+
+<dt id="button-states">States</dt>
+<dd>
+  The states the file writes, each with the sprite it draws: `DefaultStateElements`,
+  `HoverStateElements`, `ClickedStateElements`, `InactiveStateElements` and their selected forms. A
+  state the file does not write draws nothing.
+</dd>
+
+<dt id="button-hit-region">Hit region (`HitRegionElement`)</dt>
+<dd>The region element that the button's clicks and hovers land in.</dd>
+
+  <dt id="button-tooltip-key">Tooltip key (`ActiveTooltipTraKey`)</dt>
+  <dd>
+    The string-table key of the tooltip the active button shows. The file can also set
+    `InactiveTooltipTraKey` and `SelectedTooltipTraKey`, which show under **All fields**.
+  </dd>
+</dl>
+
+The toolbar's **Button state** draws every button in one state, for the preview only.
+
+## Meter
+
+The **Meter** section shows on a `UiElementGroupMeterData`. A meter is a group whose bars the fill
+cuts.
+
+<dl>
+  <dt id="meter-enabled">Enabled (`IsEnabled`)</dt>
+  <dd>Shows or hides the meter. Default: `true`.</dd>
+
+<dt id="meter-start">Start % (`StartPercentage`)</dt>
+<dd>The fill the meter starts at, before the game sets one. Default: `0`.</dd>
+
+<dt id="meter-direction">Fills from (`FillDirection`)</dt>
+<dd>
+  The edge the fill grows from: **Left** or **Right**. Any other value in the file cuts nothing, and
+  reads as not filled.
+</dd>
+
+<dt id="meter-preview-fill">Preview fill</dt>
+<dd>
+  The fill the preview draws. It is not saved. **Use the meter's own fill** goes back to the file's.
+</dd>
+
+<dt id="meter-bars">Bars (`BarElements`)</dt>
+<dd>The elements the fill cuts.</dd>
+
+  <dt id="meter-tip">Tip (`TipStyle`)</dt>
+  <dd>
+    The style of the piece that marks the fill's edge: **Bar extension**, **Double-sided** or
+    **Centred glow**. A meter without a tip shows none.
+  </dd>
+</dl>
+
+## Combo box
+
+The **Combo box** section shows on an element that a `UiComboBoxDefinition` builds a drop-down
+list from. **Open**, **Options** and **Selected** set what the preview draws, and are not saved.
+
+<dl>
+  <dt id="combo-direction">Opens (`ListDisplayDirection`)</dt>
+  <dd>Whether the list opens **Down** or **Up** from its button. Default: **Down**.</dd>
+
+<dt id="combo-label-key">Label key (`DropdownDisplayTraKey`)</dt>
+<dd>The closed box's label, where `@Name@` stands for the selected option.</dd>
+
+  <dt id="combo-sound">Sound (`SoundEvents`)</dt>
+  <dd>The sound event a selection plays, from `OnSelectionEvent`.</dd>
+</dl>
+
+## All fields
+
+**All fields** lists every field that the scene bin writes for the element, as the bin editor's
+property tree shows them. While a variant is drawn, it shows the base scene bin's fields,
+read-only.
+
+## View controller
+
+With nothing selected, the inspector shows the view controller. A view controller's class is based
+on `ViewController`, and its subclass is the game code that drives the view.
+
+<dl>
+  <dt id="pathhashtoself">`PathHashToSelf`</dt>
+  <dd>The path of the view's own files, such as its packed sprite manifest.</dd>
+
+  <dt id="baseloadable">`BaseLoadable`</dt>
+  <dd>
+    A `UiPropertyLoadable` whose `FilepathHash` names the view's base scene bin. Variants link their
+    own scene bins in fields such as `MobileOverrideLoadable`.
+  </dd>
+</dl>
+
+Every other field shows under **Other**. Many name the scenes and elements that the view's code
+fills at run time.
+
+## Font
+
+A font is a `GameFontDescription`, a text style: the font files to draw with, at what size, and in
+which colors. It opens in the **Font** view, whose **Inspector** lists the fields below under
+**Identity** and **Look**.
+
+For a font of the scene bin, the **Text** section edits the same fields with **Face**, **Colour**,
+**Outline**, **Shadow** and **Glow**. A game font is shared by every text that uses it, so Atlas
+does not edit it in place. Make a copy with **New font from this one** instead.
+
+<dl>
+  <dt id="font-name">`name`</dt>
+  <dd>A readable name for the font, such as `Gold4_NoShadow`. The game does not read it.</dd>
+
+<dt id="font-typedata">`typeData`</dt>
+<dd>
+  The `FontType` that supplies the font files, by locale. **Face** in the **Text** section sets it.
+  **Import a font file as this font's face** copies a `.ttf` or `.otf` file into your layer and
+  makes the font draw with it.
+</dd>
+
+<dt id="font-resolutiondata">`resolutionData`</dt>
+<dd>
+  The `FontResolutionData` that supplies the size, the outline size and the shadow offset, by locale
+  and window height. With no entry for the locale and none for `en_us`, the font gets a size of `0`.
+</dd>
+
+<dt id="font-color">`Color`</dt>
+<dd>The text color. **Colour** in the **Text** section sets it.</dd>
+
+<dt id="font-outline">`outlineColor`</dt>
+<dd>
+  The color of the outline. Its width comes from the font's resolution data. **Outline** in the
+  **Text** section sets it.
+</dd>
+
+<dt id="font-shadow">`shadowColor`</dt>
+<dd>
+  The color of the drop shadow. Its offset comes from the font's resolution data. **Shadow** in the
+  **Text** section sets it.
+</dd>
+
+<dt id="font-glow">`glowColor`</dt>
+<dd>
+  Building a font does not read it, and no other reader was found in the game. **Glow** in the
+  **Text** section sets it.
+</dd>
+
+  <dt id="font-filltexturename">`fillTextureName`</dt>
+  <dd>A texture that the game loads with the font. How the font draws it is not yet identified.</dd>
+</dl>
+
+While the game uses its colorblind palette, each `colorblind*` color that is set replaces the
+matching color above. These fields show under **Other**.
+
+{/* TODO: how the game reads a font that a mod declares in a scene bin, since it reads the shipped fonts from ux/fonts.bin once at startup. */}
+
+## Limitations
+
+- **Look** shows a value, but takes no edits. Edit these fields under **All fields**.
+- The meaning of most effect element fields is not yet documented here.
+
+## Related pages
+
+- [Atlas UI editor](/editor/ui-editor/)
+- [Bin editor](/editor/bin-editor/)
+- [Strings editor](/editor/strings-editor/)
+- [BIN file format](/reference/file-formats/bin/)

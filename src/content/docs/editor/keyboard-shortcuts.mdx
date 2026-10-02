@@ -7,6 +7,267 @@ tags:
   subject: [creator-workshop]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+This page lists the keyboard shortcuts of LTK Editor, grouped by the part of the app that answers
+them. A key in a group works only while that part of the app has the focus.
 
-<UnderConstruction />
+Menus show a command's shortcut beside its name, and so do the commands in the
+[command palette](/editor/command-palette/).
+
+## Global
+
+These keys work anywhere in the app, also over the project grid.
+
+| Key                                                        | Action                     |
+| ---------------------------------------------------------- | -------------------------- |
+| <kbd>Ctrl</kbd>+<kbd>1</kbd>                               | Go to **Home**             |
+| <kbd>Ctrl</kbd>+<kbd>2</kbd>                               | Go to **Mods**             |
+| <kbd>Ctrl</kbd>+<kbd>3</kbd>                               | Go to **Workshop**         |
+| <kbd>Ctrl</kbd>+<kbd>D</kbd>                               | Open diagnostics           |
+| <kbd>Ctrl</kbd>+<kbd>,</kbd>                               | Open the settings          |
+| <kbd>Ctrl</kbd>+<kbd>=</kbd>, <kbd>Ctrl</kbd>+<kbd>-</kbd> | Zoom the app in or out     |
+| <kbd>Ctrl</kbd>+<kbd>0</kbd>                               | Reset the zoom to 100%     |
+| <kbd>Ctrl</kbd>+<kbd>N</kbd>                               | Create a project           |
+| <kbd>Ctrl</kbd>+<kbd>O</kbd>                               | Open a folder as a project |
+
+## Command palette
+
+| Key                                                        | Action                                              |
+| ---------------------------------------------------------- | --------------------------------------------------- |
+| <kbd>Ctrl</kbd>+<kbd>P</kbd>, <kbd>Ctrl</kbd>+<kbd>K</kbd> | Open the palette                                    |
+| <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>              | Open the palette, scoped to commands                |
+| <kbd>Ctrl</kbd>+<kbd>R</kbd>                               | Open the palette, scoped to projects                |
+| <kbd>Ctrl</kbd>+<kbd>F</kbd>                               | Filter the project grid, while no project is open   |
+| <kbd>Up</kbd>, <kbd>Down</kbd>                             | Move the highlight                                  |
+| <kbd>Home</kbd>, <kbd>End</kbd>                            | Move the highlight to the first or last result      |
+| <kbd>Enter</kbd>                                           | Open the result or run the command                  |
+| <kbd>Ctrl</kbd>+<kbd>Enter</kbd>                           | Open the result in a group beside the current one   |
+| <kbd>Alt</kbd>+<kbd>Enter</kbd>                            | Open the result in a permanent tab                  |
+| <kbd>Tab</kbd>                                             | Scope the search to the highlighted result's source |
+| <kbd>Backspace</kbd>                                       | Remove the scope, in an empty box                   |
+| <kbd>Esc</kbd>                                             | Close the palette                                   |
+
+See [Command palette](/editor/command-palette/) for the prefixes that scope a search.
+
+## Project
+
+These keys work while a project is open.
+
+| Key                                           | Action                                       |
+| --------------------------------------------- | -------------------------------------------- |
+| <kbd>Alt</kbd>+<kbd>Left</kbd>                | Go back to the last place you opened         |
+| <kbd>Alt</kbd>+<kbd>Right</kbd>               | Go forward again                             |
+| <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd> | Search the game files in the **Search** view |
+
+The fourth and fifth mouse buttons also go back and forward.
+
+## Tabs and groups
+
+These keys act on the focused group of the editor area.
+
+| Key                                                                                | Action                                    |
+| ---------------------------------------------------------------------------------- | ----------------------------------------- |
+| <kbd>Ctrl</kbd>+<kbd>W</kbd>                                                       | Close the active tab                      |
+| <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd>                                      | Reopen the last tab you closed            |
+| <kbd>Ctrl</kbd>+<kbd>Tab</kbd>, <kbd>Ctrl</kbd>+<kbd>PageDown</kbd>                | Go to the next tab                        |
+| <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Tab</kbd>, <kbd>Ctrl</kbd>+<kbd>PageUp</kbd> | Go to the previous tab                    |
+| <kbd>Alt</kbd>+<kbd>1</kbd> to <kbd>Alt</kbd>+<kbd>8</kbd>                         | Go to the tab at that place in the strip  |
+| <kbd>Alt</kbd>+<kbd>9</kbd>                                                        | Go to the last tab                        |
+| <kbd>Esc</kbd>                                                                     | Restore the other groups after a maximize |
+
+The next and previous tab keys wrap around at the ends of the strip.
+
+To move a tab with the keyboard, focus it and press <kbd>Space</kbd>. Move it with the arrow keys,
+then press <kbd>Space</kbd> to drop it or <kbd>Esc</kbd> to cancel. See
+[Tabs and groups](/editor/interface/#tabs-and-groups).
+
+## Documents
+
+These keys act on the active tab.
+
+| Key                                                                         | Action               |
+| --------------------------------------------------------------------------- | -------------------- |
+| <kbd>Ctrl</kbd>+<kbd>S</kbd>                                                | Save the document    |
+| <kbd>Ctrl</kbd>+<kbd>F</kbd>                                                | Find in the document |
+| <kbd>Ctrl</kbd>+<kbd>Z</kbd>                                                | Undo                 |
+| <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd>, <kbd>Ctrl</kbd>+<kbd>Y</kbd> | Redo                 |
+
+A document with nothing to save, such as the game index, ignores <kbd>Ctrl</kbd>+<kbd>S</kbd>. In
+a bin tab, <kbd>Ctrl</kbd>+<kbd>F</kbd> opens the command palette scoped to the rows of the tab.
+
+The readme, the license and the ignore rules have a find bar:
+
+| Key                               | Action                   |
+| --------------------------------- | ------------------------ |
+| <kbd>Enter</kbd>                  | Go to the next match     |
+| <kbd>Shift</kbd>+<kbd>Enter</kbd> | Go to the previous match |
+| <kbd>Esc</kbd>                    | Close the find bar       |
+
+## Trees
+
+These keys work in the trees of LTK Editor, such as a layer's files and the game index.
+
+| Key                             | Action                                                     |
+| ------------------------------- | ---------------------------------------------------------- |
+| <kbd>Up</kbd>, <kbd>Down</kbd>  | Move to the previous or next row                           |
+| <kbd>Home</kbd>, <kbd>End</kbd> | Move to the first or last row                              |
+| <kbd>Right</kbd>                | Expand the folder, or move to its first child              |
+| <kbd>Left</kbd>                 | Collapse the folder, or move to its parent                 |
+| <kbd>Enter</kbd>                | Open the file, or expand or collapse the folder            |
+| <kbd>Ctrl</kbd>+<kbd>Left</kbd> | Collapse every folder of the tree                          |
+| <kbd>Delete</kbd>               | Delete the file, in a layer's files. LTK Editor asks first |
+
+## Game browser
+
+These keys work in the game index, the game WADs and an archive tab.
+
+| Key                                                | Action                                                    |
+| -------------------------------------------------- | --------------------------------------------------------- |
+| <kbd>Ctrl</kbd>+<kbd>L</kbd>                       | Turn the breadcrumb into a path box                       |
+| <kbd>Alt</kbd>+<kbd>Up</kbd>, <kbd>Backspace</kbd> | Go to the parent folder                                   |
+| <kbd>Ctrl</kbd>+<kbd>F</kbd>, <kbd>/</kbd>         | Focus the filter box                                      |
+| <kbd>Ctrl</kbd>+<kbd>A</kbd>                       | Select every item in view                                 |
+| <kbd>Ctrl</kbd>+<kbd>Space</kbd>                   | Add the focused item to the selection, or remove it       |
+| <kbd>Esc</kbd>                                     | Clear the selection                                       |
+| <kbd>Ctrl</kbd>+<kbd>I</kbd>                       | Copy the selection into the selected layer                |
+| <kbd>Ctrl</kbd>+<kbd>E</kbd>                       | Extract the selection to the last folder you used         |
+| <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd>      | Extract the selection with the **Extract to disk** dialog |
+
+Before your first extract there is no last folder, so <kbd>Ctrl</kbd>+<kbd>E</kbd> opens the
+dialog. <kbd>Backspace</kbd> and <kbd>/</kbd> work while a row has the focus, not a text box. See
+[Game browser](/editor/game-browser/).
+
+{/* TODO: Ctrl+1, Ctrl+2 and Ctrl+3 switch the game browser between Tree, Grid and Details in source, but the same keys also go to Home, Mods and Workshop app-wide. Confirm in the app which one wins before documenting them. */}
+
+## Objects browser
+
+These keys work in the grid of the **Objects** view.
+
+| Key                                                | Action                                     |
+| -------------------------------------------------- | ------------------------------------------ |
+| Arrow keys                                         | Move between tiles                         |
+| <kbd>Home</kbd>, <kbd>End</kbd>                    | Move to the first or last tile             |
+| <kbd>Space</kbd>                                   | Show or hide the large preview             |
+| <kbd>Ctrl</kbd>+<kbd>Enter</kbd>                   | Open the object in a group beside this one |
+| <kbd>Alt</kbd>+<kbd>Up</kbd>, <kbd>Backspace</kbd> | Go to the parent folder                    |
+
+In a particle system tab, <kbd>Alt</kbd>+<kbd>Up</kbd> and <kbd>Alt</kbd>+<kbd>Down</kbd> open the
+previous or next particle system of its folder. See [Objects browser](/editor/objects-browser/).
+
+## Bin editor
+
+These keys work on the rows of a bin tab or an object tab.
+
+| Key                               | Action                                                              |
+| --------------------------------- | ------------------------------------------------------------------- |
+| <kbd>Up</kbd>, <kbd>Down</kbd>    | Move to the previous or next row                                    |
+| <kbd>Home</kbd>, <kbd>End</kbd>   | Move to the first or last row                                       |
+| <kbd>Right</kbd>, <kbd>Left</kbd> | Expand or collapse the row                                          |
+| <kbd>Enter</kbd>, <kbd>F2</kbd>   | Edit the value. On a row with no value, <kbd>Enter</kbd> expands it |
+| <kbd>Shift</kbd>+<kbd>F10</kbd>   | Open the row's menu                                                 |
+
+See [Bin editor interface](/editor/bin-editor/interface/).
+
+## Declarations
+
+These keys work on a module row of the **Declarations** view and the **Game data** document.
+
+| Key                            | Action            |
+| ------------------------------ | ----------------- |
+| <kbd>F2</kbd>                  | **Rename**        |
+| <kbd>Alt</kbd>+<kbd>Up</kbd>   | **Move up**       |
+| <kbd>Alt</kbd>+<kbd>Down</kbd> | **Move down**     |
+| <kbd>Delete</kbd>              | **Remove module** |
+
+On a declared row, <kbd>Enter</kbd> runs **Go to row**. See
+[Declarations view](/editor/bin-editor/declarations/).
+
+## VFX editor
+
+These keys work while the focus is in a particle system tab and not in a text field.
+
+| Key                                                                 | Action                                    |
+| ------------------------------------------------------------------- | ----------------------------------------- |
+| <kbd>Space</kbd>                                                    | Play or pause                             |
+| <kbd>Left</kbd>, <kbd>Right</kbd>                                   | Step one frame back or forward            |
+| <kbd>Shift</kbd>+<kbd>Left</kbd>, <kbd>Shift</kbd>+<kbd>Right</kbd> | Step 6 frames back or forward             |
+| <kbd>Home</kbd>                                                     | Restart and play                          |
+| <kbd>End</kbd>                                                      | Go to the end                             |
+| <kbd>L</kbd>                                                        | Turn looping on or off                    |
+| <kbd>F</kbd>                                                        | Fit the effect in the preview             |
+| <kbd>S</kbd>                                                        | Solo the selected emitter                 |
+| <kbd>M</kbd>                                                        | Mute the selected emitter                 |
+| <kbd>[</kbd>, <kbd>]</kbd>                                          | Slow down or speed up the playback        |
+| <kbd>Ctrl</kbd>+<kbd>M</kbd>                                        | Add a timeline marker at the current time |
+
+A focused slider keeps the arrow keys, <kbd>Home</kbd>, <kbd>End</kbd>, <kbd>PageUp</kbd>
+and <kbd>PageDown</kbd>.
+
+In the **Graph** pane:
+
+| Key                                           | Action                                                  |
+| --------------------------------------------- | ------------------------------------------------------- |
+| <kbd>Tab</kbd>, <kbd>Shift</kbd>+<kbd>A</kbd> | Open the quick add                                      |
+| <kbd>Ctrl</kbd>+<kbd>A</kbd>                  | Select every node                                       |
+| <kbd>Esc</kbd>                                | Clear the selection                                     |
+| <kbd>Ctrl</kbd>+<kbd>D</kbd>                  | **Duplicate emitter**, or duplicate a list item         |
+| <kbd>Ctrl</kbd>+<kbd>C</kbd>                  | **Copy emitter**                                        |
+| <kbd>Ctrl</kbd>+<kbd>V</kbd>                  | **Paste emitter**                                       |
+| <kbd>Delete</kbd>                             | **Delete emitter**, or remove the selected node's value |
+
+See [VFX editor](/editor/vfx-editor/).
+
+## Skin preview
+
+These keys work while the focus is in the skin preview.
+
+| Key                                                                 | Action                             |
+| ------------------------------------------------------------------- | ---------------------------------- |
+| <kbd>Space</kbd>                                                    | Play or pause the animation        |
+| <kbd>Left</kbd>, <kbd>Right</kbd>                                   | Step one frame back or forward     |
+| <kbd>Shift</kbd>+<kbd>Left</kbd>, <kbd>Shift</kbd>+<kbd>Right</kbd> | Step 6 frames back or forward      |
+| <kbd>Home</kbd>                                                     | Restart the animation              |
+| <kbd>F</kbd>                                                        | **Frame the character**            |
+| <kbd>[</kbd>, <kbd>]</kbd>                                          | Slow down or speed up the playback |
+
+See [Skin editor](/editor/skin-editor/).
+
+## Atlas UI editor
+
+These keys work while the focus is on the canvas of a view tab. The canvas lists them under
+**Keyboard shortcuts** in its status strip.
+
+| Key                                                          | Action                               |
+| ------------------------------------------------------------ | ------------------------------------ |
+| <kbd>F</kbd>                                                 | **Frame** the selection              |
+| <kbd>0</kbd>                                                 | **Fit the screen**                   |
+| <kbd>1</kbd>                                                 | **Actual size**                      |
+| <kbd>=</kbd>, <kbd>-</kbd>                                   | **Zoom in**, **Zoom out**            |
+| Arrow keys                                                   | **Nudge by a pixel**                 |
+| <kbd>Shift</kbd> and an arrow key                            | **Nudge by ten pixels**              |
+| <kbd>]</kbd>, <kbd>[</kbd>                                   | **Bring forward**, **Send backward** |
+| <kbd>Shift</kbd>+<kbd>]</kbd>, <kbd>Shift</kbd>+<kbd>[</kbd> | **Bring to front**, **Send to back** |
+| <kbd>Space</kbd>                                             | **Hold to pan**                      |
+| <kbd>Esc</kbd>                                               | **Clear selection**                  |
+
+The preview toggles:
+
+| Key          | Action                    |
+| ------------ | ------------------------- |
+| <kbd>V</kbd> | **Transform**             |
+| <kbd>I</kbd> | **Interact**              |
+| <kbd>Z</kbd> | **Safe zone**             |
+| <kbd>H</kbd> | **Show disabled**         |
+| <kbd>E</kbd> | **Effects**               |
+| <kbd>S</kbd> | **Sample content**        |
+| <kbd>L</kbd> | **Stack scenes**          |
+| <kbd>B</kbd> | **Next button state**     |
+| <kbd>P</kbd> | **Play or pause effects** |
+
+On a focused row of the **Sprites** pane, <kbd>F</kbd> frames the sprite, <kbd>E</kbd> runs
+**Export PNG** and <kbd>R</kbd> runs **Replace image**. See [Atlas UI editor](/editor/ui-editor/).
+
+## Related pages
+
+- [Command palette](/editor/command-palette/)
+- [LTK Editor interface](/editor/interface/)
+- [Map viewer](/editor/map-viewer/)
