@@ -37,16 +37,17 @@ The wiki documents LTK Manager and LTK Editor for two groups of readers.
 
 ## Page types
 
-Each page is one type. When a page answers two kinds of question, split it into two pages. The
-type goes in the `type` tag, and the title shape tells the reader the type before they open it.
+Each page has one type, set in the `type` tag. A page about one feature can hold more than one
+kind of content, such as what the feature is and how to use it. Its type is the kind that makes up
+most of the page. See [Feature pages](#feature-pages).
 
-| Type        | Answers                                       | Title shape                         | Example                   | `type` tag  |
-| ----------- | --------------------------------------------- | ----------------------------------- | ------------------------- | ----------- |
-| Concept     | What is this, and why does it matter?         | Noun, or "About" and a noun         | Profiles, About VFX files | `concept`   |
-| Task        | How do I do this?                             | Imperative verb and object          | Create a profile          | `guide`     |
-| Reference   | What does each part do?                       | Noun and "reference" or "interface" | VFX editor interface      | `reference` |
-| Quick start | How do I reach this result from start to end? | Imperative verb and object          | Recolor a skin            | `tutorial`  |
-| Overview    | What is in this section?                      | Section name                        | LTK Editor                | `overview`  |
+| Type        | Answers                                       | Title shape                                    | Example                 | `type` tag  |
+| ----------- | --------------------------------------------- | ---------------------------------------------- | ----------------------- | ----------- |
+| Concept     | What is this, and why does it matter?         | Noun                                           | Profiles, Sandboxes     | `concept`   |
+| Task        | How do I do this?                             | Short imperative verb and object, or a noun    | Install mods, Packaging | `guide`     |
+| Reference   | What does each part do?                       | Noun, or a noun and "reference" or "interface" | Keyboard shortcuts      | `reference` |
+| Quick start | How do I reach this result from start to end? | Quick start                                    | Quick start             | `tutorial`  |
+| Overview    | What is in this section?                      | Section name                                   | LTK Editor              | `overview`  |
 
 `troubleshooting` and `faq` pages keep their own shape: one heading per symptom or question.
 
@@ -106,22 +107,32 @@ per region, with a numbered screenshot and a `#` / Name / Description table for 
 3. Numbered `##` sections, such as `## 1. Set up the project`, each with numbered steps.
 4. Next steps.
 
-Keep a quick start to one result that a reader can finish in one sitting. LTK Editor has two or
-three quick starts. LTK Manager has one, [Quick start](/manager/quick-start/), and Start Here links to it.
+Keep a quick start to one result that a reader can finish in one sitting. LTK Manager and LTK
+Editor each have one, titled Quick start. Start Here links to
+[the LTK Manager quick start](/manager/quick-start/).
 
 ### Overview pages
 
 An overview page is a section's landing page. It has a lead paragraph and a Topic / Description
 table with one row for each page in the section.
 
-## LTK Editor depth
+## Feature pages
 
-Each editor in LTK Editor gets four kinds of page:
+Prefer one bigger page over several small ones. LTK Editor gives each feature or editor one page
+that holds what it is, its regions and its common tasks, in that order. The title is the feature's
+name: Game browser, Packaging, Testing.
 
-- A concept page about the file or game system it edits
-- An interface page for the editor's window
-- Task pages for the common jobs in it
-- A reference page with every field
+Split content off into its own page only in these cases:
+
+- **Field lists.** An editor whose fields need a definition list gets a separate reference page,
+  such as VFX editor reference.
+- **A region table that outgrows the page.** An editor with many regions can move them to an
+  interface page, such as Bin editor interface.
+- **A task that stands alone.** A task that readers come to on its own, and that does not belong to
+  one feature, gets its own task page.
+
+LTK Manager pages are smaller, with one task page for each job in the mod library. Their titles are
+short imperatives: Install mods, Change the load order.
 
 Tell the reader what a field does in the game, not only what the control does in the app. Do not
 copy tooltip text into the page. A reader who opens the wiki already read the tooltip and needs
@@ -160,9 +171,15 @@ Do not write click, hit, tap, check or navigate to.
 
 ## Headings and titles
 
-- **Sentence case.** "Create a profile", "VFX editor interface". Product names keep their
-  capitals.
-- **Imperative for tasks, not the gerund.** "Switch profiles", not "Switching profiles".
+- **Terse.** A title or heading names its subject in a few words, with no clause: "Packaging",
+  not "Leave files out of a pack". Leave out what the reader already knows from the section.
+- **Sentence case.** "Install mods", "VFX editor interface". Product names keep their capitals.
+- **Imperative for a single task, not the gerund.** "Switch profiles", not "Switching profiles".
+  A feature page keeps the feature's name, such as Packaging.
+- **Sidebar labels drop the parent's name.** Under the **Bin editor** group, the interface page is
+  **Interface**, not **Bin editor interface**. The page title keeps the full name.
+- **No group that repeats its children.** Do not add a sidebar group such as Editors when every
+  label under it already says editor.
 - **No emoji** in titles, headings or body text. Use `HeadingIcon` for a deliberate icon.
 - **No questions**, except on FAQ pages.
 - **No skipped levels.** A `###` sits under a `##`. The page title is the only `#`, and it comes
@@ -172,7 +189,8 @@ Do not write click, hit, tap, check or navigate to.
 
 ### UI text
 
-- **Labels in bold, exactly as the app shows them**, with the same case: **New Profile**.
+- **Labels in bold, exactly as the app shows them**, with the same case: **New Profile**. Write
+  an ellipsis in a label as three dots: **Extract...**.
 - **Menu paths** bold each segment and keep the separator plain: **Settings** > **General**.
 - **Keys** use one `<kbd>` per key: <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd>.
 - **Code formatting** for file names, folders, extensions, config keys, values and engine names:
@@ -196,6 +214,24 @@ Each <Hint as="span" tip="A saved set of enabled mods and their load order." cli
 A glossary entry starts with the definition. It does not open with "X is" or "It is", and it
 does not repeat the term. Write "A saved set of enabled mods and their load order.", not
 "Profile: a profile is a saved set of mods."
+
+### Inline elements
+
+Never start a line of text with `<kbd>`, `<Hint>` or another inline element. MDX reads such a line
+as a block, Prettier puts a blank line before it, and the sentence splits into two paragraphs.
+When a wrapped line would start with one, move the word before it onto that line. Keep each
+`Hint` on one line, however long it is.
+
+```mdx
+{/* Splits the sentence */}
+The editor saves each edit at once. Press
+
+<kbd>Ctrl</kbd>+<kbd>S</kbd> to save it now.
+
+{/* Stays one paragraph */}
+The editor saves each edit at once.
+Press <kbd>Ctrl</kbd>+<kbd>S</kbd> to save it now.
+```
 
 ### Fields and properties
 
@@ -492,9 +528,10 @@ import Compare from '@components/Compare.astro';
 
 Before you open a pull request, check that:
 
-- The page is one type, and its title has that type's shape.
+- The page has one `type` tag, and its title is terse and has that type's shape.
 - Headings are in sentence case and have no emoji.
 - UI labels are bold and match the app.
+- No line of text starts with `<kbd>` or `<Hint>`.
 - Glossary terms have a `Hint` on first mention.
 - Every screenshot follows the capture settings and has alt text.
 - The page ends with Related pages or Next steps.
