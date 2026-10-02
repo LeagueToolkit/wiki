@@ -64,15 +64,18 @@ If you think LTK Manager blocked a mod by mistake, open an issue on the
 
 ## Changes while the patcher runs
 
-While the patcher runs, LTK Manager does not let you:
+You can change your library while the patcher runs. When you turn mods on or off, change the load
+order, install, update or uninstall mods, or switch profiles, the change applies to your next game.
 
-- Turn mods on or off
-- Install, update or uninstall mods
-- Change the load order
-- Switch or rename profiles
+- **No game is open.** LTK Manager rebuilds the overlay a moment after your last change. Several
+  changes in a row cost one rebuild.
+- **A game is open.** The change waits, and **Applies after this game** shows next to **Stop
+  Patcher**. LTK Manager rebuilds the overlay when the game closes.
 
-Stop the patcher, make your changes, then start it again. You can still search, filter, read mod
-details and check mod health.
+A change never reaches a game that is already running. A game that starts during the few seconds of
+a rebuild runs without mods.
+
+Two changes still need the patcher stopped: repairing a mod and renaming a profile.
 
 ## Related pages
 
