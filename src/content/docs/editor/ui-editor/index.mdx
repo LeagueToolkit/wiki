@@ -7,6 +7,235 @@ tags:
   subject: [creator-workshop, bin]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Screenshot from '@components/Screenshot.astro';
+import Video from '@components/Video.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+Atlas is the UI editor of LTK Editor. It draws a view of the game's UI at a screen size you choose,
+and lets you move, resize, re-anchor and re-skin its elements as in a design tool. Every change is
+an ordinary edit to the view's bin files.
+
+<Where path={['Bin editor', 'View']} files="UI .bin files" />
+
+<Screenshot
+  file="editor/ui-editor-overview.webp"
+  alt="A view open in Atlas, with the Layers pane on the left, the canvas in the middle and the Inspector on the right"
+/>
+
+## Words
+
+Atlas uses its own words for the parts of the game's UI data.
+
+| Word        | What it is in the game data                                                            |
+| ----------- | -------------------------------------------------------------------------------------- |
+| View        | A view controller object, of a class based on `ViewController`, and the files it loads |
+| Scene       | A `UISceneData` object, a layer of the view's tree                                     |
+| Element     | A UI element, such as an icon, a text, a region, a group or a button                   |
+| Variant     | A patch to the view for one platform or layout, such as mobile or tablet               |
+| Sprite      | A region of a texture that an element draws                                            |
+| Page, sheet | A texture that the game packs sprites into, or one made by hand                        |
+
+## Open a view
+
+Open a view controller object from the [Objects browser](/editor/objects-browser/) or from its bin.
+A scene bin's `UiPropertyLoadable` object opens the same way. The object tab opens in the **View**
+view. Switch between **View** and **Properties** with the view
+mode control in the tab header.
+
+Two more classes open in a smaller form of Atlas, with a **Preview** and an **Inspector**:
+
+- A UI element opens in the **UI element** view, drawn alone.
+- A font, a `GameFontDescription` object, opens in the **Font** view with a **Sample text** box.
+
+In a project, an edit to a game bin becomes a declaration in your layer. See
+[Game data declarations](/editor/bin-editor/game-data/).
+
+## Panes
+
+| Pane      | What it shows                                                                    |
+| --------- | -------------------------------------------------------------------------------- |
+| Preview   | The canvas, with the toolbar above it                                            |
+| Layers    | The view's scenes and elements as a tree, topmost first                          |
+| Variants  | The base view and each variant, and the records of the variant that draws        |
+| Sprites   | Every sprite the view draws, by texture                                          |
+| Inspector | The selected element's fields, or the view controller's fields with no selection |
+
+By default, **Layers**, **Variants** and **Sprites** share a strip on the left, the preview fills
+the middle, and **Inspector** sits on the right. The **Panes** menu turns a pane on or off, and
+**Reset layout** puts every pane back.
+
+## Toolbar
+
+The toolbar above the canvas sets how the preview draws. None of its settings change your files.
+
+<Screenshot
+  file="editor/ui-editor-toolbar.webp"
+  alt="The Atlas toolbar with the Transform and Interact tools, the screen size, the preview toggles and the effects controls"
+/>
+
+| #   | Name                      | Key          | Description                                                           |
+| --- | ------------------------- | ------------ | --------------------------------------------------------------------- |
+| 1   | Transform                 | <kbd>V</kbd> | Selects, moves and resizes elements                                   |
+| 2   | Interact                  | <kbd>I</kbd> | Plays the view's buttons and widgets under the pointer, with no edits |
+| 3   | Screen size               |              | The screen the view lays out for, and the HUD scale                   |
+| 4   | Safe zone                 | <kbd>Z</kbd> | Shows the screen's safe zone                                          |
+| 5   | Show disabled             | <kbd>H</kbd> | Draws the elements that the view keeps turned off                     |
+| 6   | Effects                   | <kbd>E</kbd> | Draws the view's effects                                              |
+| 7   | Sample content            | <kbd>S</kbd> | Fills what the game sets at run time with sample icons and text       |
+| 8   | Stack scenes              | <kbd>L</kbd> | Draws every scene on one screen                                       |
+| 9   | Button state              | <kbd>B</kbd> | Draws every button in one state, or each in its own                   |
+| 10  | Effect and meter progress |              | Sets how far effects and meters have run                              |
+| 11  | Play effects              | <kbd>P</kbd> | Plays or pauses the effects                                           |
+
+**Screen size** offers 16:9 screens at 1280 x 720, 1920 x 1080 and 2560 x 1440, and 1920 x 1200,
+3440 x 1440 and 1600 x 1200. The default is 1920 x 1080. Its **HUD scale** slider goes from 66% to
+100%, the range the game allows.
+
+## Canvas
+
+The canvas draws each root scene of the view on a frame of its own, named above it. Right-click a
+frame's name to change how its scenes draw: **Draw on its own frame**, **Draw on frame**, **Split
+into its scenes** or **Reset frames**. These choices change only the preview.
+
+| Key                                                           | Action                                 |
+| ------------------------------------------------------------- | -------------------------------------- |
+| <kbd>F</kbd>                                                  | Frame the selection, or fit the screen |
+| <kbd>0</kbd>                                                  | Fit the screen                         |
+| <kbd>1</kbd>                                                  | Actual size                            |
+| <kbd>=</kbd> / <kbd>-</kbd>                                   | Zoom in or out                         |
+| Arrow keys                                                    | Nudge the selection by a pixel         |
+| <kbd>Shift</kbd>+arrow keys                                   | Nudge the selection by ten pixels      |
+| <kbd>]</kbd> / <kbd>[</kbd>                                   | Bring forward or send backward         |
+| <kbd>Shift</kbd>+<kbd>]</kbd> / <kbd>Shift</kbd>+<kbd>[</kbd> | Bring to front or send to back         |
+| <kbd>Space</kbd>                                              | Hold to pan                            |
+| <kbd>Esc</kbd>                                                | Clear the selection                    |
+
+The keyboard button in the status strip under the canvas lists these keys and the toolbar keys.
+
+## Arrange elements
+
+With **Transform** on, drag an element to move it, or drag a handle to resize it. A group moves with
+everything in it. An element that a managed layout places moves only with its layout.
+
+Right-click an element for its menu:
+
+- **Arrange** moves it in its siblings' draw order: **Bring to front**, **Bring forward**, **Send
+  backward** and **Send to back**.
+- **Align** lines up two or more selected elements by their **Left edges**, **Horizontal
+  centres**, **Right edges**, **Top edges**, **Vertical centres** or **Bottom edges**.
+- **Distribute horizontally** and **Distribute vertically** space three or more selected elements
+  evenly.
+- **Move to scene** moves it to another scene of the view.
+
+Each action is one undo step.
+
+<Video
+  file="editor/ui-editor-arrange"
+  alt="Three icons aligned by their top edges and then distributed horizontally"
+/>
+
+## Layers pane
+
+The **Layers** pane lists the view's scenes and elements as a tree, topmost first. **Search
+elements** narrows the tree to the elements whose name, path or class holds the text.
+
+- The eye on a scene shows or hides it in the preview. The eye on an element hides it.
+  Neither changes the file.
+- A dot marks a scene that the file turns on itself.
+- A mark shows on each element that the drawn variant
+  changes. <kbd>Up</kbd> and <kbd>Down</kbd> move through the rows, <kbd>Right</kbd> and <kbd>Left</kbd> open
+  and close a fold, and <kbd>F</kbd> frames the element.
+
+## Variants pane
+
+The **Variants** pane lists **Base** and each variant the view links. Select one to draw it over
+the base on the canvas. Edits go to the variant that draws.
+
+Under the drawn variant, the pane lists its records by the object they patch. A record the game
+skips is marked **Skipped**, with the reason on hover. A mobile or tablet variant is marked **Not
+on PC**, because the Windows client never applies it.
+
+## Sprites pane
+
+The **Sprites** pane lists every sprite the view draws, grouped by texture: the game's atlas pages,
+its hand-made sheets, and your own sheet. Select a sprite to select the elements that draw it.
+
+| Key          | Action                                            |
+| ------------ | ------------------------------------------------- |
+| <kbd>E</kbd> | **Export PNG** writes the sprite to a PNG file    |
+| <kbd>R</kbd> | **Replace image** swaps the sprite for a PNG file |
+| <kbd>F</kbd> | Frames the sprite's elements                      |
+
+To change the look of a sprite, export it, edit the PNG and replace the image with it. Atlas never
+writes a game texture. The image joins your project's own sheet, and every element that drew the
+sprite points at it. When you replace a sprite that is already on your sheet with an image of the
+same size, it keeps its place on the sheet.
+
+The inspector's **Sprite** section offers the same two actions for one element.
+
+Your sheet keeps its source images and its pack spec in `.ltk/atlas/` of your project, outside
+`content/`, so a pack never includes them. Atlas writes the packed sheet into a layer each time you
+import an image.
+
+## Surfaces
+
+A surface is a panel style that any number of images can wear at their own size. Right-click an
+image and select **Make surface from this** to make one from its pixels. Atlas finds the edges that
+keep their size and the middle that stretches.
+
+**Apply surface** dresses the selected images with a surface. The inspector's **Surface** list
+swaps it for another.
+
+## Inspector
+
+With an element selected, the **Inspector** shows its fields in sections. With nothing selected,
+it shows the view controller's own fields.
+
+| Section    | What it holds                                                  |
+| ---------- | -------------------------------------------------------------- |
+| Identity   | The element's scene, layer and whether it is enabled           |
+| Position   | Its anchor, its place and size, and how it scales              |
+| Look       | Its color and the other values of how it draws                 |
+| Sprite     | The sprite it draws, with **Export PNG** and **Replace image** |
+| Text       | The text key and the font                                      |
+| Button     | A button's states and their images                             |
+| Meter      | A meter's bars and fill                                        |
+| Combo box  | A combo box's options                                          |
+| All fields | Every field the scene bin writes for the element               |
+
+A section shows only when the element has what it edits. The
+[Atlas UI editor reference](/editor/ui-editor/reference/) describes the fields.
+
+## Fonts
+
+The **Text** section's **Font** list holds every font of the scene bin and of the game. A game font
+is shared by every text that uses it, so Atlas does not edit it in place.
+
+To change a font's look:
+
+1. Select **New font from this one**.
+2. Enter a **Font name**, and select **Create font**.
+   The copy is declared in your project, and the text switches to it.
+3. Change its **Face** and its **Colour**, **Outline**, **Shadow** and **Glow** colors.
+
+**Import a font file as this font's face** copies a `.ttf` or `.otf` file into your layer and
+makes the font draw with it.
+
+## Tooltips
+
+A view that lays out an ability tooltip shows a **Tooltip** row above the canvas. Choose a
+**Character**, then its passive or one of its abilities, to fill the tooltip. **Level** and
+**Rank** set the values the tooltip reads, and **Shift** shows the tooltip that Shift shows in game.
+
+## Limitations
+
+- The canvas draws mobile and tablet variants, but takes no edits on them.
+- Sample content, hidden scenes and the button state are only for the preview. The game sets these
+  at run time.
+
+## Related pages
+
+- [Atlas UI editor reference](/editor/ui-editor/reference/)
+- [Bin editor](/editor/bin-editor/)
+- [Game data declarations](/editor/bin-editor/game-data/)
+- [Objects browser](/editor/objects-browser/)

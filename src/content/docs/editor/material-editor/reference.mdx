@@ -7,6 +7,163 @@ tags:
   subject: [creator-workshop, bin]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+The fields of a `StaticMaterialDef` object, in the order the material editor's inspector shows
+them.
+
+<Where
+  path={['Bin editor', 'Object tab', 'Material', 'Inspector']}
+  files="StaticMaterialDef objects in .bin files"
+/>
+
+The inspector shows each field under its name in the file. Bin files leave out a value that equals
+the class default, and the game then uses that default.
+
+## Identity
+
+<dl>
+  <dt id="name">`name`</dt>
+  <dd>
+    The material's path, such as `Characters/Ahri/Skins/Skin52/Materials/MAT_Eyes_inst`. A link
+    to the material is the FNV-1a hash of this path in lowercase.
+  </dd>
+
+  <dt id="type">`type`</dt>
+  <dd>
+    The kind of mesh the material draws. It selects the engine defines the passes compile with,
+    so it must match the shader.
+
+    | Value | Shader family in shipped data         |
+    | ----- | ------------------------------------- |
+    | `0`   | `Shaders/StaticMesh/...`, map geometry |
+    | `1`   | `Shaders/SkinnedMesh/...`, characters |
+    | `2`   | `Shaders/Particles/...`               |
+    | `3`   | `Shaders/UI/...`                      |
+    | `4`   | `Shaders/PostProcess/...`             |
+
+    {/* TODO: value 5 appears on a few TFT materials. What it changes is not yet identified. */}
+
+  </dd>
+</dl>
+
+## Samplers
+
+The **Samplers** table edits `samplerValues`, a list of `StaticMaterialShaderSamplerDef` entries.
+Each entry sets the texture and sampler state for one texture the shader declares.
+
+For each texture a pass shader declares, the game looks for an entry with the same `TextureName`:
+
+| Material entry                                       | Texture the game uses         |
+| ---------------------------------------------------- | ----------------------------- |
+| Present, and `texturePath` loads                     | `texturePath`                 |
+| Present, and `texturePath` is unset or fails to load | The engine's fallback texture |
+| Absent                                               | The shader's default texture  |
+
+<dl>
+  <dt id="texture-name">Name (`TextureName`)</dt>
+  <dd>The name of the shader texture the entry fills in.</dd>
+
+<dt id="texture-path">Texture (`texturePath`)</dt>
+<dd>The texture file to draw with.</dd>
+
+  <dt id="address">U, V, W (`addressU`, `addressV`, `addressW`)</dt>
+  <dd>
+    What the texture does past its edge on each axis: `0` wrap, `1` clamp, `2` mirror, `3`
+    border. A sampler that sets none of the three shows `default` across the columns.
+  </dd>
+</dl>
+
+An entry also has `filterMin` and `filterMag`, which the table does not show. Filtering is on only
+for the value `1`. Edit them in **Properties**.
+
+{/* TODO: document uncensoredTextures once its behavior is confirmed. */}
+
+## Params
+
+The **Params** table edits `paramValues`, a list of `StaticMaterialShaderParamDef` entries.
+
+The game first sets every shader parameter to the shader's default, then applies the pass's own
+values. It then applies these entries to every pass whose shader declares the name. The material's
+value wins over the pass's.
+
+<dl>
+  <dt id="param-name">Name (`name`)</dt>
+  <dd>The name of the shader parameter the entry sets.</dd>
+
+  <dt id="param-value">Value (`value`)</dt>
+  <dd>
+    Four floats. The shader declares which components the parameter uses, and the game fills them
+    in order from `x`. An entry that leaves `value` out writes `(0, 0, 0, 0)`, not the shader's
+    default.
+  </dd>
+</dl>
+
+## Switches
+
+The **Switches** table edits `switches`, a list of `StaticMaterialSwitchDef` entries. For each
+switch the shader declares, the game uses the material's entry when there is one, and otherwise
+the shader's default.
+
+<dl>
+  <dt id="switch-name">Name (`name`)</dt>
+  <dd>The name of the shader switch the entry sets.</dd>
+
+  <dt id="switch-on">On (`on`)</dt>
+  <dd>
+    Whether the switch is on. A compile-time switch selects which compiled variant of the shader
+    the pass uses. A runtime switch reaches the shader as a constant that can change while the game
+    runs. An entry without `on` is on. Default: `true`.
+  </dd>
+</dl>
+
+## Macros
+
+<dl>
+  <dt id="shader-macros">`shaderMacros`</dt>
+  <dd>
+    Defines added first to every pass's define list, as a name and a value. Switches, a pass's own
+    macros and child techniques can override them. A name or value the shader does not declare is
+    dropped without a warning, so a misspelled macro does nothing.
+  </dd>
+</dl>
+
+## Techniques
+
+<dl>
+  <dt id="techniques">`techniques`</dt>
+  <dd>
+    The material's techniques, each a named list of passes. A pass links the shader, adds its own
+    macros and parameter values, and carries the render state: blending, depth, culling and stencil.
+    Passes draw in list order.
+  </dd>
+</dl>
+
+## Other
+
+<dl>
+  <dt id="child-techniques">`childTechniques`</dt>
+  <dd>
+    Techniques built from another technique. The game copies the passes of the technique named
+    `parentName` and adds the child's `shaderMacros` to each pass of the copy. A child can select
+    another variant of the same shader this way.
+  </dd>
+
+<dt id="shared-texture-sets">`SharedTextureSets`</dt>
+<dd>
+  Textures the material registers for the whole engine. Any shader that samples the shared name gets
+  the texture.
+</dd>
+
+  <dt id="dynamic-material">`dynamicMaterial`</dt>
+  <dd>
+    Drivers that change the material's parameters, textures and switches while the game runs, for
+    example from time or from game state. The material preview draws the static values.
+  </dd>
+</dl>
+
+## Related pages
+
+- [Material editor](/editor/material-editor/)
+- [Bin editor](/editor/bin-editor/)
+- [BIN file format](/reference/file-formats/bin/)

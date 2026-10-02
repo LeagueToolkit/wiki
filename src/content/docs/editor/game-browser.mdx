@@ -7,6 +7,250 @@ tags:
   subject: [creator-workshop, wad]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+The game browser shows the files of your League installation in LTK Editor. It reads the game's <Hint as="span" tip="Primary archive format (magic RW) used by League of Legends to bundle game assets. Each WAD contains compressed files identified by path hashes." client:visible>[WAD](/glossary/)</Hint>
+archives and never changes them. Use it to find a file, preview it and copy it into your project.
+
+<Where path={['Project views', 'Game index']} files="Every WAD archive of the installed game" />
+
+<Screenshot
+  file="editor/game-browser-index.webp"
+  alt="The Game index tab in the Grid view, with texture thumbnails of one champion folder"
+/>
+
+## Game documents
+
+The game browser opens as one of three documents.
+
+| Document   | Shows                                                                   |
+| ---------- | ----------------------------------------------------------------------- |
+| Game index | Every file of the installation in one tree, with the archives folded in |
+| Game WADs  | A list of every archive the installation holds                          |
+| An archive | The files of one archive, in a tab named after it                       |
+
+To open them:
+
+- **Game index**: select **Game index** on the rail. The side panel shows the tree. To open it as
+  a tab, select **View actions** > **Open Game index in a tab**, or run **Open the game index**
+  from the [command palette](/editor/command-palette/).
+- **Game WADs**: select **Game WADs** in the toolbar of the **Game index** tab, or run **Open the
+  game WADs** from the command palette.
+- **An archive**: select a row of **Game WADs**. In the **WADs** section of the **Explorer**,
+  hover over an archive and select **Browse game archive**.
+
+## Views
+
+The **Game index** tab and an archive tab draw the same files in three views.
+
+| View    | Shows                                         | Key                          |
+| ------- | --------------------------------------------- | ---------------------------- |
+| Tree    | Folders you expand one level at a time        | <kbd>Ctrl</kbd>+<kbd>1</kbd> |
+| Grid    | Tiles with a thumbnail of each file           | <kbd>Ctrl</kbd>+<kbd>2</kbd> |
+| Details | One row per file, with columns you can resize | <kbd>Ctrl</kbd>+<kbd>3</kbd> |
+
+The **Sort and view** menu in the toolbar holds the options of the view.
+
+<dl>
+  <dt id="sort-by">Sort by</dt>
+  <dd>**Name**, **Size** or **Kind**, in **Ascending** or **Descending** order.</dd>
+
+<dt id="kind">Kind</dt>
+<dd>
+  Shows only the files of the kinds you select: **Textures**, **Meshes**, **Animations**, **Data**,
+  **Audio** or **Other**. **Unnamed only** shows only the files that no hash table names. Shows in
+  the Grid and Details views.
+</dd>
+
+<dt id="tile-size">Tile size</dt>
+<dd>The size of a tile. Shows in the Grid view.</dd>
+
+<dt id="row-height">Row height</dt>
+<dd>The height of a row. Shows in the Details view.</dd>
+
+  <dt id="thumbnails">Thumbnails</dt>
+  <dd>
+    Draws each file's image on its item. Off, an item shows an icon for its kind. Shows in the Grid
+    and Details views.
+  </dd>
+</dl>
+
+## Move between folders
+
+The breadcrumb in the toolbar names the open folder. Select a segment to go to it, or select the
+caret beside it to list the folders at that level.
+
+- Press <kbd>Ctrl</kbd>+<kbd>L</kbd> to enter a path. <kbd>Tab</kbd> completes a folder name.
+- Press <kbd>Backspace</kbd> or <kbd>Alt</kbd>+<kbd>Up</kbd> to go to the parent folder.
+- In the Grid and Details views, press a letter or a digit to jump to the next item whose name
+  starts with it.
+- Press <kbd>Enter</kbd> to open the focused folder or file.
+
+## Search and filter
+
+The box in the toolbar searches or filters, depending on its scope.
+Press <kbd>Ctrl</kbd>+<kbd>F</kbd> or <kbd>/</kbd> to focus it.
+
+<dl>
+  <dt id="scope-folder">This folder</dt>
+  <dd>Narrows the rows already on screen to the ones that match.</dd>
+
+  <dt id="scope-whole">Whole game, Whole archive</dt>
+  <dd>
+    Searches the full path of every file in the installation, or in the archive the tab shows.
+    Results keep their folders, so they show as a tree. Select **Use regular expression** to
+    search with a regular expression.
+  </dd>
+</dl>
+
+To search the game from anywhere in the project,
+press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>F</kbd>. The **Search** view opens in the side panel with its
+box focused.
+
+<Screenshot
+  file="editor/game-browser-search.webp"
+  alt="The Search view in the side panel, with results for a champion name grouped under their folders"
+/>
+
+## Select files
+
+Select a row to select it. <kbd>Ctrl</kbd> and <kbd>Shift</kbd> add to the selection, as they do
+in a file manager.
+
+| Key                              | Action                        |
+| -------------------------------- | ----------------------------- |
+| <kbd>Ctrl</kbd>+<kbd>A</kbd>     | Select every row              |
+| <kbd>Ctrl</kbd>+<kbd>Space</kbd> | Add or remove the focused row |
+| <kbd>Shift</kbd>+arrow keys      | Extend the selection          |
+| <kbd>Escape</kbd>                | Clear the selection           |
+
+The toolbar shows how many files the selection holds. Copy and extract act on the whole
+selection, folders included.
+
+## Preview a file
+
+Select a file to open it in a preview tab. Double-click it to keep the tab open. See
+[File previews](/editor/file-previews/) for the files LTK Editor can show.
+
+## Copy into a layer
+
+**Copy into** writes the selected files into the layer selected in the **Explorer**. Each file
+lands at the path the game reads, inside a folder named after its archive, such as
+`Aatrox.wad.client`. A file the layer already holds is skipped, so a copy never overwrites your
+edits.
+
+1. In the **Explorer**, select the layer to copy into.
+2. In the game browser, select the files or folders.
+3. Right-click the selection and select **Copy into** _layer_, or press
+   <kbd>Ctrl</kbd>+<kbd>I</kbd>.
+
+An archive tab has **Copy into** _layer_ in its toolbar, which copies the whole archive. A
+preview tab of a game file has it too.
+
+## Extract to disk
+
+**Extract...** writes the selected files to a folder outside your project. The extract runs in the
+background, and a notification shows its progress with a **Cancel** button.
+
+1. Select the files or folders.
+2. Right-click the selection and select **Extract...**, or press <kbd>Ctrl</kbd>+<kbd>E</kbd>.
+3. Set the options in the **Extract to disk** dialog, and select **Extract**.
+
+LTK Editor remembers the options. After the first extract, the menu offers **Extract to**
+_folder_, which repeats the last extract into the same folder. From then on, the two items
+take these keys:
+
+| Item                    | Key                                           |
+| ----------------------- | --------------------------------------------- |
+| **Extract to** _folder_ | <kbd>Ctrl</kbd>+<kbd>E</kbd>                  |
+| **Extract...**          | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd> |
+
+<Screenshot
+  file="editor/game-browser-extract.webp"
+  alt="The Extract to disk dialog with a destination folder, Keep paths selected and Skip selected"
+/>
+
+<dl>
+  <dt id="destination">Destination</dt>
+  <dd>The folder to write the files to. It can be any folder except the League installation.</dd>
+
+<dt id="layout">Layout</dt>
+<dd>
+  **Keep paths** writes each file at its game path under the destination. **Flat** writes every file
+  into the destination by its name alone. Default: **Keep paths**.
+</dd>
+
+<dt id="existing-files">Existing files</dt>
+<dd>
+  What to do with a file the destination already holds: **Skip** or **Replace**. Default: **Skip**.
+</dd>
+
+<dt id="one-folder-per-archive">One folder per archive</dt>
+<dd>
+  Writes the files of each archive into a folder named after it. This is the layout a layer holds,
+  so you can add the folder to a layer with **Add WAD folder...**. Default: off.
+</dd>
+
+<dt id="recover-names">Recover names from the archive</dt>
+<dd>
+  Reads every bin of the archive for file names that no hash table holds. This is slow. Default:
+  off.
+</dd>
+
+  <dt id="open-when-done">Open the folder when done</dt>
+  <dd>Opens the destination in your file manager when the extract finishes. Default: on.</dd>
+</dl>
+
+## Row menu
+
+Right-click a file to open its menu. A folder's menu has only the copy and extract items.
+
+<dl>
+  <dt id="menu-open">Open</dt>
+  <dd>Opens the file in a tab of its own.</dd>
+
+<dt id="menu-vs-code">Open in VS Code</dt>
+<dd>
+  Opens a bin file as ritobin text in VS Code. Shows when the ritobin-lsp extension for VS Code has
+  installed its Windows Explorer integration.
+</dd>
+
+<dt id="menu-copy-into">Copy into _layer_, Extract to _folder_, Extract...</dt>
+<dd>See [Copy into a layer](#copy-into-a-layer) and [Extract to disk](#extract-to-disk).</dd>
+
+<dt id="menu-find-references">Find references</dt>
+<dd>
+  Lists the bin objects that name the file. See [References](/editor/objects-browser/#references).
+</dd>
+
+<dt id="menu-copy-name">Copy Name</dt>
+<dd>Copies the file name.</dd>
+
+<dt id="menu-copy-chunk-path">Copy Chunk Path</dt>
+<dd>Copies the file's path inside its archive. Disabled when no hash table names the file.</dd>
+
+  <dt id="menu-copy-path-hash">Copy Path Hash</dt>
+  <dd>Copies the hash of the file's path.</dd>
+</dl>
+
+## File names and hashes
+
+An archive stores each file under a <Hint as="span" tip="League identifies files and BIN properties by a hash of their path or name rather than the string itself. Hash tables map known hashes back to readable names." client:visible>[hash](/glossary/)</Hint>
+of its path, and the hash tables supply the names. A file that no hash table names shows its
+hash, and groups in a folder of its own. When every file shows as a hash, the hash tables are not
+downloaded. Sync them in **Settings** > **Cache**.
+
+## Game index
+
+LTK Editor builds the game index the first time a session reads it. When the game patches while
+LTK Editor is open, select **Rebuild index** in the toolbar of the **Game index** tab to read the
+installation again.
+
+## Related pages
+
+- [File previews](/editor/file-previews/)
+- [Objects browser](/editor/objects-browser/)
+- [Projects](/editor/projects/)
+- [WAD file format](/reference/file-formats/wad/)

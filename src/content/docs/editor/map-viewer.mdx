@@ -7,6 +7,119 @@ tags:
   subject: [creator-workshop, mapgeo]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Screenshot from '@components/Screenshot.astro';
 
-<UnderConstruction />
+The map viewer draws a League map in LTK Editor, with its geometry, sky, lighting and the objects
+it places. Use it to see a map change before you test it in the game.
+
+<Screenshot
+  file="editor/map-viewer.webp"
+  alt="A map open in the map viewer, with the preview, the outliner and the inspector"
+/>
+
+## What opens in the map viewer
+
+| File or object        | Opens as                                                            |
+| --------------------- | ------------------------------------------------------------------- |
+| `.mapgeo` file        | The map it draws                                                    |
+| `.materials.bin`      | The map it draws. The **Objects** switch shows the bin's objects    |
+| `Map` object          | The **Map** view: **Identity**, **Map skins**, **Characters**       |
+| `MapSkin` object      | The **Map skin** view: **Identity**, **Look**, **Minimap**, **VFX** |
+| `MapContainer` object | The **Container** view: **Identity**, **Chunks**, **Components**    |
+
+The viewer looks for the geometry, materials and textures in your project first, and in your
+League installation second.
+
+## Panes
+
+A map tab has three panes: **Preview**, **Outliner** and **Inspector**. Reopen a closed pane from
+the **Panes** menu. **Reset layout** puts each pane back in its place.
+
+## Preview controls
+
+The controls sit at the top right of the preview.
+
+| Control                  | What it does                                                              |
+| ------------------------ | ------------------------------------------------------------------------- |
+| Map skin                 | Picks which skin of the map to draw. Shows when the map has more than one |
+| **Particles**            | Plays the map's particle effects                                          |
+| **Event effects**        | Plays the effects that show only during an in-game event                  |
+| **Structures and props** | Draws the map's structures and props                                      |
+| **Sky**                  | Draws the sky                                                             |
+| **Hexshade**             | Draws the map with [Hexshade](/editor/hexshade/)                          |
+| **Placeables**           | Marks each placeable object with a dot                                    |
+| **Box select**           | Selects placeables by dragging a box                                      |
+| **Visibility layers**    | Turns each visibility layer of the geometry on or off                     |
+| **Sun**                  | Changes the sun and ambient light                                         |
+| **Post effects**         | Changes fog, depth of field and ambient occlusion                         |
+| **View mode**            | Picks how the preview draws the geometry                                  |
+| **Camera**               | Picks the camera                                                          |
+| **Frame the character**  | Fits the map in the view                                                  |
+
+{/* TODO: verify what each View mode and Camera choice does in the map preview. */}
+
+## Lighting
+
+**Sun** and **Post effects** start from the map's own values. They change the preview only, not
+the map's files.
+
+<dl>
+  <dt id="sun">Sun</dt>
+  <dd>
+    **Azimuth**, **Elevation**, **Sun strength**, **Ambient strength**, **Sun color**, **Sky
+    color** and **Ground color**. **Reset to the map's sun** puts back the map's values.
+  </dd>
+
+  <dt id="post-effects">Post effects</dt>
+  <dd>
+    **Depth fog**, **Height fog**, **Depth of field** and **Ambient occlusion**, each with its own
+    settings. **Reset to the map's post effects** puts back the map's values.
+  </dd>
+</dl>
+
+{/* TODO: describe each fog, depth of field and ambient occlusion setting. */}
+
+## Outliner
+
+The **Outliner** lists each chunk of the map's `.materials.bin`, a `MapPlaceableContainer`, and
+the placeable objects it holds. Select a row to move the camera to the object.
+
+- Enter text in **Search placeables** to keep the placeables whose name or class holds it.
+- Select a kind chip to keep one kind: **Characters**, **Particles**, **Audio**, **Locators**,
+  **Groups** or **Other**.
+- Select the eye on a row to hide the chunk or the placeable in the preview.
+
+A lightning mark shows a placeable that stays hidden until an in-game event shows it. The preview
+plays it only with **Event effects** on, or while it is selected.
+
+| Key                                  | Action                        |
+| ------------------------------------ | ----------------------------- |
+| <kbd>Up</kbd>, <kbd>Down</kbd>       | Move between rows             |
+| <kbd>Left</kbd>, <kbd>Right</kbd>    | Fold and unfold a chunk       |
+| <kbd>Enter</kbd> or <kbd>Space</kbd> | Move the camera to the row    |
+| <kbd>Ctrl</kbd>+<kbd>F</kbd>         | Go to the search box          |
+| <kbd>Ctrl</kbd>+<kbd>A</kbd>         | Select every listed placeable |
+| <kbd>Esc</kbd>                       | Clear the selection           |
+
+## Select placeables
+
+The **Outliner** and the preview share one selection.
+
+1. Turn on **Box select** in the preview controls.
+2. Drag a box over the placeables, or select one dot.
+
+   Hold <kbd>Shift</kbd> to add to the selection, or <kbd>Ctrl</kbd> to add or remove one
+   placeable. The other mouse buttons still move the camera.
+
+A bar over the **Outliner** counts the selection. Its buttons are **Frame the selection**, **Hide
+the selection in the preview**, **Show the selection in the preview** and **Clear the selection**.
+
+The **Inspector** shows the fields of the placeable you selected last. **Open in its chunk** opens
+the chunk's object at that placeable.
+
+## Related pages
+
+- [Hexshade](/editor/hexshade/)
+- [Bin editor](/editor/bin-editor/)
+- [Skin editor](/editor/skin-editor/)
+- [MapGeo](/reference/file-formats/mapgeo/)

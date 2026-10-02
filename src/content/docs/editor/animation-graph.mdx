@@ -1,12 +1,80 @@
 ---
 title: Animation graph
-description: Read and edit the clips and blends of an animation graph.
+description: Read the clips of an animation graph and the tracks, masks and sync groups they key into.
 tags:
   type: concept
   audience: [mod-creator]
   subject: [creator-workshop, anm]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
 
-<UnderConstruction />
+An animation graph is an `AnimationGraphData` object that lists a skin's animation clips. Each
+clip names an <Hint as="span" tip="Animation file format. Stores per-joint keyframe data for champion and map animations." client:visible>[ANM](/glossary/)</Hint>
+file or other clips, and keys into the graph's tracks, masks and sync groups. LTK Editor opens an
+animation graph in the **Graph** view, a table of its clips.
+
+<Screenshot
+  file="editor/animation-graph-clips.webp"
+  alt="Graph view of an animation graph, with the clip table and its Clips, Tracks, Masks and Sync groups tabs"
+/>
+
+## Open a graph
+
+A skin links its graph through `skinAnimationProperties.animationGraphData`. Follow that link, or
+open any object of class `AnimationGraphData`. The object opens in the **Graph** view. Switch to
+**Properties** with the view mode control in the tab header.
+
+The [skin editor](/editor/skin-editor/) shows the same table in its **Clips** pane, where a clip
+also poses the skin preview.
+
+## Clips
+
+The **Clips** tab has one row per entry of `mClipDataMap`, sorted by name. Enter text in
+**Filter** to keep the clips whose name holds it.
+
+| Column     | What it shows                                                                      |
+| ---------- | ---------------------------------------------------------------------------------- |
+| Name       | The clip's name, and its kind: the class name without `ClipData`, such as `Atomic` |
+| Rate       | The `.anm` file's frames per second, over the ticks per second of `mTickDuration`  |
+| Track      | The track the clip plays on                                                        |
+| Mask       | The mask the clip uses. Shows only when a clip of the graph names one              |
+| Sync group | The sync group the clip joins. Shows only when a clip of the graph names one       |
+| Events     | The number of events the clip has                                                  |
+
+Select a track, mask or sync group chip to switch to that tab, with its entry marked. A chip that
+names a key the graph does not declare shows a warning.
+
+Select the caret at the start of a row, or press <kbd>Right</kbd>, to unfold the clip's own
+fields. A clip that plays other clips lists them under **Plays**.
+
+Right-click a clip and select **Open animation** to open its `.anm` file, or **Open animation to
+the side** to open it in the other group.
+
+## Tracks, masks and sync groups
+
+The other tabs list the maps the clips key into. Each entry is one row.
+
+| Tab             | Columns                                  |
+| --------------- | ---------------------------------------- |
+| **Tracks**      | Name, Priority, Blend mode, Blend weight |
+| **Masks**       | Name, Id, Joints                         |
+| **Sync groups** | Name, Type                               |
+
+**Joints** counts the joints a mask weighs, out of the joints its list covers. Unfold a mask to
+see the weight of each joint.
+
+## Other fields
+
+The fields the table does not show, such as the blend table, are under **Other**.
+
+## Editing a graph
+
+{/* TODO: which cells of the clip table take edits in v1.25.0, and how a field row of an unfolded clip edits. */}
+
+## Related pages
+
+- [Skin editor](/editor/skin-editor/)
+- [Bin editor](/editor/bin-editor/)
+- [ANM file format](/reference/file-formats/anm/)

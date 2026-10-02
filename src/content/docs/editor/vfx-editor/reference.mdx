@@ -7,6 +7,846 @@ tags:
   subject: [creator-workshop, bin]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+The fields of a `VfxSystemDefinitionData` object and of its `VfxEmitterDefinitionData` emitters,
+in the order the VFX editor's inspector shows them.
+
+<Where
+  path={['Bin editor', 'Object tab', 'System', 'Inspector']}
+  files="VfxSystemDefinitionData objects in .bin files"
+/>
+
+Each entry gives the inspector's label, where the field has one, then the field's name in the
+file. Bin files leave out a value that equals the class default, and the game then uses that
+default.
+
+Many emitter fields are values: a constant, a random range or a curve over time. Set the kind with
+the mode control next to the field. See [Value modes](/editor/vfx-editor/#value-modes).
+
+## System
+
+Select the system's segment of the crumb to show these fields in the inspector.
+
+### Identity
+
+<dl>
+  <dt id="particle-name">`particleName`</dt>
+  <dd>The system's short name.</dd>
+
+<dt id="particle-path">`particlePath`</dt>
+<dd>The full path that identifies the system. Other objects link to the system by this path.</dd>
+
+<dt id="visibility-radius">`visibilityRadius`</dt>
+<dd>
+  The radius, in world units, of the box the game culls the system by. When the box leaves the
+  camera's view, the game hides the system and pauses it, unless `flags` says otherwise. Default:
+  `250`.
+</dd>
+
+  <dt id="flags">`flags`</dt>
+  <dd>
+    Behavior flags for the whole system, as one number. The game uses the value as it is written.
+
+    | Bit      | Effect when set                                                              |
+    | -------- | ---------------------------------------------------------------------------- |
+    | `0x0001` | Keeps simulating while the system is off screen                              |
+    | `0x0002` | Keeps the system alive when its owner dies                                   |
+    | `0x0004` | Keeps the system alive when its owner revives                                |
+    | `0x0008` | Runs one simulation step per frame instead of fixed steps                    |
+    | `0x0010` | Stops persistent sound and voice-over at once when the system ends           |
+    | `0x0020` | Keeps persistent sounds playing while the system is hidden                   |
+    | `0x0040` | Runs at least one simulation step every frame                                |
+    | `0x0100` | Moves particles in closed form toward `birthVelocity` divided by drag        |
+    | `0x0200` | Takes the HUD layer's size from the UI element that hosts the system         |
+    | `0x0400` | Scales particles with the owner's current model scale                        |
+    | `0x0800` | Lets the lowest effects quality skip all emitters but importance `3` and `4` |
+
+    Bit `0x0080` is written by older files and has no effect. Default: `212` (`0xD4`).
+
+  </dd>
+
+<dt id="drawing-layer">`drawingLayer`</dt>
+<dd>
+  The layer the system draws in. `0` is the world. `1` is the HUD layer, where the system skips
+  world culling and is placed on a canvas of `hudLayerDimension` and `HudLayerAspect`. Default: `0`.
+</dd>
+
+  <dt id="build-up-time">`buildUpTime`</dt>
+  <dd>
+    Seconds the game fast-forwards the system when it becomes visible. A long ambient effect then
+    shows fully built up instead of starting empty. Default: `0`.
+  </dd>
+</dl>
+
+### Emitters
+
+<dl>
+  <dt id="complex-emitters">`complexEmitterDefinitionData`</dt>
+  <dd>
+    The system's complex emitters. Only an emitter in this list can emit from a mesh with
+    `emissionMeshName`.
+  </dd>
+
+  <dt id="simple-emitters">`simpleEmitterDefinitionData`</dt>
+  <dd>
+    The system's simple emitters, a lighter emitter type without mesh emission. The editor marks
+    them as simple.
+  </dd>
+</dl>
+
+### Audio
+
+<dl>
+  <dt id="sound-on-create">`soundOnCreateDefault`</dt>
+  <dd>The sound event the game plays once when the system starts.</dd>
+
+<dt id="sound-persistent">`soundPersistentDefault`</dt>
+<dd>
+  The looping sound event that plays while the system lives. Bits `0x0010` and `0x0020` of `flags`
+  set whether it stops at once and whether it plays off screen.
+</dd>
+
+<dt id="voice-over-on-create">`voiceOverOnCreateDefault`</dt>
+<dd>The voice-over event the game plays once when the system starts.</dd>
+
+  <dt id="voice-over-persistent">`voiceOverPersistentDefault`</dt>
+  <dd>The looping voice-over event, with the same rules as `soundPersistentDefault`.</dd>
+</dl>
+
+### Other
+
+**Other** lists every system field that the sections above do not.
+
+<dl>
+  <dt id="self-illumination">`selfIllumination`</dt>
+  <dd>The self-illumination factor of the system's rendering. `-1` means unset. Default: `-1`.</dd>
+
+<dt id="system-material-overrides">`materialOverrideDefinitions`</dt>
+<dd>
+  Material overrides for every emitter of the system. The entries are the same as an emitter's
+  [Material Overrides](#material-overrides).
+</dd>
+
+<dt id="override-scale-cap">`overrideScaleCap`</dt>
+<dd>The largest scale the system can take. Unset means no cap. Default: unset.</dd>
+
+<dt id="m-eye-candy">`mEyeCandy`</dt>
+<dd>
+  Marks the system as eye candy, which the game hides when the player turns on the setting that
+  hides eye candy. Default: `false`.
+</dd>
+
+<dt id="dynamic-parameter-data">`DynamicParameterData`</dt>
+<dd>
+  Overrides that game events apply to named emitters: scale, UV scale, emission rate, lifetime or
+  birth velocity, at once or eased in.
+</dd>
+
+<dt id="point-light">`PointLight`</dt>
+<dd>A dynamic light that the system gives off while it lives.</dd>
+
+<dt id="audio-parameter-flex-id">`audioParameterFlexID`</dt>
+<dd>
+  The flex ID that drives an audio parameter of the system's sounds. `-1` turns it off. Default:
+  `-1`.
+</dd>
+
+<dt id="audio-parameter-duration">`audioParameterTimeScaledDuration`</dt>
+<dd>
+  The duration of a time-scaled audio parameter, used with `audioParameterFlexID`. Default: `0`.
+</dd>
+
+<dt id="clock-to-use">`ClockToUse`</dt>
+<dd>
+  The game clock that drives the system's time. Default: `0`.
+  {/* TODO: the values of ClockToUse and the clock each selects. */}
+</dd>
+
+<dt id="hud-layer-dimension">`hudLayerDimension`</dt>
+<dd>The size of the canvas a HUD-layer system is placed on. Default: `1024`.</dd>
+
+<dt id="hud-layer-aspect">`HudLayerAspect`</dt>
+<dd>The aspect ratio of the HUD-layer canvas. Default: `1.333` (4:3).</dd>
+
+<dt id="hud-anchor">`hudAnchorPositionFromWorldProjection`</dt>
+<dd>
+  Anchors a HUD-layer system at its world position, projected onto the screen. Default: `true`.
+</dd>
+
+<dt id="m-is-pose-afterimage">`mIsPoseAfterimage`</dt>
+<dd>Marks the system as a pose afterimage, a ghost copy of a character. Default: `false`.</dd>
+
+<dt id="asset-remapping-table">`assetRemappingTable`</dt>
+<dd>Entries that swap assets the system's emitters name for other assets.</dd>
+
+<dt id="effector-definition">`EffectorDefinition`</dt>
+<dd>
+  A force that the system adds to the map's environment while it lives. It moves the environment,
+  not the system's own particles.
+</dd>
+
+<dt id="transform">`transform`</dt>
+<dd>A fixed transform applied to the whole system. Default: the identity.</dd>
+
+<dt id="shimmer-emitters">`ShimmerEmitterDefinitionData`</dt>
+<dd>
+  Emitters that take their emission, lifetime, physics, rendering and geometry from a component
+  graph. The game drops an entry whose graph lacks any of the four.
+</dd>
+
+<dt id="scale-with-bone">`scaleDynamicallyWithAttachedBone`</dt>
+<dd>Scales the system with the bone it is attached to. Default: `false`.</dd>
+
+  <dt id="distance-based-transparency">`DistanceBasedTransparencyParams`</dt>
+  <dd>Fades the whole system by distance. Large ground indicators use it.</dd>
+</dl>
+
+## Emitter
+
+Select an emitter in the timeline, the **Emitters** pane or the preview to show its fields.
+
+### Emission
+
+<dl>
+  <dt id="rate">Emission Rate (`rate`)</dt>
+  <dd>
+    Particles the emitter spawns each second. For a **Single Particle** emitter, the number of
+    particles. Default: `0`.
+  </dd>
+
+<dt id="flex-rate">Flex Emission Rate (`flexRate`)</dt>
+<dd>A flex value that overrides **Emission Rate**. See [Flex values](#flex-values).</dd>
+
+<dt id="period">Emission Period (`period`)</dt>
+<dd>The length of one emission cycle, in seconds, for an emitter that repeats. Default: unset.</dd>
+
+<dt id="lifetime">Emitter Lifetime (`lifetime`)</dt>
+<dd>Seconds the emitter emits. Unset makes it emit for the life of the system. Default: unset.</dd>
+
+<dt id="particle-lifetime">Particle Lifetime (`particleLifetime`)</dt>
+<dd>Seconds each particle lives. Default: `3`.</dd>
+
+<dt id="flex-particle-lifetime">Flex Particle Lifetime (`flexParticleLifetime`)</dt>
+<dd>A flex value that overrides **Particle Lifetime**.</dd>
+
+<dt id="start-delay">Start Delay (`timeBeforeFirstEmission`)</dt>
+<dd>Seconds before the emitter starts to emit. Default: `0`.</dd>
+
+<dt id="active-time-per-period">Active Time per Period (`timeActiveDuringPeriod`)</dt>
+<dd>
+  Seconds of each **Emission Period** that the emitter emits. Unset makes it emit for the whole
+  period. Default: unset.
+</dd>
+
+<dt id="linger-settings">Linger Settings (`Linger`)</dt>
+<dd>
+  Finer control of what happens after the system ends than **Emitter Linger** and **Particle
+  Linger** give.
+</dd>
+
+<dt id="emitter-linger">Emitter Linger (`emitterLinger`)</dt>
+<dd>
+  Seconds the emitter lingers after the system ends, so its particles can finish. Default: `0`.
+</dd>
+
+<dt id="particle-linger">Particle Linger (`particleLinger`)</dt>
+<dd>Seconds particles live on after the emitter stops. Default: `0`.</dd>
+
+<dt id="particle-linger-mode">Particle Linger Mode (`particleLingerType`)</dt>
+<dd>
+  How lingering particles behave after the emitter stops. Default: `0`.
+  {/* TODO: the values of particleLingerType and what each does. */}
+</dd>
+
+<dt id="single-particle">Single Particle (`isSingleParticle`)</dt>
+<dd>
+  Keeps one particle, or a fixed set, alive instead of a stream. The timeline draws its output as
+  one burst. Default: `false`.
+</dd>
+
+<dt id="skip-chance">Skip Chance (`ChanceToNotExist`)</dt>
+<dd>
+  The chance, from `0` to `1`, that the game skips the emitter when the system starts. Default: `0`.
+</dd>
+
+<dt id="maximum-emission-rate-by-speed">
+  Maximum Emission Rate by Speed (`MaximumRateByVelocity`)
+</dt>
+<dd>The highest rate **Emission Rate by Speed** can reach. Default: unset.</dd>
+
+<dt id="emission-rate-by-speed">Emission Rate by Speed (`rateByVelocityFunction`)</dt>
+<dd>
+  Scales the emission rate by how fast the emitter moves, for example dust that emits only while a
+  character runs.
+</dd>
+
+<dt id="shared-particle-randomness">Shared Particle Randomness (`ParticlesShareRandomValue`)</dt>
+<dd>
+  Gives every particle of the emitter the same random value, instead of one each. Default: `false`.
+</dd>
+
+<dt id="variable-start-time">Variable Start Time (`HasVariableStartTime`)</dt>
+<dd>
+  Starts the emitter at a random point of its cycle, so copies of a looping effect do not play in
+  step. Default: `false`.
+</dd>
+
+  <dt id="importance">Importance (`importance`)</dt>
+  <dd>
+    How the player's effects quality setting culls the emitter.
+
+    | Effects quality  | Importance values the game skips |
+    | ---------------- | -------------------------------- |
+    | Very low and low | `0`, `1`, `5`                    |
+    | Medium           | `0`, `1`                         |
+    | High             | `0`, `4`                         |
+    | Very high        | `4`                              |
+
+    `3` is never skipped. `4` is a low-quality stand-in that shows only on low settings. `5`
+    shows only on medium and above. Default: `2`.
+
+  </dd>
+</dl>
+
+### Birth
+
+Birth fields set the value a particle starts with.
+
+<dl>
+  <dt id="initial-color">Initial Color (`birthColor`)</dt>
+  <dd>The particle's color and alpha when it spawns. Default: `[1, 1, 1, 1]`.</dd>
+
+<dt id="initial-scale">Initial Scale (`birthScale0`)</dt>
+<dd>The particle's scale on each axis when it spawns. Default: `[1, 1, 1]`.</dd>
+
+<dt id="initial-rotation">Initial Rotation (`birthRotation0`)</dt>
+<dd>The particle's rotation on each axis, in degrees, when it spawns. Default: `[0, 0, 0]`.</dd>
+
+<dt id="initial-frame-rate">Initial Frame Rate (`birthFrameRate`)</dt>
+<dd>A multiplier on the flipbook's **Frame Rate** for each particle. Default: `1`.</dd>
+
+<dt id="initial-uv-offset">Initial UV Offset (`birthUVOffset`)</dt>
+<dd>The particle's UV offset when it spawns. Default: `[0, 0]`.</dd>
+
+<dt id="flex-initial-uv-offset">Flex Initial UV Offset (`flexBirthUVOffset`)</dt>
+<dd>A flex value that overrides **Initial UV Offset**.</dd>
+
+<dt id="initial-uv-rotation-speed">Initial UV Rotation Speed (`birthUvRotateRate`)</dt>
+<dd>The particle's UV rotation speed, in degrees per second. Default: `0`.</dd>
+
+<dt id="initial-uv-scroll-speed">Initial UV Scroll Speed (`birthUvScrollRate`)</dt>
+<dd>The particle's UV scroll speed, in UVs per second. Default: `[0, 0]`.</dd>
+
+<dt id="flex-initial-uv-scroll-speed">Flex Initial UV Scroll Speed (`flexBirthUVScrollRate`)</dt>
+<dd>A flex value that overrides **Initial UV Scroll Speed**.</dd>
+
+  <dt id="flex-initial-scale">Flex Initial Scale (`flexScaleBirthScale`)</dt>
+  <dd>A flex value that scales **Initial Scale**.</dd>
+</dl>
+
+### Initial motion
+
+<dl>
+  <dt id="initial-velocity">Initial Velocity (`birthVelocity`)</dt>
+  <dd>
+    The particle's velocity on each axis when it spawns. A random range gives each particle its own
+    velocity in the range. Default: `[0, 0, 0]`.
+  </dd>
+
+<dt id="flex-initial-velocity">Flex Initial Velocity (`flexBirthVelocity`)</dt>
+<dd>A flex value that overrides **Initial Velocity**.</dd>
+
+<dt id="initial-acceleration">Initial Acceleration (`birthAcceleration`)</dt>
+<dd>The particle's acceleration on each axis when it spawns. Default: `[0, 0, 0]`.</dd>
+
+<dt id="initial-orbital-velocity">Initial Orbital Velocity (`birthOrbitalVelocity`)</dt>
+<dd>
+  Turns the particle around the emitter's origin, in degrees per second on each axis. Default: `[0,
+  0, 0]`.
+</dd>
+
+<dt id="initial-drag">Initial Drag (`birthDrag`)</dt>
+<dd>The particle's drag on each axis, which slows its velocity. Default: `[0, 0, 0]`.</dd>
+
+<dt id="initial-rotation-speed">Initial Rotation Speed (`birthRotationalVelocity0`)</dt>
+<dd>
+  The particle's spin when it spawns, in degrees per second on each axis. Default: `[0, 0, 0]`.
+</dd>
+
+<dt id="flex-initial-rotation-speed">
+  Flex Initial Rotation Speed (`flexBirthRotationalVelocity0`)
+</dt>
+<dd>A flex value that overrides **Initial Rotation Speed**.</dd>
+
+  <dt id="initial-rotation-acceleration">Initial Rotation Acceleration (`birthRotationalAcceleration`)</dt>
+  <dd>
+    The particle's spin acceleration, in degrees per second squared on each axis. Default:
+    `[0, 0, 0]`.
+  </dd>
+</dl>
+
+### Motion over life
+
+<dl>
+  <dt id="velocity-over-lifetime">Velocity over Lifetime (`velocity`)</dt>
+  <dd>Velocity added over the particle's life, on top of its initial velocity. Default: `[0, 0, 0]`.</dd>
+
+<dt id="acceleration-over-lifetime">Acceleration over Lifetime (`acceleration`)</dt>
+<dd>
+  Acceleration over the particle's life, in the space of the emitter or the particle. Default: `[0,
+  0, 0]`.
+</dd>
+
+<dt id="world-acceleration">World Acceleration (`worldAcceleration`)</dt>
+<dd>
+  Acceleration in world space, whatever the particle's orientation. Gravity is a negative Y value.
+  Default: `[0, 0, 0]`.
+</dd>
+
+  <dt id="drag-over-lifetime">Drag over Lifetime (`drag`)</dt>
+  <dd>Drag on each axis over the particle's life, which slows its velocity. Default: `[0, 0, 0]`.</dd>
+</dl>
+
+### Position
+
+<dl>
+  <dt id="emitter-position">Emitter Position (`EmitterPosition`)</dt>
+  <dd>The emitter's offset from the system. Default: `[0, 0, 0]`.</dd>
+
+<dt id="spawn-shape">Spawn Shape (`SpawnShape`)</dt>
+<dd>
+  A shape that spreads the particles' spawn positions, and can set their velocities, instead of
+  spawning them at one point. The preview's **Gizmo** draws it.
+</dd>
+
+<dt id="flex-spawn-shape">Flex Spawn Shape (`FlexShapeDefinition`)</dt>
+<dd>Flex values for the spawn shape.</dd>
+
+<dt id="emitter-space">Emitter Space (`IsEmitterSpace`)</dt>
+<dd>
+  Simulates the particles in the emitter's space, so particles already spawned move with the
+  emitter. Off leaves them behind in world space. Default: `false`.
+</dd>
+
+<dt id="follow-terrain">Follow Terrain (`isFollowingTerrain`)</dt>
+<dd>Keeps particles at the height of the ground under them. Default: `false`.</dd>
+
+<dt id="ground-layer">Ground Layer (`isGroundLayer`)</dt>
+<dd>
+  Draws the emitter on the ground, like an area indicator. The timeline lists ground-layer emitters
+  first. Default: `false`.
+</dd>
+
+<dt id="navigation-mesh-mask">Navigation Mesh Mask (`useNavmeshMask`)</dt>
+<dd>
+  Masks the effect with the navigation mesh, so a ground effect does not draw over walls. Default:
+  `false`.
+</dd>
+
+<dt id="attachment-weight">Attachment Weight (`bindWeight`)</dt>
+<dd>
+  How closely particles already spawned follow a moving emitter, from `0` (stay in world space) to
+  `1` (move with the emitter). Default: `0`.
+</dd>
+
+<dt id="stretch-by-speed">Stretch by Speed (`directionVelocityScale`)</dt>
+<dd>
+  How much a particle stretches along its direction as it moves faster. It works with **Orient Along
+  Direction**. Default: `0`.
+</dd>
+
+<dt id="minimum-speed-stretch">Minimum Speed Stretch (`directionVelocityMinScale`)</dt>
+<dd>The smallest stretch of a particle that orients along its direction. Default: `1`.</dd>
+
+<dt id="emitter-position-offset">Emitter Position Offset (`translationOverride`)</dt>
+<dd>
+  The emitter's position within the system. The preview's **Offset** handle drags it. Default: `[0,
+  0, 0]`.
+</dd>
+
+<dt id="offset-over-lifetime">Offset over Lifetime (`offsetLifetimeScaling`)</dt>
+<dd>
+  Scales each particle's lifetime by its spawn offset from the emitter, on each axis. Default: `[0,
+  0, 0]`.
+</dd>
+
+<dt id="offset-symmetry-mode">Offset Symmetry Mode (`offsetLifeScalingSymmetryMode`)</dt>
+<dd>
+  How **Offset over Lifetime** treats a negative offset. Default: `0`.
+  {/* TODO: the values of offsetLifeScalingSymmetryMode and what each does. */}
+</dd>
+
+<dt id="rotation-over-lifetime">Rotation over Lifetime (`rotation0`)</dt>
+<dd>The particle's rotation over its life, in degrees on each axis. Default: `[0, 0, 0]`.</dd>
+
+<dt id="emitter-orientation">Emitter Orientation (`rotationOverride`)</dt>
+<dd>
+  The emitter's rotation within the system, in degrees on each axis. The preview's **Turn** handle
+  drags it. Default: `[0, 0, 0]`.
+</dd>
+
+<dt id="enable-rotation">Enable Rotation (`isRotationEnabled`)</dt>
+<dd>Turns on the particle rotation fields. Default: `false`.</dd>
+
+<dt id="post-rotation-orientation">Post-Rotation Orientation (`hasPostRotateOrientation`)</dt>
+<dd>
+  Adds a fixed rotation around **Post-Rotation Axis** after the particle's orientation is worked
+  out. Default: `false`.
+</dd>
+
+<dt id="post-rotation-axis">Post-Rotation Axis (`postRotateOrientationAxis`)</dt>
+<dd>The axis of **Post-Rotation Orientation**. Default: `[0, 0, 0]`.</dd>
+
+<dt id="orient-along-direction">Orient Along Direction (`isDirectionOriented`)</dt>
+<dd>Turns each particle to face the way it moves. Default: `false`.</dd>
+
+<dt id="local-emitter-orientation">Local Emitter Orientation (`isLocalOrientation`)</dt>
+<dd>
+  Orients the emitter in the space of what the system is attached to, instead of world space.
+  Default: `true`.
+</dd>
+
+<dt id="local-particle-orientation">Local Particle Orientation (`particleIsLocalOrientation`)</dt>
+<dd>Orients each particle in the space of what the system is attached to. Default: `false`.</dd>
+
+<dt id="emission-mesh">Emission Mesh (`emissionMeshName`)</dt>
+<dd>
+  A mesh whose surface the particles spawn on. The game reads it only for an emitter in
+  `complexEmitterDefinitionData`.
+</dd>
+
+<dt id="emission-mesh-scale">Emission Mesh Scale (`emissionMeshScale`)</dt>
+<dd>The scale of **Emission Mesh**. Default: `1`.</dd>
+
+<dt id="emission-surface">Emission Surface (`emissionSurfaceDefinition`)</dt>
+<dd>A surface the particles spawn across.</dd>
+
+  <dt id="emit-along-mesh-normals">Emit Along Mesh Normals (`useEmissionMeshNormalForBirth`)</dt>
+  <dd>Emits and orients particles along the normals of **Emission Mesh**. Default: `true`.</dd>
+</dl>
+
+### Scale
+
+<dl>
+  <dt id="scale-over-lifetime">Scale over Lifetime (`scale0`)</dt>
+  <dd>The particle's scale over its life, multiplied by **Initial Scale**. Default: `[1, 1, 1]`.</dd>
+
+<dt id="scale-multiplier">Scale Multiplier (`scaleOverride`)</dt>
+<dd>The emitter's scale within the system. Default: `[1, 1, 1]`.</dd>
+
+<dt id="uniform-scale">Uniform Scale (`isUniformScale`)</dt>
+<dd>Uses the X scale for every axis. Default: `false`.</dd>
+
+<dt id="flex-instance-scale">Flex Instance Scale (`FlexInstanceScale`)</dt>
+<dd>A flex value that scales the whole emitter.</dd>
+
+<dt id="scale-emitter-lifetime">Scale Emitter Lifetime (`doesLifetimeScale`)</dt>
+<dd>
+  Scales the emitter's lifetime when the game scales the duration of its effect. Default: `false`.
+</dd>
+
+  <dt id="scale-particle-lifetime">Scale Particle Lifetime (`doesParticleLifetimeScale`)</dt>
+  <dd>Scales the particles' lifetime when the game scales the duration of their effect. Default: `false`.</dd>
+</dl>
+
+### Color
+
+<dl>
+  <dt id="color-over-lifetime">Color over Lifetime (`Color`)</dt>
+  <dd>The particle's color and alpha over its life, multiplied by **Initial Color**. Default: `[1, 1, 1, 1]`.</dd>
+
+<dt id="color-modulation">Color Modulation (`modulationFactor`)</dt>
+<dd>A color and alpha the emitter's output is multiplied by. Default: `[1, 1, 1, 1]`.</dd>
+
+<dt id="censorship-color-modulation">Censorship Color Modulation (`censorModulateValue`)</dt>
+<dd>
+  A color and alpha the output is multiplied by in regions where the game tones down its visuals.
+  Default: `[1, 1, 1, 1]`.
+</dd>
+
+<dt id="colorblind-visibility">Colorblind Visibility (`colorblindVisibility`)</dt>
+<dd>
+  When the emitter shows: `0` always, `1` only without colorblind mode, `2` only in colorblind mode.
+  Default: `0`.
+</dd>
+
+<dt id="color-render-flags">Color Render Flags (`colorRenderFlags`)</dt>
+<dd>
+  Flags for the color output. Default: `0`.
+  {/* TODO: the bits of colorRenderFlags and what each does. */}
+</dd>
+
+<dt id="color-lookup-mode-x">Color Lookup Mode X (`colorLookUpTypeX`)</dt>
+<dd>
+  What drives the X axis of the **Color Texture** lookup, such as the particle's life. Default: `1`.
+</dd>
+
+<dt id="color-lookup-mode-y">Color Lookup Mode Y (`colorLookUpTypeY`)</dt>
+<dd>
+  What drives the Y axis of the **Color Texture** lookup. Default: `0`.
+  {/* TODO: the values of the color lookup modes and what drives each. */}
+</dd>
+
+<dt id="color-lookup-offset">Color Lookup Offset (`colorLookUpOffsets`)</dt>
+<dd>An offset added to the lookup coordinates. Default: `[0, 0]`.</dd>
+
+<dt id="color-lookup-scale">Color Lookup Scale (`colorLookUpScales`)</dt>
+<dd>A scale applied to the lookup coordinates. Default: `[1, 1]`.</dd>
+
+<dt id="color-palette">Color Palette (`paletteDefinition`)</dt>
+<dd>A palette texture that recolors the emitter.</dd>
+
+  <dt id="color-texture">Color Texture (`particleColorTexture`)</dt>
+  <dd>
+    A gradient texture that colors the particles, often over their life. The lookup modes, offset
+    and scale above set how the game reads it. Default:
+    `ASSETS/Shared/Particles/DefaultColorOverlifetime.png`.
+  </dd>
+</dl>
+
+### Primitive
+
+<dl>
+  <dt id="render-primitive">Render Primitive (`primitive`)</dt>
+  <dd>
+    What each particle draws as: a camera-facing quad, a mesh, a beam, a trail, a projection or
+    another shape. Unset draws a camera-facing quad. See [Primitive](/editor/vfx-editor/#primitive)
+    for the choices.
+  </dd>
+</dl>
+
+### Texture
+
+<dl>
+  <dt id="texture">Texture (`texture`)</dt>
+  <dd>The emitter's main texture.</dd>
+
+<dt id="secondary-texture">Secondary Texture (`textureMult`)</dt>
+<dd>A second texture multiplied over the main one, with UV controls of its own.</dd>
+
+<dt id="falloff-texture">Falloff Texture (`falloffTexture`)</dt>
+<dd>
+  The falloff texture of the emitter's shading. Default:
+  `ASSETS/Shared/Particles/DefaultFalloff.png`.
+</dd>
+
+<dt id="pixelated-texture">Pixelated Texture (`isTexturePixelated`)</dt>
+<dd>Samples the texture without smoothing, so it draws pixelated. Default: `false`.</dd>
+
+<dt id="texture-address-mode">Texture Address Mode (`texAddressModeBase`)</dt>
+<dd>
+  Whether the main texture wraps or clamps past its edge. Default: `0`.
+  {/* TODO: which value is wrap and which is clamp. */}
+</dd>
+
+<dt id="sprite-sheet-grid">Sprite Sheet Grid (`texDiv`)</dt>
+<dd>The columns and rows the texture divides into for a flipbook. Default: `[1, 1]`.</dd>
+
+<dt id="flip-texture-u">Flip Texture U (`TextureFlipU`)</dt>
+<dd>Flips the texture horizontally. Default: `false`.</dd>
+
+<dt id="flip-texture-v">Flip Texture V (`TextureFlipV`)</dt>
+<dd>Flips the texture vertically. Default: `false`.</dd>
+
+<dt id="visibility-filters">Visibility Filters (`Filtering`)</dt>
+<dd>Settings that limit when the emitter shows.</dd>
+
+<dt id="frame-count">Frame Count (`numFrames`)</dt>
+<dd>The number of flipbook frames, laid out by **Sprite Sheet Grid**. Default: `1`.</dd>
+
+<dt id="frame-rate">Frame Rate (`frameRate`)</dt>
+<dd>Flipbook frames per second. Default: `0`.</dd>
+
+<dt id="start-frame">Start Frame (`startFrame`)</dt>
+<dd>The first flipbook frame. Default: `0`.</dd>
+
+<dt id="random-start-frame">Random Start Frame (`isRandomStartFrame`)</dt>
+<dd>Starts each particle on a random flipbook frame. Default: `false`.</dd>
+
+<dt id="uv-mode">UV Mode (`uvMode`)</dt>
+<dd>
+  How the game makes the primitive's UVs. Default: `0`.
+  {/* TODO: the values of uvMode and what each does. */}
+</dd>
+
+<dt id="uv-scale">UV Scale (`uvScale`)</dt>
+<dd>The scale of the UVs. Default: `[1, 1]`.</dd>
+
+<dt id="uv-rotation">UV Rotation (`uvRotation`)</dt>
+<dd>The rotation of the UVs around **UV Pivot**, in degrees. Default: `0`.</dd>
+
+<dt id="clamp-uv-scrolling">Clamp UV Scrolling (`uvScrollClamp`)</dt>
+<dd>Clamps scrolled UVs instead of wrapping them. Default: `false`.</dd>
+
+<dt id="uv-pivot">UV Pivot (`uvTransformCenter`)</dt>
+<dd>
+  The point UV rotation and scale turn around. `[0.5, 0.5]` is the texture's center. Default: `[0.5,
+  0.5]`.
+</dd>
+
+<dt id="uv-parallax-scale">UV Parallax Scale (`uvParallaxScale`)</dt>
+<dd>The strength of a UV offset that changes with the view angle. Default: `0`.</dd>
+
+<dt id="particle-uv-rotation-speed">Particle UV Rotation Speed (`particleUVRotateRate`)</dt>
+<dd>Each particle's UV rotation speed over its life, in degrees per second. Default: `0`.</dd>
+
+<dt id="particle-uv-scroll-speed">Particle UV Scroll Speed (`particleUVScrollRate`)</dt>
+<dd>Each particle's UV scroll speed over its life, in UVs per second. Default: `[0, 0]`.</dd>
+
+<dt id="emitter-uv-scroll-speed">Emitter UV Scroll Speed (`emitterUvScrollRate`)</dt>
+<dd>
+  A UV scroll speed the emitter applies to every particle, in UVs per second. Default: `[0, 0]`.
+</dd>
+
+<dt id="alpha-erosion">Alpha Erosion (`alphaErosionDefinition`)</dt>
+<dd>Dissolves particles over their life with an erosion texture and a threshold.</dd>
+
+<dt id="distortion">Distortion (`distortionDefinition`)</dt>
+<dd>Warps the scene behind the emitter, such as heat haze or a shockwave.</dd>
+
+  <dt id="reflection">Reflection (`reflectionDefinition`)</dt>
+  <dd>Fresnel and environment reflection settings for the emitter's shading.</dd>
+</dl>
+
+### Render
+
+<dl>
+  <dt id="blend-mode">Blend Mode (`blendMode`)</dt>
+  <dd>
+    How the emitter's output blends with the scene, such as alpha blending or additive. Default:
+    `0`.
+    {/* TODO: the values of blendMode and the blend each selects. */}
+  </dd>
+
+<dt id="render-order">Render Order (`pass`)</dt>
+<dd>
+  A sort key that moves the emitter earlier or later in the draw order. The timeline lists lanes in
+  draw order. Default: `0`.
+</dd>
+
+<dt id="render-phase-override">Render Phase Override (`renderPhaseOverride`)</dt>
+<dd>The render phase the emitter draws in. `7` means no override. Default: `7`.</dd>
+
+<dt id="alpha-cutoff">Alpha Cutoff (`alphaRef`)</dt>
+<dd>The alpha, from `0` to `255`, below which the game discards a pixel. Default: `5`.</dd>
+
+<dt id="write-alpha-only">Write Alpha Only (`WriteAlphaOnly`)</dt>
+<dd>Writes only the alpha channel of the render target. Default: `false`.</dd>
+
+<dt id="render-backfaces">Render Backfaces (`disableBackfaceCull`)</dt>
+<dd>Draws both faces of the primitive. Default: `false`.</dd>
+
+<dt id="cast-shadows">Cast Shadows (`doesCastShadow`)</dt>
+<dd>Makes the emitter's geometry cast shadows. Default: `false`.</dd>
+
+<dt id="depth-bias">Depth Bias (`depthBiasFactors`)</dt>
+<dd>
+  The slope and constant depth bias, which stop the emitter from flickering against geometry at the
+  same depth. Default: `[0, 0]`.
+</dd>
+
+<dt id="depth-offset">Depth Offset (`DepthPushPull`)</dt>
+<dd>
+  Default: `0`.
+  {/* TODO: what DepthPushPull does in the game. The meta wiki has no description yet. */}
+</dd>
+
+<dt id="soft-particles">Soft Particles (`softParticleParams`)</dt>
+<dd>Fades particles where they cut into scene geometry, so they show no hard edge.</dd>
+
+<dt id="slice-technique-range">Slice Technique Range (`sliceTechniqueRange`)</dt>
+<dd>
+  Default: `0`.
+  {/* TODO: what sliceTechniqueRange does in the game. The meta wiki has no description yet. */}
+</dd>
+
+<dt id="stencil-mode">Stencil Mode (`stencilMode`)</dt>
+<dd>
+  The stencil mode the emitter draws with. Default: `0`.
+  {/* TODO: the values of stencilMode and what each does. */}
+</dd>
+
+<dt id="stencil-reference">Stencil Reference (`stencilRef`)</dt>
+<dd>The stencil reference value that **Stencil Mode** uses. Default: `0`.</dd>
+
+<dt id="stencil-reference-id">Stencil Reference ID (`StencilReferenceId`)</dt>
+<dd>The hash of a named stencil reference that effects share.</dd>
+
+<dt id="render-flags">Render Flags (`miscRenderFlags`)</dt>
+<dd>
+  Low-level render flags. The timeline uses them to sort lanes in draw order. Default: `0`.
+  {/* TODO: the bits of miscRenderFlags and what each does. */}
+</dd>
+
+<dt id="mesh-render-flags">Mesh Render Flags (`meshRenderFlags`)</dt>
+<dd>
+  Render flags for a mesh primitive. Default: `1`.
+  {/* TODO: the bits of meshRenderFlags and what each does. */}
+</dd>
+
+<dt id="sort-emitters-by-position">Sort Emitters by Position (`SortEmittersByPos`)</dt>
+<dd>
+  Sorts the emitter against others by position, so transparent emitters draw in the right order.
+  Default: `false`.
+</dd>
+
+  <dt id="legacy-simple-settings">Legacy Simple Settings (`LegacySimple`)</dt>
+  <dd>The settings of an emitter in `simpleEmitterDefinitionData`.</dd>
+</dl>
+
+### Material
+
+<dl>
+  <dt id="custom-material">Custom Material (`CustomMaterial`)</dt>
+  <dd>
+    A material that draws the emitter instead of the standard particle shading. The preview draws
+    it with a static approximation.
+  </dd>
+
+  <dt id="material-overrides">Material Overrides (`materialOverrideDefinitions`)</dt>
+  <dd>Overrides of textures or materials for this emitter, by submesh and priority.</dd>
+</dl>
+
+### Effects
+
+<dl>
+  <dt id="audio">Audio (`Audio`)</dt>
+  <dd>Sound events tied to the emitter or its particles.</dd>
+
+<dt id="child-particles">Child Particles (`childParticleSetDefinition`)</dt>
+<dd>
+  Particle systems that the emitter's particles spawn, for example when a particle dies. The
+  timeline nests a child's emitters under the emitter that carries them.
+</dd>
+
+  <dt id="forces">Forces (`fieldCollectionDefinition`)</dt>
+  <dd>Force fields that act on the emitter's particles: attraction, acceleration, drag and noise.</dd>
+</dl>
+
+### Other
+
+**Other** lists every emitter field that the groups above do not.
+
+<dl>
+  <dt id="emitter-name">Emitter Name (`emitterName`)</dt>
+  <dd>The emitter's name. Overrides such as `DynamicParameterData` find the emitter by it.</dd>
+
+  <dt id="disabled">Disabled (`disabled`)</dt>
+  <dd>
+    Makes the game skip the emitter when it loads the effect. The timeline's eye hides an emitter
+    in the preview without setting this field. Default: `false`.
+  </dd>
+</dl>
+
+## Flex values
+
+A flex field scales or replaces its base field by a value the game passes in, identified by a flex
+ID. One effect can then adapt to a spell's rank, a character's size or a similar value.
+
+## Related pages
+
+- [VFX editor](/editor/vfx-editor/)
+- [Bin editor](/editor/bin-editor/)
+- [Editing bins](/editor/bin-editor/editing/)
+- [BIN file format](/reference/file-formats/bin/)

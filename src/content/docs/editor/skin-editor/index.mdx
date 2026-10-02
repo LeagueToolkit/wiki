@@ -7,6 +7,291 @@ tags:
   subject: [creator-workshop, skn, anm]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
+import Video from '@components/Video.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+The skin editor is the class view of a skin object in the [bin editor](/editor/bin-editor/). It
+draws the skin's mesh on its skeleton, plays the clips of its animation graph, and shows the
+skin's fields beside the character they build.
+
+<Where path={['Bin editor', 'Skin']} files="Skin .bin files" />
+
+<Screenshot
+  file="editor/skin-editor-overview.webp"
+  alt="A skin tab with the character in the preview, the Clips pane under it, and the Material and Inspector panes on the right"
+/>
+
+## Open a skin
+
+A skin is the object at `Characters/<Character>/Skins/Skin<N>`, of class
+`SkinCharacterDataProperties` or `TftSkinCharacterDataProperties`. Open it from the
+[Objects browser](/editor/objects-browser/), or expand it in its bin and select **Open object**.
+
+The object tab opens in the **Skin** view. Switch between **Skin** and **Properties** with the view
+mode control in the tab header.
+
+## Panes
+
+A skin tab holds five panes. Drag a pane's tab to move it, and drag the edge between two panes to
+resize them. The **Panes** menu turns a pane on or off, and **Reset layout** puts every pane back.
+
+| Pane      | What it shows                                                               |
+| --------- | --------------------------------------------------------------------------- |
+| Preview   | The character, posed by a clip, with the preview controls and the transport |
+| Clips     | The clips of the skin's animation graph, and its tracks, masks and groups   |
+| Spells    | The character's spells, and ability sequences to preview on the character   |
+| Material  | One material the skin draws with, as tables you can edit                    |
+| Inspector | The skin's fields, grouped in sections                                      |
+
+By default, **Preview** fills the left side with **Clips** and **Spells** under it, and
+**Material** sits over **Inspector** on the right.
+
+## Preview
+
+The preview draws the skin's <Hint as="span" tip="Skinned mesh file format. Contains vertex data, bone weights, and material references for character models." client:visible>[SKN](/glossary/)</Hint>
+mesh on its <Hint as="span" tip="Skeleton file format. Defines the joint hierarchy and bind pose for character models." client:visible>[SKL](/glossary/)</Hint>
+skeleton, wearing its idle effects. The camera frames the character when the skin loads.
+
+<Screenshot
+  file="editor/skin-editor-preview-controls.webp"
+  alt="The preview controls in the top right corner of the skin preview"
+/>
+
+| #   | Name                | Description                                                                   |
+| --- | ------------------- | ----------------------------------------------------------------------------- |
+| 1   | Map backdrop        | Stands the skin on a map. See [Map backdrop](#map-backdrop)                   |
+| 2   | Move                | Shows a gizmo that moves the character. Select it again to turn the character |
+| 3   | Ground              | Draws a ground plane under the character. Shows while no backdrop is on       |
+| 4   | Midlane             | Gives the ground the texture of a Summoner's Rift lane                        |
+| 5   | Effects             | Shows the idle effects and the particle events of the playing clip            |
+| 6   | Open effect         | Opens an idle effect or a particle event of the clip in its own tab           |
+| 7   | Armature            | Draws the skeleton over the character                                         |
+| 8   | Hexshade            | Draws the skin with the game's own shaders. See [Hexshade](/editor/hexshade/) |
+| 9   | Bake tangents       | Saves tangents into the mesh. See [Bake tangents](#bake-tangents)             |
+| 10  | Submeshes           | Shows or hides each submesh of the mesh                                       |
+| 11  | View mode           | Draws the scene lit, unshaded, untextured or as a wireframe                   |
+| 12  | Camera              | Moves the camera to a preset view                                             |
+| 13  | Frame the character | Moves the camera back to the whole character                                  |
+| 14  | Hide viewport UI    | Hides the controls and the transport. Press <kbd>Esc</kbd> to show them       |
+
+**Effects** shows only when the skin has idle effects or the clip has particle events. **Bake
+tangents** shows only when the skin's bin is in a layer of your project.
+
+**Move** has a menu, **Move options**. Choose **Move** or **Turn** for the gizmo, or select **Back
+to the centre** to put the character back where it started.
+
+**View mode** draws the scene **Lit**, **Unshaded**, **Untextured** or as a **Wireframe**.
+**Wireframe overlay** draws the wireframe over the other modes. **Anti-aliasing** is **Off**,
+**FXAA (in game)** or **SMAA**.
+
+**Camera** moves the camera to the **Game**, **Orbit**, **Top**, **Front** or **Side** view.
+
+### Transport
+
+The transport under the preview plays, pauses and scrubs the clip, and sets the playback speed.
+Its picker chooses the clip that poses the skin. **Bind pose** shows the skeleton's rest pose.
+
+A clip that blends between values shows a **Parameter** slider. The preview plays the part of the
+clip whose value is nearest the slider.
+
+| Key                                                 | Action                             |
+| --------------------------------------------------- | ---------------------------------- |
+| <kbd>Space</kbd>                                    | Play or pause                      |
+| <kbd>Left</kbd> / <kbd>Right</kbd>                  | Pause and step one frame           |
+| <kbd>Shift</kbd>+<kbd>Left</kbd> / <kbd>Right</kbd> | Pause and step a tenth of a second |
+| <kbd>Home</kbd>                                     | Restart the clip                   |
+| <kbd>F</kbd>                                        | Frame the character                |
+| <kbd>[</kbd> / <kbd>]</kbd>                         | Slower or faster, from 0.05x to 2x |
+
+The keys work while the focus is in the preview. Select the preview to give it the focus.
+
+<Video
+  file="editor/skin-editor-clip"
+  alt="A skin playing a clip, with its particle events firing on the joints they name"
+/>
+
+### Map backdrop
+
+**Map backdrop** stands the skin on a map of your installation. Its menu, **Map backdrop
+options**, lists **None** and each map. Each map opens a list of its map skins, and you choose one
+of them. The menu also has four switches:
+
+<dl>
+  <dt id="backdrop-particles">Particles</dt>
+  <dd>Plays the particle systems placed on the map.</dd>
+
+<dt id="backdrop-event-effects">Event effects</dt>
+<dd>Adds the effects a map event shows. Works only while **Particles** is on.</dd>
+
+<dt id="backdrop-structures">Structures and props</dt>
+<dd>Draws the map's structures and props.</dd>
+
+  <dt id="backdrop-sky">Sky</dt>
+  <dd>Draws the map's sky.</dd>
+</dl>
+
+With a backdrop on, three more controls show. **Visibility layers** turns each layer of the map on
+or off. **Sun** and **Post effects** start from the map's own values, which you can change for the
+preview. Each has a reset back to the map's values. None of these controls change your files.
+
+- **Sun** sets **Sun color**, **Sun strength**, **Azimuth**, **Elevation**, **Sky color**,
+  **Ground color** and **Ambient strength**. **Reset to the map's sun** puts them back.
+- **Post effects** holds **Depth fog**, **Height fog**, **Depth of field** and **Ambient
+  occlusion**, each with its own settings. **Reset to the map's post effects** puts them back.
+
+{/* TODO: what each fog, depth of field and ambient occlusion setting does in the preview. */}
+
+### Armature and submeshes
+
+**Armature** draws a dot for each joint and a line to its parent. Its menu holds **Names**, which
+writes each joint's name beside its dot.
+
+**Submeshes** lists the submeshes of the `.skn` file. Turn one off to hide it, or on to show it,
+whatever the skin and the playing clip say. **Show as the skin does** drops your choices.
+
+### Bake tangents
+
+**Bake tangents** saves mesh tangents into the `.skn` file, for physically based materials with
+normal maps and roughness-metallic textures. The mesh must be in the same layer of your project as
+the skin's bin. When it is not, the button is disabled and its tooltip says so.
+
+## Clips pane
+
+The **Clips** pane lists the skin's animation graph as a table. Select a row to pose the preview
+with that clip. The transport's picker then names the clip, and a play mark shows on its row.
+
+<Screenshot
+  file="editor/skin-editor-clips.webp"
+  alt="The Clips pane with the Clips, Tracks, Masks and Sync groups tabs, a filter and the clip table"
+/>
+
+- The **Clips**, **Tracks**, **Masks** and **Sync groups** tabs switch between the four maps of
+  the graph.
+- **Filter** narrows the rows by name.
+- The caret at the start of a row unfolds the clip's own fields. <kbd>Right</kbd> and
+  <kbd>Left</kbd> unfold and fold the focused row.
+- Select a track, mask or sync group chip to switch to its tab, with the entry marked.
+- Right-click a row and select **Open animation**, or **Open animation to the side**, to open its <Hint as="span" tip="Animation file format. Stores per-joint keyframe data for champion and map animations." client:visible>[ANM](/glossary/)</Hint>
+  file.
+
+On the **Masks** tab, select a mask to see where it reaches on the character. The parts the mask
+does not weigh dim, and the armature turns on. Select the mask again to let it go.
+
+The **Clips** tab has these columns:
+
+| Column     | What it shows                                                        |
+| ---------- | -------------------------------------------------------------------- |
+| Name       | The clip's name, and its kind                                        |
+| Rate       | The frame rate of the animation file, then the clip's tick rate      |
+| Track      | The track the clip plays on                                          |
+| Mask       | The mask the clip plays through. Shows when a clip names one         |
+| Sync group | The sync group the clip keeps time with. Shows when a clip names one |
+| Events     | The number of events in the clip                                     |
+
+See [Animation graph](/editor/animation-graph/) for the graph itself.
+
+## Spells pane
+
+The **Spells** pane stages a visual cast on the character, called an ability sequence. It lists
+the sequences saved in your project under **Ability sequences**, and the character's spells from
+your League installation under them. Enter text in **Find a spell** to narrow the spells.
+
+To start a sequence, select **Create ability**, or select a spell to start one from that spell's
+data. The pane then shows the sequence's fields:
+
+1. Choose the **Animation**, the **Cast bone** and the effects.
+2. Set the timing and the target.
+3. Select **Preview sequence** to play it in the **Preview** pane.
+4. Select **Save recipe** to keep it in your project.
+
+A saved recipe shows only for its character. **Remove recipe** deletes it. A spell that the preview
+cannot play shows **Not supported yet**, **Unavailable** or **Conflicting definitions** in place of
+its play mark.
+
+<dl>
+  <dt id="ability-animation">Animation</dt>
+  <dd>The clip the character plays. **No animation** keeps the character in its bind pose.</dd>
+
+<dt id="ability-cast-bone">Cast bone</dt>
+<dd>The joint the cast starts from. **Character origin** uses the character's position.</dd>
+
+<dt id="ability-cast-effect">Cast effect</dt>
+<dd>The effect that plays on the cast bone from the start of the sequence until the release.</dd>
+
+<dt id="ability-release">Release at (s)</dt>
+<dd>The second of the sequence at which the cast is released.</dd>
+
+<dt id="ability-projectile">Projectile effect</dt>
+<dd>The effect that flies from the cast bone to the target.</dd>
+
+<dt id="ability-missile-delay">Missile delay (s)</dt>
+<dd>Seconds between the release and the projectile leaving the cast bone.</dd>
+
+<dt id="ability-flight">Flight duration (s)</dt>
+<dd>The seconds the projectile takes to reach the target.</dd>
+
+<dt id="ability-impact-effect">Impact effect</dt>
+<dd>The effect that plays at the target when the projectile arrives.</dd>
+
+<dt id="ability-impact-time">Emit for (s)</dt>
+<dd>The seconds the impact effect plays.</dd>
+
+<dt id="ability-target">Target X, Target Y, Target Z</dt>
+<dd>The point in the preview where the cast lands.</dd>
+
+  <dt id="ability-guides">Range guides</dt>
+  <dd>
+    Outlines of the spell's range and radii, as suggested at rank one. They are visual guides, not
+    collision shapes.
+  </dd>
+</dl>
+
+A sequence's timings must finish within 30 seconds.
+
+{/* TODO: which fields a spell's own data fills when you start a sequence from a spell. */}
+
+## Material pane
+
+The **Material** pane shows one material that the skin draws with, as the
+[Material editor](/editor/material-editor/) draws it. Select a submesh on the character to show its
+material, or pick another in the pane's **Material** list.
+
+The character shows a material edit only with Hexshade on. While it is off, the pane offers **Draw
+with Hexshade**.
+
+## Inspector
+
+The **Inspector** shows the skin's fields in sections. The
+[Skin editor reference](/editor/skin-editor/reference/) describes each field.
+
+| Section            | What it holds                                                   |
+| ------------------ | --------------------------------------------------------------- |
+| Identity           | The skin's name for sound events, its classification and parent |
+| Icons              | The portraits and the loading-screen art                        |
+| Mesh               | The mesh, the skeleton, the textures and the material           |
+| Material overrides | A row per submesh that draws with its own material or textures  |
+| Animation          | The animation graph                                             |
+| VFX                | The idle effects, each with the system its key resolves to      |
+| Audio              | The sound banks                                                 |
+| Health bar         | The health bar settings                                         |
+| Other              | Every field that no other section holds                         |
+
+Hover over a material override to dim every submesh but the one it dresses. Select a part of the
+character to scroll its override into view.
+
+## Limitations
+
+- A clip that the game picks at run time, from a condition or a chance, plays its first child that
+  has an animation file.
+- An ability sequence is a visual cast that you time by hand. It does not play the animation's
+  events, and its range guides are not collision shapes.
+
+## Related pages
+
+- [Skin editor reference](/editor/skin-editor/reference/)
+- [Bin editor](/editor/bin-editor/)
+- [Animation graph](/editor/animation-graph/)
+- [Material editor](/editor/material-editor/)
+- [Hexshade](/editor/hexshade/)

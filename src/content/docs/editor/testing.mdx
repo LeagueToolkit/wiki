@@ -1,12 +1,80 @@
 ---
 title: Testing
-description: Load a project in game without packing it.
+description: Load a project in game without packing it, with all of its layers or a chosen set.
 tags:
   type: guide
   audience: [mod-creator]
   subject: [creator-workshop, patcher]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+Test a project to play it in game without packing it. LTK Editor builds an <Hint as="span" tip="A directory that mirrors League's game data structure but contains only files modified by your mods. The patcher redirects the game to read from the overlay." client:visible>[overlay](/glossary/)</Hint>
+from the project's files and starts the <Hint as="span" tip="The component that applies mod overlays to League of Legends at runtime by hooking into the game's file reading mechanism." client:visible>[patcher](/glossary/)</Hint>.
+
+<Where path={['Project header', 'Test']} />
+
+Prerequisites:
+
+- A [project](/editor/projects/) with at least one layer
+- No patcher session running from the LTK Manager library or another project
+
+## Test a project
+
+1. Open the project.
+2. Select **Test** in the project header.
+
+   The button reads **Building...** while LTK Editor builds the overlay, then **Stop Test** while the
+   patcher runs.
+
+3. Start a game in the League client.
+4. To end the session, select **Stop Test**.
+
+You can also run **Test the project** from the [command palette](/editor/command-palette/), or
+select projects on the **Workshop** page and select **Test _N_** to test them together.
+
+<Screenshot
+  file="editor/testing-test-button.webp"
+  alt="The Test button in the project header with the Layers to test menu open"
+/>
+
+{/* TODO: whether a change made while the patcher runs reaches the next game, or needs Stop Test and Test again. */}
+
+## Layers to test
+
+The caret next to **Test** opens **Layers to test**, a checklist of the project's layers. Turn off a
+layer to leave it out of the next test.
+
+- The `base` layer is always on.
+- LTK Editor remembers the choice for each project.
+- While a layer is off, the caret shows how many layers the test turns on, such as `2/3`.
+- A layer you add later is on until you turn it off.
+
+The caret shows only on a project with more than one layer.
+
+## What a test loads
+
+- The project's files as they are on disk. A test needs no pack.
+- The mods enabled in your LTK Manager library. The project takes priority over them.
+- Nothing that the project's [ignore rules](/editor/packaging/#ignore-rules) leave out.
+
+## When Test is unavailable
+
+Only one patcher session runs at a time. Hover over a disabled **Test** to see why:
+
+| Tooltip                            | Cause                                      |
+| ---------------------------------- | ------------------------------------------ |
+| Testing "_name_" - stop it first   | Another project is in a test               |
+| Patcher is running - stop it first | LTK Manager is patching the library's mods |
+
+## A failed test
+
+When a game started during a test fails, the **Test** button's tooltip shows **Last test** and the
+reason. Select **Details** to open the report on the [Diagnostics](/manager/diagnostics/) page.
+
+## Next steps
+
+- [Problems](/editor/problems/)
+- [Packaging](/editor/packaging/)

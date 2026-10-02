@@ -7,6 +7,104 @@ tags:
   subject: [creator-workshop, tex]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
 
-<UnderConstruction />
+A file preview shows a file of your project or of the game in a tab, with the viewer for its
+kind. Open one from the **Explorer**, the [game browser](/editor/game-browser/) or a link in a
+bin.
+
+<Screenshot
+  file="editor/file-previews-texture.webp"
+  alt="A champion texture open in the image viewer, with its size, format and mip count in the status strip"
+/>
+
+## Preview tabs
+
+With **Preview on a single click** on, selecting a file opens it in a preview tab. The next file
+you select replaces it. Double-click a file, or double-click its tab, to keep the tab open. Turn
+the setting off to open a file only on a double-click. The setting is under **Settings** >
+**Workshop** > **Project editor**. Default: on.
+
+See [LTK Editor interface](/editor/interface/) for how tabs work.
+
+## What each file opens in
+
+LTK Editor picks the viewer from the file's extension. A game file that no hash table names has no
+extension, so LTK Editor reads its first bytes instead.
+
+| File                                 | Opens in                              |
+| ------------------------------------ | ------------------------------------- |
+| `.tex`, `.dds`                       | The image viewer                      |
+| `.png`, `.jpg`, `.tga`               | The image viewer                      |
+| `.bin`                               | The [bin editor](/editor/bin-editor/) |
+| `.mapgeo`, `.materials.bin` of a map | The [map viewer](/editor/map-viewer/) |
+| Any other file                       | **No preview for this file**          |
+
+A file that has the extension of an image but does not decode shows **Could not read this file**.
+
+## Image viewer
+
+The image viewer draws a <Hint as="span" tip="Texture file format. Stores compressed image data with mipmaps." client:visible>[TEX](/glossary/)</Hint>
+or DDS texture, or a PNG, JPEG or TGA image. A file opens fitted to the pane, and a small image
+opens at its actual size.
+
+- Scroll the mouse wheel to zoom.
+- Drag the image to move it.
+
+The status strip under the image shows the image's size in pixels. For a texture it also shows
+the container and the pixel format, and the number of mips when there is more than one. It then
+shows the file size.
+
+<dl>
+  <dt id="checkerboard">Show the alpha checkerboard, Hide the alpha checkerboard</dt>
+  <dd>
+    Draws a checkerboard behind the image, so transparent pixels show as the pattern. Off, they
+    show the pane's background. Default: on.
+  </dd>
+
+<dt id="zoom-out">Zoom out, Zoom in</dt>
+<dd>Zooms by one step. The zoom reaches from 5% to 3200%.</dd>
+
+<dt id="actual-size">Actual size</dt>
+<dd>The current zoom, as a percentage. Select it to show the image at 100%.</dd>
+
+  <dt id="fit">Fit</dt>
+  <dd>Fits the whole image in the pane. An image smaller than the pane stays at 100%.</dd>
+</dl>
+
+## Toolbar
+
+A preview tab's toolbar holds the ways to take the file out of the tab.
+
+<dl>
+  <dt id="copy-into">Copy into _layer_</dt>
+  <dd>
+    Copies a game file into the layer selected in the **Explorer**, at the path the game reads.
+    See [Copy into a layer](/editor/game-browser/#copy-into-a-layer).
+  </dd>
+
+<dt id="extract">Extract</dt>
+<dd>
+  Writes a game file to the folder of your last extract. Shows after your first extract from the
+  game browser. See [Extract to disk](/editor/game-browser/#extract-to-disk).
+</dd>
+
+  <dt id="save-a-copy">Save a copy...</dt>
+  <dd>Saves the file to a folder and a name you choose.</dd>
+</dl>
+
+**Copy into** and **Extract** show only on a game file, because a file of your project is
+already on disk.
+
+## Limitations
+
+- Meshes, animations and audio files have no preview. Their tab shows **No preview for this
+  file**.
+
+## Related pages
+
+- [Game browser](/editor/game-browser/)
+- [Bin editor](/editor/bin-editor/)
+- [Map viewer](/editor/map-viewer/)
+- [TEX file format](/reference/file-formats/tex/)

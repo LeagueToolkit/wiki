@@ -1,12 +1,247 @@
 ---
 title: Projects
-description: What a mod project is, how to create or import one, and how to edit its details and layers in LTK Editor.
+description: What a mod project is, how to create, open or import one, and how to edit its details, readme and layers in LTK Editor.
 tags:
   type: concept
   audience: [mod-creator]
   subject: [creator-workshop, mod-project, layers]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
 
-<UnderConstruction />
+A project is a folder that holds the files of one mod and a `mod.config.json` that describes it.
+LTK Editor edits a project, and [Testing](/editor/testing/) and [Packaging](/editor/packaging/)
+build from it.
+
+<Screenshot
+  file="editor/projects-workshop-grid.webp"
+  alt="The Workshop page with a grid of project cards and the New project button"
+/>
+
+## Project folder
+
+A project folder holds the mod's config, its documents and one folder per layer:
+
+```text
+my-mod/
+  mod.config.json
+  README.md
+  LICENSE
+  thumbnail.webp
+  .modignore
+  content/
+    base/
+      Aatrox.wad.client/
+  build/
+```
+
+- `mod.config.json` holds the name, version, authors, tags and the layer table.
+- `content/` holds one folder per layer. A layer holds a folder for each WAD it changes.
+- `.modignore` lists the files that Pack and Test leave out. See [Packaging](/editor/packaging/).
+- `build/` receives the packed files.
+
+LTK Editor keeps the project's tab layout in `.ltk/editor.json`. See
+[Mod projects](/making-mods/mod-projects/) for the config format.
+
+## Create a project
+
+LTK Editor creates projects in the folder set in **Settings** > **Workshop** > **Workshop directory**.
+
+1. Go to the **Workshop** page.
+2. Select **New project**, or press <kbd>Ctrl</kbd>+<kbd>N</kbd>.
+3. Fill in the **New Project** dialog and select **Create Project**.
+
+<dl>
+  <dt id="new-thumbnail">Add Thumbnail</dt>
+  <dd>The image on the mod's card. A 16:9 image fits best. Optional.</dd>
+
+<dt id="new-display-name">Display Name</dt>
+<dd>The name players see. Required.</dd>
+
+<dt id="new-project-slug">Project Slug</dt>
+<dd>
+  The folder name, in lowercase letters, numbers and hyphens. It follows **Display Name** until you
+  edit it.
+</dd>
+
+<dt id="new-author">Author Profile, Author</dt>
+<dd>
+  The project's author. **Author Profile** shows when you have saved author profiles, and
+  **Custom...** shows an **Author** field instead. Without profiles, the dialog shows only
+  **Author**.
+</dd>
+
+  <dt id="new-description">Description</dt>
+  <dd>A short description of the mod.</dd>
+</dl>
+
+The new project starts at version `1.0.0` with a `base` layer, a readme and the recommended
+ignore rules.
+
+## Open a folder
+
+To work on a project outside the workshop directory, open its folder:
+
+1. On the **Workshop** page, select **More ways to start a project** next to **New project**.
+2. Select **Open folder...**, or press <kbd>Ctrl</kbd>+<kbd>O</kbd>.
+3. Select the folder.
+
+A folder with a `mod.config.json` opens as it is, and the project shows on the grid. A folder
+without one shows **This folder is not a mod project yet**, with two choices:
+
+- **Make it a project here** writes `mod.config.json` into the folder and moves its WADs into
+  `content/base`. A `META/` folder stays where it is.
+- **Copy into the workshop folder** makes a project from a copy and leaves the folder untouched.
+
+A folder whose subfolders are projects offers two other choices:
+
+- **Add all to the list** opens every project in it. cslol and Fantome mods in it become projects
+  in place.
+- **Use as the workshop folder** makes it the workshop directory, where new projects are created.
+
+To take a project that lives outside the workshop directory off the grid, select
+**Remove from list**. The folder on disk does not change.
+
+## Import a mod
+
+**More ways to start a project** > **Import a project** turns a packed mod into a project:
+
+<dl>
+  <dt id="import-fantome">From Fantome...</dt>
+  <dd>
+    Imports a <Hint as="span" tip="Mod archive format (.fantome) based on ZIP, from the cslol era. Technically superseded by modpkg, but still the format to publish on mod sites, none of which fully support modpkg yet." client:visible>[Fantome](/glossary/)</Hint>
+    file. The **Import from Fantome** dialog shows the archive's author, version and WAD files, and
+    asks for a **Project Name** and a **Display Name**.
+  </dd>
+
+<dt id="import-modpkg">From Modpkg...</dt>
+<dd>Imports a `.modpkg` file with no further questions.</dd>
+
+  <dt id="import-git">From a Git repository...</dt>
+  <dd>
+    Downloads a project from GitHub. Enter the **Repository URL** and, optionally, a **Branch**,
+    which takes a branch or a tag name. An empty **Branch** means `main`.
+  </dd>
+</dl>
+
+See [Creating a project](/making-mods/project/) for what each import keeps from the archive.
+
+## Mod details
+
+The **Mod details** document edits what `mod.config.json` says about the mod. Select it in the
+lower part of the rail.
+
+<Screenshot
+  file="editor/projects-mod-details.webp"
+  alt="The Mod details document with the Identity, Categorization and Authors sections"
+/>
+
+<dl>
+  <dt id="details-identity">Identity</dt>
+  <dd>
+    The thumbnail, the **Display Name**, the **Version** and the **Description**. The version takes
+    the `MAJOR.MINOR.PATCH` form, such as `1.0.0`.
+  </dd>
+
+<dt id="details-categorization">Categorization</dt>
+<dd>
+  **Tags**, **Maps** and **Champions**, which help players find the mod. Enter champions as a
+  comma-separated list.
+</dd>
+
+<dt id="details-authors">Authors</dt>
+<dd>Each author's **Name** and an optional **Role**. Select **Add Author** to add a row.</dd>
+
+  <dt id="details-info">Slug, Path, Last Modified, Layers</dt>
+  <dd>The project's slug, folder, last change and layer count. Select **Edit slug** to rename the project folder.</dd>
+</dl>
+
+Mod details is the one document that waits for you to save. To save, select **Save** or press <kbd>Ctrl</kbd>+<kbd>S</kbd>.
+**Discard** drops your changes.
+
+## Readme and license
+
+The **Readme** document edits `README.md`, the long description a package carries. A project's
+`LICENSE` file opens in a **License** document.
+
+- The readme shows its text and a rendered preview side by side. In a narrow tab, switch between
+  them with **Raw** and **Preview**.
+- **Insert template** adds the `About`, `Installing` and `Credits` sections the readme does not have
+  yet.
+- Both documents save as you type. When the file changes on disk, choose **Keep mine** or
+  **Reload**.
+
+## Layers
+
+A <Hint as="span" tip="A named group of files within a mod project. Layers let mod creators offer optional components that users can toggle independently." client:visible>[layer](/glossary/)</Hint>
+is a folder of files under `content/` that a player can turn on or off. Every project has a `base`
+layer. The **Content** section of the **Explorer** lists the layers.
+
+<Screenshot
+  file="editor/projects-content-section.webp"
+  alt="The Content section of the Explorer with the base layer and two more layers"
+/>
+
+- To add a layer, select **Add layer**. Enter a **Display Name**, a **Layer Slug** and a
+  **Description** in the **New Layer** dialog. The slug is the layer's folder name under `content/`.
+- To rename a layer, double-click its name, enter the new name and press <kbd>Enter</kbd>.
+- To change the order, drag a layer up or down. A layer lower in the list applies over the layers
+  above it.
+- **Layer actions** on a row holds **Open Folder**, **Edit** and **Delete**. **Edit** changes the
+  layer's description.
+
+The `base` layer stays at the top, and you can't rename or delete it. See
+[Layers](/making-mods/layers/) for what layers are for.
+
+## Layer files
+
+Select a layer to open its files in a tab. Each <Hint as="span" tip="Primary archive format (magic RW) used by League of Legends to bundle game assets. Each WAD contains compressed files identified by path hashes." client:visible>[WAD](/glossary/)</Hint>
+the layer changes is a folder named after the game's archive, such as `Aatrox.wad.client`.
+
+To add WADs to the layer, select **Add WAD**:
+
+- **Add WAD file...** extracts a packed WAD into a folder of the same name.
+- **Add WAD folder...** copies a folder that already holds the files.
+
+You can also drop WAD files and folders onto the window from your file manager. To copy files out
+of the game, use the [Game browser](/editor/game-browser/).
+
+Right-click a file for its menu:
+
+<dl>
+  <dt id="file-open">Open</dt>
+  <dd>Opens the file in a tab.</dd>
+
+<dt id="file-vscode">Open in VS Code</dt>
+<dd>
+  Opens a bin file as text in Visual Studio Code. Shows when the ritobin-lsp extension for VS Code
+  has installed its Windows Explorer integration.
+</dd>
+
+<dt id="file-find-references">Find references</dt>
+<dd>Lists the bins that name the file.</dd>
+
+<dt id="file-copy">Copy Name, Copy Relative Path</dt>
+<dd>Copies the file name, or its path inside the layer.</dd>
+
+<dt id="file-reveal">Reveal in Explorer</dt>
+<dd>Shows the file in your file manager.</dd>
+
+<dt id="file-ignore">Ignore This File, Ignore This Folder</dt>
+<dd>
+  Adds a rule that leaves the file or folder out of the pack. See [Ignore
+  rules](/editor/packaging/#ignore-rules).
+</dd>
+
+  <dt id="file-delete">Delete</dt>
+  <dd>Deletes the file from the layer after you confirm. Press <kbd>Del</kbd> on a focused row to do the same.</dd>
+</dl>
+
+## Related pages
+
+- [Modding workflow](/editor/workflow/)
+- [Sandboxes](/editor/sandboxes/)
+- [Strings editor](/editor/strings-editor/)
+- [Packaging](/editor/packaging/)
+- [Mod projects](/making-mods/mod-projects/)

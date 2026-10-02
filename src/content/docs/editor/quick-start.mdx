@@ -1,12 +1,106 @@
 ---
 title: Quick start
-description: Make a project, change a file, and test the result in game.
+description: Make a project, change a game bin, test the result in game and pack it.
 tags:
   type: tutorial
   audience: [mod-creator]
   subject: [creator-workshop, mod-project]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
 
-<UnderConstruction />
+This quick start makes a mod that draws Teemo at twice the normal size. You create a project,
+change one value in Teemo's skin bin, test the mod in game and pack it.
+
+<Screenshot
+  file="editor/quick-start-result.webp"
+  alt="Teemo in a Practice Tool game, drawn at twice the normal size"
+/>
+
+## Prerequisites
+
+- LTK Manager, installed and with the League installation path set. See
+  [Quick start](/manager/quick-start/).
+- The patcher stopped in LTK Manager
+
+## 1. Create a project
+
+1. In the title bar, select **Workshop**.
+2. Select **New project**, the plus button, or press <kbd>Ctrl</kbd>+<kbd>N</kbd>.
+3. In **Display Name**, enter `Big Teemo`.
+
+   **Project Slug** fills in as you type. It becomes the name of the project's folder.
+
+4. Select **Create Project**.
+5. Select the project to open it.
+
+<Screenshot
+  file="editor/quick-start-new-project.webp"
+  alt="New Project dialog with Big Teemo entered as the display name and big-teemo as the slug"
+/>
+
+## 2. Open Teemo's skin bin
+
+A skin's values live in a <Hint as="span" tip="Binary property file format (magic PROP). Stores configuration, game data, and asset metadata." client:visible>[bin file](/glossary/)</Hint>. You
+change it with [game data declarations](/editor/bin-editor/game-data/), so the mod ships only the
+value you change.
+
+1. Press <kbd>Ctrl</kbd>+<kbd>P</kbd> to open the [command palette](/editor/command-palette/).
+2. Enter `teemo skin0.bin`.
+
+   The **Game** group lists the matching files of your League installation.
+
+3. Select `data/characters/teemo/skins/skin0.bin`.
+
+   The bin opens in a tab. A strip at the top says **Game data declarations are off**.
+
+4. On the strip, select **Declare edits**.
+
+   The bin takes edits. Each edit saves to your project, not to the game.
+
+## 3. Change the skin scale
+
+1. Expand the object `Characters/Teemo/Skins/Skin0`, then expand `skinMeshProperties`.
+2. Look for a `skinScale` row. When it is missing, add it:
+   1. Select the add line under the last property of `skinMeshProperties`.
+   2. Enter `skinScale` and press <kbd>Enter</kbd>.
+3. Select the value of `skinScale`.
+4. Enter `2` and press <kbd>Enter</kbd>.
+
+   The row shows the new value, with a mark for your declaration. LTK Editor writes the edit to
+   `content/base/game_data.yaml` in your project.
+
+<Screenshot
+  file="editor/quick-start-skin-scale.webp"
+  alt="Teemo's skin bin with skinMeshProperties expanded and skinScale set to 2"
+/>
+
+## 4. Test in game
+
+1. In the project header, select **Test**.
+
+   LTK Editor builds the project and starts the patcher. The button then reads **Stop Test**.
+
+2. Open League and start a game with Teemo, for example in Practice Tool.
+
+   Teemo is twice the normal size.
+
+3. When you're done, select **Stop Test**.
+
+## 5. Pack the mod
+
+1. In the project header, select **Pack**.
+
+   LTK Editor writes `.modpkg` and `.fantome` files to the project's `build` folder.
+
+2. In the message that appears, select **Show in Explorer** to open the folder.
+
+Install the `.modpkg` file in LTK Manager to play with the mod, or share it.
+
+## Next steps
+
+- [Modding workflow](/editor/workflow/)
+- [Game data declarations](/editor/bin-editor/game-data/)
+- [Testing](/editor/testing/)
+- [Packaging](/editor/packaging/)

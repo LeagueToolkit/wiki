@@ -7,6 +7,104 @@ tags:
   subject: [creator-workshop, mod-project]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Hint from '@components/Hint.svelte';
 
-<UnderConstruction />
+A mod in LTK Editor starts as a project. You bring game files, or edits to game files, into its
+layers. Then you check and test the result, and pack it into a file that LTK Manager installs.
+
+## The steps
+
+| Step                        | What you do                                       | Where                                                                              |
+| --------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| [Start](#start-a-project)   | Create, open or import a project                  | [Projects](/editor/projects/)                                                      |
+| [Find](#find-game-content)  | Find the game files and objects to change         | [Game browser](/editor/game-browser/), [Objects browser](/editor/objects-browser/) |
+| [Bring in](#bring-in-files) | Copy files into a layer, or declare edits to them | [Game data declarations](/editor/bin-editor/game-data/)                            |
+| [Edit](#edit)               | Change bins, effects, materials, UI and text      | [Bin editor](/editor/bin-editor/) and the other editors                            |
+| [Check](#check)             | Fix what the project checks find                  | [Problems](/editor/problems/)                                                      |
+| [Test](#test)               | Load the project in game                          | [Testing](/editor/testing/)                                                        |
+| [Pack](#pack)               | Write the `.modpkg` or `.fantome` file            | [Packaging](/editor/packaging/)                                                    |
+
+The steps are not a one-way path. You go back to editing after each test, and you can test at any
+point without packing.
+
+## Start a project
+
+A project is a folder on disk with a `mod.config.json` file and a `content` folder. Each folder in
+`content` is a <Hint as="span" tip="A named group of files within a mod project. Layers let mod creators offer optional components that users can toggle independently." client:visible>[layer](/glossary/)</Hint>. A new project has one layer, `base`.
+
+Start from an empty project, turn a folder you already have into one, or import a `.fantome` file,
+a `.modpkg` file or a Git repository. See [Projects](/editor/projects/).
+
+## Find game content
+
+LTK Editor reads your League installation directly. You do not extract the game to start a mod.
+
+- The [command palette](/editor/command-palette/) finds a game file or a bin object by part of
+  its path.
+- The [game browser](/editor/game-browser/) lists every file of the installation, as one index or
+  archive by archive.
+- The [objects browser](/editor/objects-browser/) finds bin objects by path or class, and the
+  places that refer to them.
+
+## Bring in files
+
+A mod changes a game file in one of two ways:
+
+<dl>
+  <dt id="copy">Copy the file into a layer</dt>
+  <dd>
+    The layer ships its own copy, which replaces the game's. Use this for a file you replace as a
+    whole, such as a texture or a mesh. In the game browser or on the file's preview, select the
+    **Copy into** button, which names the layer it copies to.
+  </dd>
+
+  <dt id="declare">Declare edits to a game bin</dt>
+  <dd>
+    The layer ships only the values you change, in its `game_data.yaml` file. The build applies them
+    to the game's copy of the bin. See [Game data declarations](/editor/bin-editor/game-data/).
+  </dd>
+</dl>
+
+To add a WAD file or folder you made elsewhere, select **Add WAD** in the layer's file list, or
+drag it onto the window. Put any other file you made elsewhere into the layer's folder on disk.
+
+## Edit
+
+The editor that opens depends on the file and, for a bin object, on its class.
+
+- The [bin editor](/editor/bin-editor/) opens every bin as rows of objects and properties.
+- A class view lays out one class for its job: the [VFX editor](/editor/vfx-editor/), the
+  [material editor](/editor/material-editor/), the [skin editor](/editor/skin-editor/), the
+  [animation graph](/editor/animation-graph/), the [map viewer](/editor/map-viewer/) and the
+  [Atlas UI editor](/editor/ui-editor/).
+- The [strings editor](/editor/strings-editor/) overrides the game's text.
+- [File previews](/editor/file-previews/) show textures and other files that you edit in other
+  programs.
+
+Each tab reads from a [sandbox](/editor/sandboxes/), which decides whether it shows your
+project's copy of a file or the game's.
+
+## Check
+
+LTK Editor checks your project for problems that break a mod in game or stop it from packing. The
+**Problems** view lists them, and many have a fix you can apply. See
+[Problems](/editor/problems/).
+
+## Test
+
+**Test** builds your project and starts the <Hint as="span" tip="The component that applies mod overlays to League of Legends at runtime by hooking into the game's file reading mechanism." client:visible>[patcher](/glossary/)</Hint>, so your next game loads the mod. You
+do not pack or install the mod first. See [Testing](/editor/testing/).
+
+## Pack
+
+**Pack** writes your project to a `.modpkg` file, a `.fantome` file or both, in the project's
+`build` folder. The project's `.modignore` file keeps work files out of the pack. See
+[Packaging](/editor/packaging/).
+
+## Related pages
+
+- [Quick start](/editor/quick-start/)
+- [Projects](/editor/projects/)
+- [Sandboxes](/editor/sandboxes/)
+- [Game data declarations](/editor/bin-editor/game-data/)
+- [Packaging](/editor/packaging/)

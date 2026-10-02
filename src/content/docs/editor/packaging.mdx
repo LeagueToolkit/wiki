@@ -7,6 +7,155 @@ tags:
   subject: [creator-workshop, packaging]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+Pack a project to write the mod as a file that players install. LTK Editor writes a <Hint as="span" tip="Modern mod package format (.modpkg). Supports full metadata, multi-layer content, thumbnails, and author information. The format to author against; see Packaging for which format to publish." client:visible>[`.modpkg`](/glossary/)</Hint>,
+a `.fantome` or both, into the project's `build/` folder.
+
+<Where path={['Project header', 'Pack']} files=".modpkg and .fantome files in build/" />
+
+To choose a format for a release, see [Packaging](/making-mods/packaging/) in Mod Creation.
+
+## Pack a project
+
+1. Open the project.
+2. Select **Pack** in the project header.
+
+   The button reads **Packing** while LTK Editor writes the files. A toast reports the result.
+
+Pack has no dialog. You can also run **Pack the project** from the
+[command palette](/editor/command-palette/), or select projects on the **Workshop** page and select
+**Pack _N_** there.
+
+<Screenshot
+  file="editor/packaging-pack-button.webp"
+  alt="The Test and Pack buttons in the project header, with the Pack as menu open"
+/>
+
+## Pack as
+
+The caret next to **Pack** opens **Pack as**, which sets the formats that Pack writes. The choice
+applies to every project, and LTK Editor remembers it.
+
+<dl>
+  <dt id="both-formats">Both formats</dt>
+  <dd>Writes a `.modpkg` and a `.fantome`. Default.</dd>
+
+<dt id="modpkg">.modpkg</dt>
+<dd>Writes a `.modpkg` only.</dd>
+
+  <dt id="fantome">.fantome</dt>
+  <dd>
+    Writes a `.fantome` only. The file carries every layer. The `base` layer's WADs go under `WAD/`,
+    and every other layer's under `WAD_<layer>/`.
+  </dd>
+</dl>
+
+## Checks before a pack
+
+Pack checks the project before it writes anything. An error stops the pack, and a warning does not.
+
+| Errors                                                            | Warnings                               |
+| ----------------------------------------------------------------- | -------------------------------------- |
+| No `mod.config.json` or `mod.config.toml`, or one that won't read | A layer folder is empty                |
+| A slug that is not lowercase with hyphens                         | The ignore rules leave a layer empty   |
+| A version that is not `MAJOR.MINOR.PATCH`                         | No `base` layer                        |
+| No `content/` folder                                              | No `thumbnail.webp` or `thumbnail.png` |
+| A layer in the config with no folder                              | No `README.md`                         |
+| An ignore rule that does not parse                                |                                        |
+
+These checks are separate from the [Problems](/editor/problems/) list, which does not stop a pack.
+
+## Results
+
+<dl>
+  <dt id="packed">Packed _name_</dt>
+  <dd>
+    The pack worked. The toast names each file it wrote and lists any warnings. **Show in Explorer**
+    opens the `build/` folder. When the ignore rules left files out, **_count_ left out** opens the
+    ignore rules.
+  </dd>
+
+<dt id="refused">_name_ can't be packed yet</dt>
+<dd>The check found errors. The toast lists them, and nothing is written.</dd>
+
+<dt id="failed">Couldn't pack _name_</dt>
+<dd>Writing the file failed. The toast gives the reason.</dd>
+
+  <dt id="many">Packed _packed_ of _total_ projects</dt>
+  <dd>A pack of several projects. The toast lists each project that did not pack, with the reason.</dd>
+</dl>
+
+## Ignore rules
+
+A project's `.modignore` file lists the files that Pack leaves out, so work files such as a `.psd`
+can sit next to the textures made from them. [Testing](/editor/testing/) leaves out the same files.
+Without a rule, every file under `content/` ships.
+
+The rules use `.gitignore` syntax, and a pattern starts at `content/`, not at the project folder.
+Use `/` as the separator, on Windows too. Matching ignores letter case. See
+[Ignore rules](/making-mods/mod-projects/#ignore-rules) for the full syntax.
+
+### Ignore rules document
+
+Select **Ignore rules** in the lower part of the rail to open the project's `.modignore`.
+
+<Screenshot
+  file="editor/packaging-ignore-rules.webp"
+  alt="The Ignore rules document with the rule text, a line problem and the Syntax card"
+/>
+
+- A project with no `.modignore` shows **No ignore rules yet**. Select
+  **Write the recommended rules** to create the file.
+- **Add _N_ missing recommended rules** adds the recommended rules the file does not have yet.
+- The **Syntax** card under the text shows the common patterns.
+- A line that does not parse shows as **Line _N_: _message_** under the text. The document does not
+  save until you fix the line.
+
+### Recommended rules
+
+The recommended rules leave out the files the game never loads. A new project starts with them.
+
+| Group                       | Patterns                                                                           |
+| --------------------------- | ---------------------------------------------------------------------------------- |
+| Ritobin text sources        | `*.py`, `*.ritobin`, `*.rito`                                                      |
+| Maya                        | `*.ma`, `*.mb`, `.mayaSwatches/`, `incrementalSave/`                               |
+| Blender                     | `*.blend`, `*.blend[0-9]*`                                                         |
+| 3ds Max                     | `*.max`                                                                            |
+| Model interchange formats   | `*.fbx`, `*.gltf`, `*.glb`, `*.obj`, `*.mtl`, `*.dae`                              |
+| Image and texturing sources | `*.psd`, `*.psb`, `*.xcf`, `*.kra`, `*.spp`, `*.sbs`, `*.sbsar`, `*.pdn`, `*.clip` |
+| Operating system files      | `Thumbs.db`, `ehthumbs.db`, `desktop.ini`, `.DS_Store`, `._*`                      |
+| Version control and editors | `.git/`, `.svn/`, `.vscode/`, `.idea/`                                             |
+| Backups and temporary files | `*.bak`, `*.tmp`, `*.swp`, `*~`                                                    |
+
+### Ignore files from the tree
+
+Right-click a file or folder in a layer's files to write a rule without typing it:
+
+<dl>
+  <dt id="ignore-file">Ignore This File</dt>
+  <dd>Adds a rule for this one file, counted from `content/`.</dd>
+
+<dt id="ignore-folder">Ignore This Folder</dt>
+<dd>Adds a rule for the folder and everything under it.</dd>
+
+<dt id="ignore-extension">Ignore All `*.ext` Files</dt>
+<dd>Adds a rule for every file with the extension, in every layer.</dd>
+
+<dt id="stop-ignoring">Stop Ignoring</dt>
+<dd>Removes the rule from `.modignore`. Shows when the row has a rule of its own.</dd>
+
+  <dt id="show-rule">Show Rule</dt>
+  <dd>Opens the rules file at the line that leaves the row out. Shows when a broader rule leaves the row out.</dd>
+</dl>
+
+A toast, **Added to ignore rules**, confirms each new rule, with **Undo** and **Open rules**. A row
+that the rules leave out shows a crossed-out eye. Hover over the eye to see the rule and its line.
+
+## Next steps
+
+- [Testing](/editor/testing/)
+- [Packaging](/making-mods/packaging/)
+- [Mod projects](/making-mods/mod-projects/)

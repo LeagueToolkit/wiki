@@ -1,12 +1,297 @@
 ---
 title: Skin editor reference
-description: Every field of a skin's properties object, and what it does in the game.
+description: The fields of a skin's properties object, by inspector section, and what each does in the game.
 tags:
   type: reference
   audience: [mod-creator]
   subject: [creator-workshop, bin]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+The skin editor's **Inspector** edits a `SkinCharacterDataProperties` object, the data for one skin
+of a character. The sections below follow the inspector's order. Each field is named as the bin
+names it.
+
+<Where path={['Bin editor', 'Skin', 'Inspector']} files="Skin .bin files" />
+
+The game looks for a skin at `Characters/<Character>/Skins/Skin<N>`, where `<N>` is the skin
+number. When that object is missing, it tries the same skin number of the character's fallback
+character, then `Skin0`. It loads the resource resolver, the
+icons and the audio, then builds the mesh and loads the animation graph. When the mesh cannot be
+built, the character does not load.
+
+The field descriptions draw on the [LoL Meta Wiki](https://meta-wiki.leaguetoolkit.dev/).
+
+## Identity
+
+<dl>
+  <dt id="championskinname">`championSkinName`</dt>
+  <dd>
+    The name the skin's sound event names use, as in `Play_sfx_AhriSkin04_AhriQ_OnCast`. When it
+    is empty, the game uses the character name. Default: empty.
+  </dd>
+
+<dt id="skinclassification">`skinClassification`</dt>
+<dd>
+  The kind of skin. The game checks only for `2`, which marks a chroma. Shipped base and purchasable
+  skins set `1`. Default: `0`.
+</dd>
+
+<dt id="skinparent">`skinParent`</dt>
+<dd>
+  The skin number of the skin a chroma belongs to. The game reads it only when `skinClassification`
+  is `2`, and builds the chroma's display name from it. Default: `-1`.
+</dd>
+
+  <dt id="armormaterial">`armorMaterial`</dt>
+  <dd>
+    A material name such as `Flesh` or `Metal`. No reader of this field was found in the game.
+    Default: empty.
+  </dd>
+</dl>
+
+A chroma is a complete skin object of its own. It does not take data from its parent skin.
+
+## Icons
+
+<dl>
+  <dt id="iconavatar">`iconAvatar`</dt>
+  <dd>The hero portrait. When it is not set, the game uses `iconCircle`. Default: none.</dd>
+
+<dt id="iconcircle">`iconCircle`</dt>
+<dd>The round portrait of the unit, which the HUD and other UI show. Default: none.</dd>
+
+<dt id="iconsquare">`iconSquare`</dt>
+<dd>The square portrait of the unit. Default: none.</dd>
+
+  <dt id="loadscreen">`loadscreen`</dt>
+  <dd>
+    The skin's loading-screen art. Its `image` is the texture the loading screen shows.
+    `UncensoredImages` holds replacements that the game shows where a censorship rule allows them.
+  </dd>
+</dl>
+
+## Mesh
+
+The **Mesh** section edits fields of `skinMeshProperties`, a `SkinMeshDataProperties` object.
+
+<dl>
+  <dt id="simpleskin">`simpleSkin`</dt>
+  <dd>
+    Path of the skinned mesh, a `.skn` file. The game builds the mesh from this file and
+    `skeleton`. When the file does not load, the mesh is not built. Default: empty.
+  </dd>
+
+<dt id="skeleton">`skeleton`</dt>
+<dd>
+  Path of the skeleton, a `.skl` file, that the mesh is skinned to. When it does not load, the mesh
+  is not built and the skin does not load. Default: empty.
+</dd>
+
+<dt id="texture">`texture`</dt>
+<dd>
+  The base color texture for the game's built-in skinned mesh shader, which draws every submesh that
+  no material covers. Default: none.
+</dd>
+
+<dt id="emissivetexture">`emissiveTexture`</dt>
+<dd>
+  Passed to the built-in shader with the other textures. How the shader uses it is not yet
+  identified. Default: none.
+</dd>
+
+<dt id="normalmaptexture">`normalMapTexture`</dt>
+<dd>The normal map for the built-in shader. Default: none.</dd>
+
+<dt id="glosstexture">`glossTexture`</dt>
+<dd>The gloss map for the built-in shader's reflective variant. Default: none.</dd>
+
+<dt id="roughnessmetallicaotexture">`RoughnessMetallicAoTexture`</dt>
+<dd>
+  A packed roughness, metallic and ambient occlusion map for the built-in shader. Setting it
+  switches the shader to physically based shading. Default: none.
+</dd>
+
+  <dt id="material">`Material`</dt>
+  <dd>
+    The material for every submesh that no material override names. When it is not set, those
+    submeshes draw with the built-in shader and the textures above. Default: none.
+  </dd>
+</dl>
+
+## Material overrides
+
+Each row is an entry of `skinMeshProperties.materialOverride`, which names one submesh in
+`submesh`.
+
+<dl>
+  <dt id="override-material">`Material`</dt>
+  <dd>
+    The material the submesh draws with. An entry without a material draws its submesh with the
+    built-in shader and the entry's own `texture`, `glossTexture`, `RoughnessMetallicAoTexture` and
+    `normalMapTexture`.
+  </dd>
+</dl>
+
+An override comes before the top-level `Material`. A texture-only override keeps its submesh on the
+built-in shader even when `Material` is set.
+
+## Animation
+
+<dl>
+  <dt id="animationgraphdata">`animationGraphData`</dt>
+  <dd>
+    The skin's animation graph, under `skinAnimationProperties`. There is no fallback to another
+    skin's graph or to a default graph. See [Animation graph](/editor/animation-graph/).
+  </dd>
+</dl>
+
+## VFX
+
+<dl>
+  <dt id="idleparticleseffects">`idleParticlesEffects`</dt>
+  <dd>
+    Effects that play on the unit while it is alive. They start when the skin is applied and stop
+    when the unit dies. Each entry has these fields:
+
+    <dl>
+      <dt id="effectkey">`effectKey`</dt>
+      <dd>
+        The hash of an effect name, which the skin's resource resolver and then the global
+        resolvers map to a particle system. When it is set, `effectName` is ignored, even when no
+        resolver has the key.
+      </dd>
+
+      <dt id="effectname">`effectName`</dt>
+      <dd>The name of a particle system. Used only when `effectKey` is not set.</dd>
+
+      <dt id="bonename">`boneName`</dt>
+      <dd>
+        The bone the effect spawns on and stays attached to. When it is empty, the effect is
+        attached to the unit.
+      </dd>
+
+      <dt id="targetbonename">`targetBoneName`</dt>
+      <dd>A bone of the unit that the effect's target is attached to. When it is empty, no target is set.</dd>
+    </dl>
+
+  </dd>
+
+  <dt id="mresourceresolver">`mResourceResolver`</dt>
+  <dd>
+    The skin's resource resolver, which maps effect keys to particle systems. The game loads every
+    target of the resolver when it finds the skin.
+  </dd>
+</dl>
+
+## Audio
+
+<dl>
+  <dt id="bankunits">`bankUnits`</dt>
+  <dd>
+    The Wwise files to load for the skin, under `skinAudioProperties`. The game loads each non-empty
+    path in an entry's `bankPath`. A `.wpk` file registers streamed media, and any other file loads
+    as a sound bank.
+  </dd>
+</dl>
+
+## Health bar
+
+The **Health bar** section edits `healthBarData`, a `CharacterHealthBarDataRecord`. The game reads
+it from the skin the unit uses, so each skin can change its unit's bar.
+
+<dl>
+  <dt id="unithealthbarstyle">`unitHealthBarStyle`</dt>
+  <dd>
+    The kind of health bar the HUD builds for the unit. Shipped champions use `12`. `13` builds no
+    bar. Default: `0`.
+  </dd>
+
+<dt id="attachtobone">`attachToBone`</dt>
+<dd>
+  A bone of the unit's skeleton that the bar sits above. When it is empty, or the skeleton has no
+  bone of that name, the bar follows the unit's position. Default: empty.
+</dd>
+
+<dt id="showwhileuntargetable">`showWhileUntargetable`</dt>
+<dd>
+  When `false`, the bar hides while the unit fails a status check, probably whether the unit can be
+  targeted. Default: `false`.
+</dd>
+
+<dt id="alphaoutwhileuntargetable">`AlphaOutWhileUntargetable`</dt>
+<dd>
+  When `true`, the bar fades by a factor that depends on a unit status, probably whether the unit
+  can be targeted. Default: `true`.
+</dd>
+
+  <dt id="showcharacterstateindicatoronstartgame">`ShowCharacterStateIndicatorOnStartGame`</dt>
+  <dd>
+    When `true`, the character state indicator shows from the start of the game. When `false`, it
+    stays hidden until something else turns it on. The HUD layout lists the champions that have an
+    indicator and defines its elements. Default: `false`.
+  </dd>
+</dl>
+
+{/* TODO: CharacterStateIndicatorMaxCount, ShowCharacterStateIndicatorToAllies, ShowCharacterStateIndicatorToEnemies and hpPerTick, once the Meta Wiki identifies their effect. */}
+
+## Other
+
+**Other** lists every top-level field that no section above holds, such as `themeMusic`,
+`defaultAnimations` and `extraCharacterPreloads`.
+
+<dl>
+  <dt id="extracharacterpreloads">`extraCharacterPreloads`</dt>
+  <dd>
+    Names of other characters to load with this one, such as Anivia's egg. Each loads with the
+    owner's skin number, through the normal skin lookup, and stays loaded as long as the owner. A
+    name that fails to load is skipped without a message.
+  </dd>
+
+<dt id="defaultanimations">`defaultAnimations`</dt>
+<dd>
+  Animations of the skin's graph that start on the unit when its animation graph is set up, and
+  again when it is refreshed.
+</dd>
+
+<dt id="persistenteffectconditions">`PersistentEffectConditions`</dt>
+<dd>
+  Effects and submesh changes that apply while a condition is true. While an entry's
+  `OwnerCondition` and `SourceCondition` are both true, its `PersistentVfxs` spawn once and its
+  `SubmeshesToShow` and `SubmeshesToHide` apply. When either turns false, they are undone.
+</dd>
+
+<dt id="mspawnparticlename">`mSpawnParticleName`</dt>
+<dd>
+  A particle that plays at the unit's position when it spawns. It plays only when the client creates
+  the unit within 0.25 seconds of its spawn time. Shipped data uses it for minion spawns.
+</dd>
+
+<dt id="overrideonscreenname">`OverrideOnScreenName`</dt>
+<dd>A string-table key for the name the unit shows in game, in place of the character's name.</dd>
+
+<dt id="thememusic">`themeMusic`</dt>
+<dd>
+  The skin's theme music, as a list of Wwise event names. The server picks which track plays and
+  when, by its index in the list. When the list is not empty, teammates get a button to mute it.
+</dd>
+
+<dt id="loadscreenvintage">`loadscreenVintage`</dt>
+<dd>The loading-screen art for a player with vintage art turned on. Only its `image` is read.</dd>
+
+  <dt id="emoteyoffset">`emoteYOffset`</dt>
+  <dd>
+    Moves the summoner emote up, for a positive value, or down from its place above the health
+    bar. The offset is in screen space, so camera zoom does not change it.
+  </dd>
+</dl>
+
+{/* TODO: the remaining Other fields, such as the alternate and uncensored icons, skinUpgradeData and the HUD mute events. */}
+
+## Related pages
+
+- [Skin editor](/editor/skin-editor/)
+- [Material editor reference](/editor/material-editor/reference/)
+- [Animation graph](/editor/animation-graph/)
+- [BIN file format](/reference/file-formats/bin/)

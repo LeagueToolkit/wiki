@@ -7,6 +7,93 @@ tags:
   subject: [creator-workshop, string-overrides, layers]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+The strings editor replaces in-game text, such as a champion's name or an ability's description,
+from a <Hint as="span" tip="A named group of files within a mod project. Layers let mod creators offer optional components that users can toggle independently." client:visible>[layer](/glossary/)</Hint>
+of your project. Each override replaces one entry of the game's string tables, and LTK Manager
+applies it when it builds the overlay.
+
+<Where path={['Explorer', 'Strings']} files="The layer's string overrides in the project config" />
+
+See [String overrides](/making-mods/string-overrides/) for how overrides are stored, packed and
+resolved between mods.
+
+<Screenshot
+  file="editor/strings-editor-document.webp"
+  alt="A strings document for Default (All Locales), with the add row on top and two overrides under it"
+/>
+
+## Open a locale
+
+A strings document holds the overrides of one layer for one locale. The **Strings** section of the
+**Explorer** lists the locales the selected layer overrides by their code, such as `default` or
+`ko_kr`, with the number of overrides in each. When the layer has none yet, select **Add
+overrides** to open **Default (All Locales)**.
+
+1. In the **Explorer**, select the layer.
+2. In the **Strings** section, select a locale.
+
+   To start a locale the layer does not override yet, select **Open a locale** in the section
+   header and select the locale.
+
+**Default (All Locales)** applies to every language. A locale such as **Korean** applies to that
+language only, and wins over **Default (All Locales)** for the same field.
+
+## Add an override
+
+1. Enter part of a field name, or part of the text the game shows, in **Add an override - field
+   name or in-game text**.
+
+   The list shows the matching fields, each with its current in-game text.
+
+2. Select a field.
+
+   **Replacement text** fills with the current in-game text, selected so you can type over it.
+
+3. Enter the new text, and press <kbd>Enter</kbd>.
+
+   The override joins the list, and the focus returns to the field name box for the next one.
+   Press <kbd>Shift</kbd>+<kbd>Enter</kbd> for a line break in the text.
+
+Field names match without regard to case. To override an entry whose name no hash table holds,
+enter its 64-bit hash as 16 hex digits, such as `f772a83b33773223`.
+
+The strings editor saves each change on its own, shortly after you make it. There is no save
+button. Press <kbd>Ctrl</kbd>+<kbd>S</kbd> to save at once.
+
+## Edit or delete an override
+
+- To change a field name or its text, select it, edit it and press <kbd>Enter</kbd>. Press
+  <kbd>Escape</kbd> to drop the change.
+- To delete an override, hover over its row and select **Delete override**.
+
+When the replacement differs from the game, the row shows the game's text under it, after
+`was:`.
+
+An empty field name or a field name that appears twice holds the save. The row says why, and the
+document saves again once you fix it.
+
+## Filter and switch locale
+
+- Enter text in **Filter the overrides** to show only the overrides whose field name,
+  replacement or in-game text matches.
+- Select **Switch locale** in the toolbar to open another locale of the same layer. The menu
+  shows the number of overrides each locale holds.
+
+## How overrides apply
+
+Select **How overrides are applied** in the toolbar for a summary.
+
+- LTK Manager patches overrides into the game's string table while it builds the overlay. They
+  survive game patches without a repack.
+- By default, LTK Manager patches only the language the game runs in. To patch every installed
+  language, turn on **Apply string overrides to all locales** in **Settings** > **Patching**.
+
+## Next steps
+
+- [String overrides](/making-mods/string-overrides/)
+- [Testing](/editor/testing/)
+- [Packaging](/editor/packaging/)

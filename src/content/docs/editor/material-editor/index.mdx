@@ -7,6 +7,168 @@ tags:
   subject: [creator-workshop, bin, tex]
 ---
 
-import UnderConstruction from '@components/UnderConstruction.astro';
+import Hint from '@components/Hint.svelte';
+import Screenshot from '@components/Screenshot.astro';
+import Where from '@components/Where.astro';
 
-<UnderConstruction />
+The material editor opens a `StaticMaterialDef` object of a <Hint as="span" tip="Binary property file format (magic PROP). Stores configuration, game data, and asset metadata." client:visible>[bin file](/glossary/)</Hint>
+as tables of its textures, parameters and switches, next to a preview that draws the material with
+its own shader.
+
+<Where
+  path={['Bin editor', 'Object tab', 'Material']}
+  files="StaticMaterialDef objects in .bin files"
+/>
+
+<Screenshot
+  file="editor/material-editor-tab.webp"
+  alt="A material open in an object tab, with the preview on the left and the inspector tables on the right"
+/>
+
+## What a material holds
+
+A material says which shader draws a mesh, and the textures, parameters and switches it draws
+with. Skins, map geometry, particles and UI all use materials.
+
+The shader declares which textures, parameters and switches exist. The material fills them in by
+name. An entry whose name the shader does not declare does nothing in the game.
+
+A material can leave an entry out. The game then uses the shader's default for it. A switch entry
+that leaves `on` unset is on.
+
+## Open a material
+
+A `StaticMaterialDef` object opens in an object tab with the **Material** view. Open one from the
+**Objects** view, from a link to it in a skin, or with **Open object** on its row in a file tab.
+Switch to **Properties** with the view mode control to see every field as plain rows.
+
+See [Bin editor](/editor/bin-editor/) for file tabs and object tabs. Whether you can edit the
+material depends on its file and the tab's [sandbox](/editor/sandboxes/).
+
+## Panes
+
+The **Material** view has two panes, **Preview** and **Inspector**. Each pane is a tab, which you
+arrange like the tabs of the editor:
+
+- Drag a pane's tab onto the edge of another pane to split it.
+- Drag the line between two panes to resize them.
+- Double-click a pane's tab to fill the view with it. Double-click it again, or press
+  <kbd>Esc</kbd>, to restore the panes.
+
+The **Panes** menu on the header row reopens a closed pane. **Reset layout** in the same menu puts
+every pane back where it started. LTK Editor keeps the arrangement per project.
+
+## Material preview
+
+The preview translates the material's shader and draws each pass that translated, in order. An
+edit shows in the preview as soon as it lands, before the file is saved.
+
+When a skin in the same file uses the material, the preview shows that skin. A texture is painted
+for the mesh it wraps, so a skin material reads right only on its skin. Turn on **Draw on a shape**
+in the preview's corner to draw the material on a shape instead.
+
+A material that no skin of its file uses draws on a shape, with no toggle.
+
+{/* TODO: screenshot of the shape controls, with a numbered region table. */}
+
+| Control             | Description                                     |
+| ------------------- | ----------------------------------------------- |
+| **Preview shape**   | **Sphere**, **Cube**, **Plane** or **Cylinder** |
+| **Turntable**       | Turns the shape                                 |
+| **Ground**          | Draws the ground under the shape                |
+| **Frame the shape** | Moves the camera to fit the shape               |
+
+LTK Editor keeps the shape, the turntable and the ground for every material you open.
+
+### Notes in the corner
+
+The top left corner of the preview says why the preview draws what it does. It shows nothing for
+a material that draws as written.
+
+<dl>
+  <dt id="shader-did-not-build">The shader did not build</dt>
+  <dd>A pass's shader could not be translated. The note gives the reason.</dd>
+
+<dt id="no-pass-translated">No pass of this material translated</dt>
+<dd>The preview has nothing to draw with, so the shape draws in the error color.</dd>
+
+<dt id="no-shader-defs">The shader defs were not opened</dt>
+<dd>The editor could not read the shader's declarations.</dd>
+
+<dt id="no-pass">The material has no pass, so it draws with the defaults</dt>
+<dd>The material names no technique with a pass.</dd>
+
+<dt id="unresolved-shader">The pass shader resolves to nothing</dt>
+<dd>A pass links a shader that no file holds. The note gives the shader's hash.</dd>
+
+  <dt id="animated">Animated material. The preview draws its static values.</dt>
+  <dd>The material changes while the game runs. The preview draws the values in the file.</dd>
+</dl>
+
+## Tables
+
+The inspector draws the material in sections. **Samplers**, **Params**, **Switches** and
+**Macros** are tables with one row per entry. **Techniques** is a tree of the material's passes.
+
+| Table        | Columns                                              |
+| ------------ | ---------------------------------------------------- |
+| **Samplers** | **Name**, **Texture**, and the address modes U, V, W |
+| **Params**   | **Name** and **Value**                               |
+| **Switches** | **Name** and **On**                                  |
+| **Macros**   | **Name** and **Value**                               |
+
+For what each field does in the game, see
+[Material editor reference](/editor/material-editor/reference/).
+
+### Rows from the shader
+
+**Samplers**, **Params** and **Switches** list every texture, parameter and switch that the pass
+shader declares, in the shader's order. They also list the entries the material does not write.
+
+A row that the material leaves to the shader shows the shader's default with a dashed border and
+muted text. Edit it to add the material's own entry with the new value. Select a default texture
+to add an entry that holds it.
+
+A row with an entry of its own has a **More actions** menu. Select **Use the shader default** to
+remove the entry, so the default applies again.
+
+An entry whose name the shader does not declare comes after the declared rows, with a warning
+mark. Until the shader's declarations load, the tables list only the material's entries.
+
+### Warnings on a row
+
+A row shows a warning mark when the game will not use it as written:
+
+- A texture path that is not in the game or in your project
+- A texture path written as a string, which the game ignores
+- A sampler that names no texture
+- An entry that the shader does not declare
+
+A switch that the shader compiles in has a mark that says **Changing this rebuilds the shader**.
+The preview draws the old shader until the new one is ready.
+
+## Edit a parameter
+
+A parameter shows one field per component it sets: x to w, or r to a for a color.
+
+1. Drag a component's letter sideways to change its value. The preview draws each step.
+2. Release the drag, leave the field or press <kbd>Enter</kbd> to write the value.
+
+   The value is written once, as one undo step.
+
+A parameter whose name ends in `Color` or `Tint`, with three or more components, has a swatch. Select it to open
+a color picker. The value is written when the picker closes.
+
+## In the skin editor
+
+A skin's **Material** pane shows the same tables for one material of the skin, next to the
+character. Select a submesh on the character to show its material. See
+[Skin editor](/editor/skin-editor/).
+
+## Related pages
+
+- [Material editor reference](/editor/material-editor/reference/)
+- [Hexshade](/editor/hexshade/)
+- [Bin editor](/editor/bin-editor/)
+- [Editing bins](/editor/bin-editor/editing/)
+- [Skin editor](/editor/skin-editor/)
