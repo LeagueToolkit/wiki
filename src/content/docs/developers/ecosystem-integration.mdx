@@ -103,7 +103,7 @@ support.
 - **Keep app state in dot-files.** Tool configuration belongs in the app's own dot-files at the
   project root - nothing outside `content/` is ever packed, so those need no further handling.
   For working files the app writes inside `content/`, add entries to the project's
-  [`.modignore`](/making-mods/mod-projects/#ignore-files), which filters exactly that directory.
+  [`.modignore`](/making-mods/mod-projects/#ignore-rules), which filters exactly that directory.
 - **Two planned pipelines target exactly this.** The
   [file transformer pipeline](/making-mods/mod-projects/#file-transformers) will let an app keep
   editable source formats in the project and have game-ready ones produced at pack time, and the
