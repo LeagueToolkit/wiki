@@ -1472,7 +1472,7 @@ For tools that build overlays:
 
 The layer manifest, source files and override inputs travel with the layer directory. `mod.config.json` or `mod.config.toml` keeps project identity and layer configuration; it does not list declaration files.
 
-The Creator Workshop adds direct module items to the layer manifest by default, creating a YAML manifest when absent. It edits an existing TOML or JSON manifest in place. A source item opens its referenced file for editing, with comments and order preserved. Extracting a direct body to a source file preserves its array position and target; the editor adjusts resource references for the new containing directory. The external file receives its own `version`.
+LTK Editor adds direct module items to the layer manifest by default, creating a YAML manifest when absent. It edits an existing TOML or JSON manifest in place. A source item opens its referenced file for editing, with comments and order preserved. Extracting a direct body to a source file preserves its array position and target; the editor adjusts resource references for the new containing directory. The external file receives its own `version`.
 
 ## Modpkg
 
@@ -1497,7 +1497,7 @@ Fantome keeps only the base layer's content, as it does for every other per-laye
 ## Open Questions
 
 - **Same-target conflict granularity in the report.** Whether the manager shows a conflict per target or per key. Per key is more useful and more noise.
-- **Editor rewriting.** Round-trip-safe YAML editing that preserves comments and order is a real requirement on the Workshop; the crate that does it is not chosen.
+- **Editor rewriting.** Round-trip-safe YAML editing that preserves comments and order is a real requirement in LTK Editor; the crate that does it is not chosen.
 - **Shared companion WAD.** Whether LTK Manager routes companion bins into one core WAD copy by default, or keeps the declared placement. The engine works either way.
 - **Unverified client behaviour on the mode gate.** None of these changes a rule above. Each is observed in a real game before a release relies on it, and there is no log line for any of them.
   - A `load` path that does not exist: expected to load normally. A fatal or a hang would make the pre-flight a hard requirement.
@@ -1507,9 +1507,9 @@ Fantome keeps only the base layer's content, as it does for every other per-laye
 
 ## Related Pages
 
-- [Mod Projects](/making-mods/mod-projects/) - the project layout and manifest the modules live in
+- [Mod projects](/making-mods/mod-projects/) - the project layout and manifest the modules live in
 - [Layers](/making-mods/layers/) - priority and the layer content directory
-- [String Overrides](/making-mods/string-overrides/) - the per-layer precedent for precedence and storage
+- [String overrides](/making-mods/string-overrides/) - the per-layer precedent for precedence and storage
 - [Embedded Hashtables](/reference/mod-packages/hashtables/) - the naming standard the same hash rules come from
 - [Metaclasses](/reference/metaclasses/overview/) - the schema the build types against
 - [Ritobin](/reference/file-formats/ritobin/) - the text form override files and type names come from

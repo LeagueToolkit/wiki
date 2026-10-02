@@ -1,46 +1,37 @@
 ---
 title: Mod Creation
-description: Build, layer, and package your own League of Legends mods with the Creator Workshop or the league-mod CLI.
+description: The mod project format behind LTK Editor and the league-mod CLI, with its layers, string overrides, declarations and package formats.
 tags:
   type: overview
   audience: [mod-creator]
-  subject: [mod-project, creator-workshop, league-mod]
+  subject: [mod-project, ltk-editor, league-mod]
 ---
 
 import { CardGrid, LinkCard } from '@astrojs/starlight/components';
 
-A [mod project](/making-mods/mod-projects/) is a directory with a
-`mod.config.json` and one or more content layers. You author it, validate it,
-then pack it into a `.modpkg` that anyone can install.
+A [mod project](/making-mods/mod-projects/) is a directory with a `mod.config.json` and one or
+more content layers. You author it, check it, then pack it into a file that anyone can install.
+This section documents the project format itself, which two tools work on:
 
-There are two ways to do this and they operate on the same project format:
+- **[LTK Editor](/editor/)**, the mod editor in LTK Manager. Start here if you are new to making
+  mods. Its pages cover each step in the app.
+- **[The `league-mod` CLI](/making-mods/command-line/)**, the same workflow from a terminal, for
+  scripting, CI and batch work.
 
-- **[The Creator Workshop](/making-mods/workshop/)** - the project editor built
-  into LTK Manager. Recommended if you are starting out.
-- **[The `league-mod` CLI](/making-mods/command-line/)** - the same workflow
-  from a terminal, and the engine the Workshop is built on. Useful for
-  scripting, CI, and batch work.
+Projects are interchangeable between them. Nothing you build in one is locked away from the other.
 
-Projects are interchangeable between them. Nothing you build in one is locked
-away from the other.
-
-## The workflow
+## Pages
 
 <CardGrid>
   <LinkCard
-    title="Mod Projects"
+    title="Mod projects"
     href="/making-mods/mod-projects/"
     description="The project standard itself - folder layout, the manifest, and what builds from it."
   />
   <LinkCard
-    title="Workshop Overview"
-    href="/making-mods/workshop/"
-    description="Set the workshop path, create a project, and understand the directory layout."
-  />
-  <LinkCard
-    title="Creating a Project"
-    href="/making-mods/project/"
-    description="Start fresh, or import from .modpkg, .fantome, raw WAD folders, or Git."
+    title="Migration"
+    href="/making-mods/migrating/"
+    description="Turn a mod from cslol-manager, a .fantome file or a loose folder into a mod project."
   />
   <LinkCard
     title="Layers"
@@ -48,22 +39,22 @@ away from the other.
     description="Split a mod into optional pieces - base, high-res, alternate variants - with priority ordering."
   />
   <LinkCard
-    title="String Overrides"
+    title="String overrides"
     href="/making-mods/string-overrides/"
     description="Change in-game text without touching the game's own string files."
   />
   <LinkCard
-    title="Game Data Declarations"
+    title="Declaration manifests"
     href="/making-mods/game-data/"
     description="Author BIN dependency edits with modules and reusable source files."
   />
   <LinkCard
-    title="Packaging"
+    title="Package formats"
     href="/making-mods/packaging/"
-    description="Validate and pack a .modpkg for distribution, plus the format specification."
+    description="Choose between .modpkg and .fantome for each release."
   />
   <LinkCard
-    title="From the Command Line"
+    title="Command line"
     href="/making-mods/command-line/"
     description="league-mod init, pack, extract, and info - the CLI path through the same workflow."
   />
@@ -71,8 +62,7 @@ away from the other.
 
 ## Before you start
 
-You will get much further if you know what the game files you are editing
-actually are. Two pages worth reading first:
+Know what the game files you edit are. Read these two pages first:
 
 - **[How Modding Works](/start-here/how-modding-works/)** - how your files end up
   in the running game.

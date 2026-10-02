@@ -31,8 +31,8 @@ Three things, all documented on this wiki:
 
 | Standard        | What it is                                                                                                         | Where it is specified                           |
 | --------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
-| Mod projects    | Folder layout plus a `mod.config.json` / `mod.config.toml` manifest                                                | [Mod Projects](/making-mods/mod-projects/)      |
-| Packages        | `.modpkg` (native) and extended `.fantome` (legacy-compatible)                                                     | [Packaging](/making-mods/packaging/)            |
+| Mod projects    | Folder layout plus a `mod.config.json` / `mod.config.toml` manifest                                                | [Mod projects](/making-mods/mod-projects/)      |
+| Packages        | `.modpkg` (native) and extended `.fantome` (legacy-compatible)                                                     | [Package formats](/making-mods/packaging/)      |
 | The feature set | [Layers](/making-mods/layers/), [string overrides](/making-mods/string-overrides/), readme and thumbnail embedding | Defined once at the project level, not per-tool |
 
 Integrating means reading and writing these instead of inventing your own. That is the whole
@@ -41,7 +41,7 @@ model: a project or package your tool produces is one every other tool already u
 ## What you get for it
 
 **Your users are not locked in.** A project your tool writes opens in the
-[Creator Workshop](/making-mods/workshop/), packs with `league-mod`, and installs in LTK Manager.
+[LTK Editor](/editor/), packs with `league-mod`, and installs in LTK Manager.
 That cuts both ways: people can leave your tool, and they can arrive with everything they already
 have. In practice the second effect dominates.
 
@@ -179,8 +179,8 @@ CLI when it exists.
 
 ## Where to go next
 
-- [Mod Projects](/making-mods/mod-projects/) - the layout and manifest standard everything builds from
-- [Packaging](/making-mods/packaging/) - `.modpkg` and `.fantome` in depth
+- [Mod projects](/making-mods/mod-projects/) - the layout and manifest standard everything builds from
+- [Package formats](/making-mods/packaging/) - `.modpkg` and `.fantome` in depth
 - [league-mod](/making-mods/command-line/) - the authoring CLI and the crates underneath it
 - [league-toolkit](/tools/league-toolkit/overview/) - the Rust library for League's file formats
 - [Architecture](/contributing/architecture/) - how LTK Manager is put together today

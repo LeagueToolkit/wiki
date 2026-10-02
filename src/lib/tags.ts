@@ -24,7 +24,7 @@ export const AUDIENCES = ['mod-user', 'mod-creator', 'tool-developer', 'contribu
 export const SUBJECTS = [
   // Tools
   'ltk-manager',
-  'creator-workshop',
+  'ltk-editor',
   'league-mod',
   'wadtools',
   'ltk-tex-utils',
@@ -149,10 +149,10 @@ export const SUBJECT_META: Record<TagSubject, TagMeta & { group: SubjectGroup }>
     description: 'The desktop mod manager.',
     glossary: '#ltk-manager',
   },
-  'creator-workshop': {
+  'ltk-editor': {
     group: 'tools',
-    label: 'Creator Workshop',
-    description: 'The mod project editor built into LTK Manager.',
+    label: 'LTK Editor',
+    description: 'The mod editor in LTK Manager.',
   },
   'league-mod': {
     group: 'tools',

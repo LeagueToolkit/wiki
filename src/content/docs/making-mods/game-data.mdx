@@ -1,5 +1,5 @@
 ---
-title: Authoring Game Data Declarations
+title: Declaration manifests
 description: Edit entry properties and BIN dependencies with layer manifests, ordered modules, and reusable source files.
 tags:
   type: guide
@@ -23,7 +23,8 @@ declares. Objects and properties you do not name stay intact.
 These examples require a packer and overlay builder with the declaration support in
 [league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225).
 Support in a particular LTK Manager release depends on its bundled engine. This guide describes
-hand-authored project files; it does not require a declaration editor in the Workshop.
+hand-authored project files. LTK Editor writes the same files when you edit a game bin. See
+[Game data declarations](/editor/bin-editor/game-data/).
 The `entries` selector requires the game-index support in
 [league-mod#228](https://github.com/LeagueToolkit/league-mod/issues/228).
 
@@ -419,7 +420,8 @@ BINs are unsupported bases.
 
 ## Related pages
 
-- [Mod Projects](/making-mods/mod-projects/) - project layout and content paths.
+- [Mod projects](/making-mods/mod-projects/) - project layout and content paths.
+- [Game data declarations](/editor/bin-editor/game-data/) - declaring edits in LTK Editor.
 - [Layers](/making-mods/layers/) - optional content and priorities.
 - [BIN Files](/reference/file-formats/bin/) - property bins and linked files.
 - [Game Data Declarations proposal](/reference/mod-packages/game-data/) - the broader declaration design.
