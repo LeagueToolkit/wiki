@@ -1,315 +1,126 @@
 ---
-title: Game Data Declarations
-description: Standard for declarative game-data edits in mod projects and packages - layer manifests with direct edits or source files, their bindings (links, modes, overrides, entries, objects), entry-name targets, signed keys, type pins, coercion, precedence, and how the overlay build routes and materialises them.
+title: Game data declarations
+description: Reference for game data declarations - the layer manifest, its modules and bindings, property edits, type pins, references, objects, and the rules that the overlay build applies.
 tags:
   type: reference
   audience: [tool-developer, mod-creator]
   subject: [mod-project, bin, overlay]
-  status: planned
+  status: wip
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-Game data declarations let a mod edit the game's property bins without shipping a copy of each bin it touches. A layer declares, per target bin, what it changes: linked files, mode-gated companion bins, override records, property edits, new objects. The overlay build reads the installed game's copy of the target and materialises the edit on top of it at build time. This page is the standard: the declaration modules, each binding's meaning, how containers carry the declarations, and the rules the build follows.
+A game data declaration is a change to one of the game's property bins that a mod layer declares in
+a manifest. The overlay build reads the copy of the target bin from the installed game and applies
+the change to it. This page specifies the manifest format, the bindings, the packaged forms and the
+rules of the build.
 
-:::caution[Status]
-This is a proposal. It is tracked in [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) (links) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) (PTCH overrides). The link engine in [league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225) implements `target`, `links`, `+links`, `-links`, `edits` and `source`. [league-mod#228](https://github.com/LeagueToolkit/league-mod/issues/228) implements the `entries` selector through the game index, with link bindings inside entry bodies. [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191) implements `overrides` for `.ptch` files; a `.rito` override file is refused with an error naming the extension until [league-mod#240](https://github.com/LeagueToolkit/league-mod/issues/240) lands. [league-mod#243](https://github.com/LeagueToolkit/league-mod/issues/243) and [league-mod#244](https://github.com/LeagueToolkit/league-mod/issues/244) implement entry bodies with property edits for a `target` and an `entries` module: signed keys, block nesting, type pins, [coercion](#coercion) against the installed schema with the base bin as fallback, and list removal by value or index. [league-mod#264](https://github.com/LeagueToolkit/league-mod/pull/264) implements [references](#references), a value read from the installed game's copy of another entry. [league-mod#275](https://github.com/LeagueToolkit/league-mod/pull/275) implements [`objects`](#objects): clone, construct and remove. `modes`, wildcard targets, and `.rito` override files are unimplemented. The [roadmap](#roadmap) names the order the bindings land in.
+:::note[Engine support]
+The `ltk_game_data` crate of [league-mod](https://github.com/LeagueToolkit/league-mod) implements
+the format that this page specifies, except for the parts under [Limitations](#limitations). A tool
+applies the rules of the crate version that it bundles. To write a manifest step by step, see
+[Declaration manifests](/making-mods/game-data/).
 :::
-
-:::note[Link declaration authoring]
-The [authoring guide](/making-mods/game-data/) covers the link engine and its tool
-requirements. The examples below describe the broader proposal.
-:::
-
-## Getting Started
-
-Start with YAML and keep a small edit in `game_data.yaml`. Use a source file when a group of edits deserves its own file. The examples here use the proposed format described by this page; they are authoring examples, not an implemented LTK Manager workflow.
-
-Each recipe shows a complete file unless labelled as a fragment. Treat the recipes as alternatives: when extending a manifest, add items to its existing `modules` list. Keep one `version` and one `modules` key in that file.
-
-### Make Your First Edit
-
-For an existing mod project, create `content/base/game_data.yaml`:
-
-```
-my-mod/
-|-- mod.config.json
-|-- content/
-|   |-- base/
-|   |   |-- game_data.yaml
-```
-
-This example sets Teemo's skin mesh `selfIllumination` property to `1.0`:
-
-```yaml
-# content/base/game_data.yaml
-version: 1
-
-modules:
-  - target: data/characters/teemo/skins/skin0.bin
-
-    'Characters/Teemo/Skins/Skin0':
-      skinMeshProperties:
-        selfIllumination: 1.0
-```
-
-Read it from the outside in:
-
-| Part                             | What you write                                                                       |
-| -------------------------------- | ------------------------------------------------------------------------------------ |
-| `version: 1`                     | The declaration format version. This is separate from the game's patch number.       |
-| `modules:`                       | Your list of edits to game files. Each `- target:` starts one module.                |
-| `target`                         | The game file you want to edit, without a project directory or WAD directory prefix. |
-| `'Characters/Teemo/Skins/Skin0'` | The entry inside that file. Copy entry names from the bin you inspect.               |
-| `skinMeshProperties`             | A property on that entry containing more fields.                                     |
-| `selfIllumination: 1.0`          | The field and its replacement value.                                                 |
-
-Keep the full entry name. A target file can contain many entries, and an entry's name is not derived from the file's name. You only declare the properties you want to change; this example does not need a copied `skin0.bin` in your mod.
-
-Use nested blocks for several edits to one struct. For one field, the dotted spelling is also valid. This fragment replaces the entry block in the example above and means the same thing:
-
-```yaml
-'Characters/Teemo/Skins/Skin0':
-  skinMeshProperties.selfIllumination: 1.0
-```
-
-Choose one spelling for the same field within a module. Writing both creates two writes to the same property.
-
-### Add a Resource Without Replacing the Whole Map
-
-Use `+resourceMap` when you want to add or redirect individual resource slots. A plain `resourceMap` sets the entire map.
-
-For this recipe, your mod must already supply a bin at `mods/teemo-classic/particles.bin` containing an entry named `Mods/TeemoClassic/Particles/R_Missile`. These are example names for your own content. Place the bin in your layer's WAD content using that chunk path.
-
-```yaml
-# content/base/game_data.yaml
-version: 1
-
-modules:
-  - target: data/characters/teemo/skins/skin0.bin
-
-    links:
-      - mods/teemo-classic/particles.bin
-
-    'Characters/Teemo/Skins/Skin0/Resources':
-      +resourceMap:
-        Teemo_R_Mis: Mods/TeemoClassic/Particles/R_Missile
-```
-
-`links` asks the game to load the companion bin with the target. The map edit directs the `Teemo_R_Mis` slot to an entry inside that companion bin. Declaring a link does not create the bin or the entry; both must exist in content available to the game.
-
-For containers, the sign on the property describes your intent:
-
-| Spelling                                                               | Meaning                                                                                         |
-| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `selfIllumination: 1.0`                                                | Set one field.                                                                                  |
-| `+resourceMap: { Teemo_R_Mis: Mods/TeemoClassic/Particles/R_Missile }` | Add or replace this map entry, preserving other keys.                                           |
-| `-resourceMap: [Teemo_R_Mis]`                                          | Remove this key from the map. Use this only when removal is intended.                           |
-| `resourceMap: { Teemo_R_Mis: Mods/TeemoClassic/Particles/R_Missile }`  | Replace the entire map with this one entry.                                                     |
-| `links: [mods/teemo-classic/particles.bin]`                            | Add a dependency. Bare `links` is the exception to the usual set rule; `+links` means the same. |
-
-A `+` or `-` belongs to a container operation. For a scalar field such as `selfIllumination`, use the ordinary unsigned key. See [Operations](#operations) for the full rules and [List Removal](#list-removal) before removing list elements.
-
-### Move a Group of Edits Into a Source File
-
-Keep both files beside each other:
-
-```
-content/base/
-|-- game_data.yaml
-|-- teemo-skin0.patch.yaml
-```
-
-The manifest selects the game file and names your source file:
-
-```yaml
-# content/base/game_data.yaml
-version: 1
-
-modules:
-  - target: data/characters/teemo/skins/skin0.bin
-    source: teemo-skin0.patch.yaml
-```
-
-The source file holds the edit:
-
-```yaml
-# content/base/teemo-skin0.patch.yaml
-version: 1
-
-'Characters/Teemo/Skins/Skin0':
-  skinMeshProperties:
-    selfIllumination: 1.0
-```
-
-This makes the same edit as the first recipe. Keep `target` in the manifest and give the source file its own `version`. Its body starts with the bindings or entry names; there is no `inline` wrapper.
-
-`source: teemo-skin0.patch.yaml` means the file beside the manifest, relative to `content/base/`. It is neither a game path nor a property-bin entry name. The `.patch` part is a naming choice; the exact filename in `source` is what matters. No source folder is required. Renaming the source file requires updating the reference, and leaves `target` unchanged.
-
-Use a source file for a coherent group of edits you want to work on together. Keep a one-field edit directly in the manifest when another file would add no useful organisation. Referenced files must be present and must not be excluded by `.modignore`.
-
-### Apply a Source, Then Customise Its Result
-
-Use two items in the same `modules` list. The source item comes first:
-
-```yaml
-# content/base/game_data.yaml
-version: 1
-
-modules:
-  - target: data/characters/teemo/skins/skin0.bin
-    source: teemo-skin0.patch.yaml
-
-  - target: data/characters/teemo/skins/skin0.bin
-
-    'Characters/Teemo/Skins/Skin0':
-      skinMeshProperties:
-        selfIllumination: 0.5
-```
-
-With the source file from the previous recipe, the first item sets the value to `1.0`; the second changes it to `0.5`. This is the result within this layer before any higher-precedence contribution. Repeating the target in separate items is valid. Putting `source` and local property edits in the same item is an error.
-
-To edit another game file, add another item with that file's `target`. Keep related work together and order modules by their intended application order. Alphabetical source filenames do not control execution.
-
-### Load a Companion Bin in One Mode Only
-
-Use `modes` when a companion bin belongs to one game mode and must not stay loaded in the others. This recipe ships an ARAM-only announcer bin and asks the game to load it in ARAM alone:
-
-```
-my-mod/
-|-- mod.config.toml
-|-- content/
-|   |-- base/
-|   |   |-- game_data.yaml
-|   |   |-- Map12.wad.client/
-|   |   |   |-- mods/aram-announcer/announcer.bin
-```
-
-```yaml
-# content/base/game_data.yaml
-version: 1
-
-modules:
-  - modes: [Map12/ARAM]
-    load: [mods/aram-announcer/announcer.bin]
-```
-
-A `modes` module has no `target`. `Map12/ARAM` names the mode entry `Maps/Shipping/Map12/Modes/ARAM` in the map's own bin, and the build derives the target from it. In ARAM the companion bin loads at map load and is released at map unload. In every other mode it is never requested. The entries inside `announcer.bin` are named under `Mods/aram-announcer/`, so they collide with nothing Riot ships.
-
-Do not also list the same bin under `links` on a bin that every game loads. That permanent reference keeps it resident and defeats the unload. See [`modes`](#modes) for the selectors, the lowering and the stopgap the link-only engine supports.
-
-### Order Edits When One Needs Another
-
-Most small edits fit in a normal body. Use `edits` when one edit needs an object or state produced by an earlier one.
-
-For example, this source body creates a custom copy of a particle object, then clones that new copy. Use it as an alternative `teemo-skin0.patch.yaml` with the source manifest above:
-
-```yaml
-# content/base/teemo-skin0.patch.yaml
-version: 1
-
-edits:
-  - objects:
-      'Mods/TeemoClassic/Particles/R_Missile':
-        clone: Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis
-        set:
-          particleName: Teemo_Classic_R_Mis
-
-  - objects:
-      'Mods/TeemoClassic/Particles/R_Missile_Extra':
-        clone: Mods/TeemoClassic/Particles/R_Missile
-        set:
-          particleName: Teemo_Classic_R_Mis_Extra
-```
-
-The second clone needs the object created by the first edit. Two clones in one `objects` mapping read the same starting state; rearranging their keys does not express this dependency. Separate edits do.
-
-This recipe adds two entries to the selected target bin. It requires the original clone entry to exist there and the new names to be unused. It does not redirect any resource slot to the new entries; adding an object alone does not make the game use it. See [Objects](#objects) for construction and [Edits](#edits) for evaluation order.
-
-### Formatting Habits and Common Mistakes
-
-- Use **YAML** for hand-written declarations. It supports comments and readable nested blocks. TOML and JSON are equally valid; keep one manifest format per layer.
-- Indent by **two spaces** at each level and use spaces rather than tabs. Keep `source`, `links`, entry names or `edits` aligned with `target` inside their module item.
-- Put one setting or list item on each line for longer edits. Use a blank line between modules. Bracketed lists work well for short vectors such as `[50.0, 180.0, 150.0]`.
-- Keep related fields in one entry block. Use nested blocks for groups of struct fields and dotted paths for isolated fields. Avoid duplicate keys and overlapping spellings of the same edit.
-- Quote **hashes** and keys with path punctuation. Examples: `'0xd2343ed1'`, `'skinAudioProperties.bankUnits[0].events'`. Prefer a readable game path as the `target` when you know it; a raw chunk hash is the same string field, spelled as exactly 16 hexadecimal digits and always quoted. See the [target grammar](#grammar).
-- Keep values in their intended YAML form: `1.0` is a number, `true` is a boolean, and `'1.0'` is a string. Leave ordinary numbers and booleans unquoted. Let the schema determine types for routine edits; use [type pins](#type-pins) when you deliberately want a type check.
-- Use **forward slashes** in paths, including on Windows. `target` is a game lookup path; `source` is a local filename. Do not put `X:\\...`, `content/base/` or a WAD directory prefix into a target.
-- Use comments to explain intent, such as `# Preserve the other resource slots.` Comments need no separate declaration key.
-
-| If you see this problem                   | Check this first                                                                                                                                                      |
-| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Your source file contributes no edits     | Confirm that the layer has a manifest and that a module references the exact source filename.                                                                         |
-| YAML reports a duplicate key              | Combine fields under one entry block, or use separate modules or edits for ordered writes.                                                                            |
-| A source item is rejected                 | Keep only the selector and `source` in that item. Put customisation in the next item.                                                                                 |
-| A target is rejected as an object         | `target` is one string. Write `target: data/.../skin0.bin` or a quoted 16-digit hash, never `path:` or `hash:`.                                                       |
-| A target cannot be found                  | Check the game chunk path. Preserve its extension, including no extension for a path such as `shared`.                                                                |
-| An entry or property cannot be found      | Inspect the selected bin and its schema. File paths, entry names and property names are different addresses.                                                          |
-| A block on a struct reports `pinMismatch` | Its only key is a type name such as `hash` or `string`, which makes it a [type pin](#type-pins). Write that field as a dotted path, or add a second key to the block. |
-| `EntryUnresolved`                         | Check the entry name or object hash against the installed game. No game bin declares it.                                                                              |
-| `EntryFanOut`                             | Informational: every declaring chunk receives the edits. Check the reported chunks.                                                                                   |
-| `IndexUnavailable`                        | Check the object-index error in the build log. The build skips every `entries` item and continues.                                                                    |
-| A declared link cannot be resolved        | Check that the companion bin exists at the declared game path and is included in the active content.                                                                  |
-| A mode selector is reported as unknown    | Modes rotate. Check the mode roster of the installed patch; a selector with no mode entry is skipped.                                                                 |
-| A `load` path is rejected                 | The game appends `.bin` to every mode-list value. A `load` path must end in `.bin`.                                                                                   |
-| A `.rito` input is rejected               | `overrides` accepts ritobin text of type `PTCH`. An ordinary `PROP` dump is not a patch input.                                                                        |
-
-## Motivation
-
-A property bin is loaded by the game as a whole file. A mod that wants to change one thing about a bin - hang a companion bin off it, redirect one VFX slot, add one per-map record - has one option today: ship the entire bin with that one change applied. That copy is a full override of a Riot file, and it carries three costs:
-
-- **It breaks on every patch.** The copy freezes every property of every object in the bin at the patch it was made from. When Riot changes any of them, the mod silently reverts that change.
-- **It conflicts with every other mod touching the same bin.** Two mods that each ship Teemo's `skin0.bin` cannot both win, even when their edits are disjoint.
-- **It hides intent.** A diff between the mod's copy and the game's copy is the only record of what the mod meant to change, and it is a binary diff.
-
-The game itself has the mechanisms a mod needs. A bin header carries a list of linked files the loader mounts alongside it. Each mode entry of a map carries a list of extra bins the loader reads when that mode starts and releases when it ends. A `PTCH` bin carries property-level overrides the loader applies over a target. None of them is reachable from a mod package without hand-editing binary files, and none of them is composable across mods.
-
-The fix is for the package to carry the edit, not the result: a small, human-readable declaration that names a target bin and states what to change. The build computes the result against whatever the installed game ships.
 
 ## Overview
 
-The standard has two parts:
+A mod that ships a copy of a game bin replaces every object of that bin. The copy contains the
+values of the patch that it was made from. When Riot changes a value in the bin, the mod replaces
+the new value with the old one. Two mods that ship the same bin cannot both apply, even if they
+change different objects.
 
-- **Declaration modules** - ordered items in a layer manifest, each with an explicit `target` and either direct bindings or a `source` file supplying the body. No `game_data/` directory is required.
-- **Bindings** - the kinds of edit a target accepts. Each binding has one meaning, one precedence rule across layers and mods, and one materialised form the game loads.
+A declaration specifies a target bin and the changes to it. The build applies the changes to the
+copy that the installed game ships. The rest of the bin keeps the values of the installed patch,
+and the build applies the declarations of several mods to the same bin.
 
-The same declarations appear in three containers:
+The format has two parts:
 
-| Container   | Declaration location                                         | Notes                                                          |
-| ----------- | ------------------------------------------------------------ | -------------------------------------------------------------- |
-| Mod project | `content/{layer}/game_data.yaml`, `.yml`, `.toml` or `.json` | The authored manifest, with optional source files.             |
-| `.modpkg`   | Per-layer package metadata, field `game_data`                | The ordered declarations and compiled resource references.     |
-| `.fantome`  | `Layers.{name}.GameData` in `META/info.json`                 | The same ordered declarations, in the LeagueToolkit extension. |
+- **Declaration modules** are the ordered items of a layer manifest. Each module selects a target
+  chunk or a set of entries. It contains the edits, or the path of a source file that contains
+  them.
+- **Bindings** are the kinds of change that an edit contains: `links`, `overrides`, entries and
+  `objects`.
 
-The mod project is the subject of this standard. A `.modpkg` and a `.fantome` are build outputs of a project.
+The same declarations are stored in three forms:
+
+| Form        | Location                                                     | Contents                                   |
+| ----------- | ------------------------------------------------------------ | ------------------------------------------ |
+| Mod project | `content/{layer}/game_data.yaml`, `.yml`, `.toml` or `.json` | The authored manifest and its source files |
+| `.modpkg`   | Layer metadata field `game_data`                             | The ordered declarations of the layer      |
+| `.fantome`  | `Layers.{name}.GameData` in `META/info.json`                 | The same ordered declarations              |
+
+A `.modpkg` and a `.fantome` are build outputs of a mod project.
 
 ## Vocabulary
 
-- **Target** - the game chunk a declaration edits: one string, a chunk hash of exactly 16 hexadecimal digits or a literal game path. A module names it as `target`, resolves it from the entry names under `entries`, or derives it from a `modes` selector. The build changes that bin's contents. File placement has no target meaning.
-- **Declaring chunk** - a game bin chunk that contains an entry. The object index records every declaring chunk of an entry. A holder is a WAD archive that ships a chunk.
-- **Module** - one application of a body to a target, at a position in the manifest's `modules` array.
-- **Selector** - the key of a module that picks its target: `target`, `entries` or `modes`. A module has exactly one.
-- **Source** - an external file supplying a module body. The manifest owns its target and application order.
-- **Batch** - a set of bindings evaluated in fixed phases. A compact body is one batch; an `edits` array orders multiple batches.
-- **Base** - the bytes the build materialises over: the game's own chunk, or the highest-precedence mod copy of that chunk when one is enabled.
-- **Binding** - one kind of edit on a target: `links`, `modes`, `overrides`, entries, `objects`.
-- **Override** - a `PTCH` bin, a file of property-level records the loader applies over a target. An override is a file in a layer; it is not a layer.
-- **Link** - one entry in a bin header's linked-file list. The loader mounts each linked bin when it loads the bin that lists it.
-- **Companion bin** - a bin a mod authors under its own namespace, `mods/<modid>/...`, reached through `links` or a mode entry. It has no Riot twin.
-- **Mode entry** - the game's per-map, per-mode root object, named `Maps/Shipping/Map<N>/Modes/<MODE>` in the map's own bin. Its extra-bin list is the only data-driven load point that is scoped to a mode.
-- **Signed key** - a key with a leading `+` or `-`. The sign is the operation: add to, or remove from, the container the key names. An unsigned key sets.
-- **Type pin** - a value marked with a type name: a YAML tag, `!f32 1.0`, or in TOML and JSON a one-key mapping, `{f32: 1.0}`. The pin fixes the type the edit expects. A YAML tag loads as the one-key mapping; the two spellings are one value in every format.
-- **Reference** - a value named by where it lives in the installed game, written `<entry name>:<property path>`: a YAML tag, `!ref a/b:speed`, or a one-key mapping, `{ref: "a/b:speed"}`. The build reads the game's copy of that value instead of a literal you wrote.
-- **Layer** - a named, prioritised slice of a mod's content. See [Layers](/making-mods/layers/).
-- **Schema** - the [meta class dump](/reference/metaclasses/overview/) for the installed patch: every class, its properties and their types. LTK Manager holds one per patch.
+- **Target** - The game chunk that a module edits. A target is one string: a game path, or a chunk
+  hash of exactly 16 hexadecimal digits.
+- **Module** - One selector with its edits, at a position in the `modules` list of a manifest.
+- **Selector** - The key of a module that selects the chunk or the entries that the module edits:
+  `target` or `entries`.
+- **Source file** - A file that contains the body of a `target` module. The manifest contains the
+  target and the position of the module.
+- **Edit** - One batch of bindings on a target. The build applies the bindings of an edit in fixed
+  phases. A compact body is one edit. An `edits` list contains several edits in order.
+- **Binding** - One kind of change in an edit: `links`, `overrides`, an entry or `objects`.
+- **Base** - The bytes that the build applies edits to: the copy of the chunk from the enabled mod
+  with the highest precedence that ships it, or the game's copy if no enabled mod ships it.
+- **Entry** - One object of a bin. An entry name is the path of the object, or the hash of that
+  path as `0x` followed by 8 hexadecimal digits.
+- **Declaring chunk** - A game bin chunk that contains an entry. The object index lists every
+  declaring chunk of an entry.
+- **Entry body** - The mapping under an entry name. Each key is a property path with an optional
+  sign. Each value is the value that the build sets, adds or removes.
+- **Sign** - A leading `+` or `-` on a key. `+` adds to a list or a map, and `-` removes from it. A
+  key with no sign sets the value.
+- **Type pin** - A value marked with a type name. In YAML it is a tag, `!f32 1.0`. In TOML and
+  JSON it is a mapping whose only key is the type name, `{f32: 1.0}`. The loader reads both forms
+  as the same value.
+- **Struct pin** - A `pointer` or `embed` pin. It contains the class and the fields of a new
+  struct.
+- **Reference** - A value that the build reads from the installed game, written as
+  `<entry name>:<property path>`. In YAML it is a tag, `!ref a/b:speed`. In TOML and JSON it is a
+  mapping whose only key is `ref`, `{ref: "a/b:speed"}`.
+- **Class tag** - The YAML form of a constructed object: the class as a tag on the properties of
+  the object, `!ResourceResolver`.
+- **Override file** - A `.ptch` file in a layer. It contains `PTCH` records that the build applies
+  to a target.
+- **Link** - One path in the dependency list of a bin header. The game loads each linked bin when
+  it loads the bin that lists it. A `link` value is a different thing: a property value that refers
+  to an object.
+- **Companion bin** - A bin that a mod adds under its own namespace, `mods/<modid>/...`. The game
+  loads it through a link. No game bin has the same path.
+- **Patch target** - A target whose chunk is a `PTCH`. The game applies a `PTCH` chunk over a
+  `PROP` chunk.
+- **Layer** - A named part of a mod's content with a priority. See [Layers](/making-mods/layers/).
+- **Schema** - The class schema of the installed patch: each class, its fields and their types.
+  See [Metaclasses](/reference/metaclasses/overview/).
+- **Object index** - The part of the game index that lists the declaring chunks of each entry.
+- **Build resource** - A manifest, a referenced source file or an override file. Packing excludes
+  build resources from game content.
+- **Diagnostic** - One nonfatal result of a build. A diagnostic has a kind. A diagnostic about a
+  skipped record, property or object also has a reason code.
+- **Error** - A condition on which the loader fails. Packing fails on an error. An overlay build
+  reports `DeclarationsRejected`, skips the declarations of that layer and keeps the other content
+  of the layer.
 
-Two vocabularies meet in a module and a reader always knows which it is holding. **This standard's words** - `version`, `modules`, `target`, `entries`, `source`, `edits`, `links`, `modes`, `load`, `overrides`, `objects`, `clone`, `class`, `set`, `remove`, the sign prefixes and the type names - are bare words. **The game's words** - entry names, property paths, map keys - appear only as keys of an entry, a `set` or a map-valued table, and an entry name at the root always carries a slash or is in hash form. Every one of the 359,477 entry names in the community `binentries` list carries a slash; a slash-less entry at the binding root is written in hash form. Keys inside an `entries` mapping accept any nonempty name. Inside an entry, this standard defines sign prefixes and type pins. The link engine also accepts `links`, `+links` and `-links` inside an `entries` body as an extension of the standard.
+The keys that this format defines are `version`, `modules`, `name`, `target`, `entries`, `source`,
+`edits`, `links`, `overrides`, `objects`, `clone`, `class`, `set` and `remove`, with the two signs
+and the type names. Names that Riot defines appear in three places only: an entry name, a property
+path in an entry body or a `set`, and a key of a map value.
 
-## Declaration Modules
+In a `target` body, an entry name contains a slash or is in hash form. Any other key that is not a
+binding keyword is an error. The loader compares binding keywords case-sensitively: `Objects` and
+`Overrides` are the names of two Riot fields, and both are property paths in an entry body.
+
+## Declaration modules
 
 ### Location
 
-A layer with declarations has one `game_data.yaml`, `game_data.yml`, `game_data.toml` or `game_data.json` at `content/{layer}/`. Multiple manifest files are an error. A layer without a manifest has no declarations. You can keep all edits in the manifest or organise larger bodies in source files anywhere within the layer. No `game_data/` directory is required.
+A layer with declarations has one manifest in `content/{layer}/`: `game_data.yaml`,
+`game_data.yml`, `game_data.toml` or `game_data.json`. The loader selects the format by the file
+extension, which it compares ASCII case-insensitively. Two manifests in one layer are an error. A
+layer with no manifest has no declarations.
 
 ```
 my-mod/
@@ -319,7 +130,7 @@ my-mod/
 |   |   |-- game_data.yaml
 |   |   |-- shared.patch.yaml
 |   |   |-- teemo-skin0.patch.yaml
-|   |   |-- teemo-skin0.rito
+|   |   |-- teemo-skin0.ptch
 |   |   |-- Teemo.wad.client/
 |   |   |   |-- data/characters/teemo/classic.bin
 |   |   |   |-- mods/teemo-classic/particles.bin
@@ -329,15 +140,37 @@ my-mod/
 |   |   |   |-- ...
 ```
 
-The manifest owns discovery. Source filenames are your choice; `.patch` is an illustrative suffix. No source folder name or hierarchy is prescribed. Directory names and filename suffixes do not discover declarations or infer targets. An unreferenced YAML, TOML or JSON file follows ordinary content rules.
+- The manifest references every source file and every override file by path. The loader does not
+  search for source files. A directory name or a file name does not select a target. The `.patch`
+  part of a source file name in these examples has no meaning.
+- A YAML, TOML or JSON file that no manifest references is game content.
+- Packing excludes build resources from game content, including a build resource inside a
+  `.wad.client` directory.
+- A `.modignore` rule that excludes a referenced source file or override file is an error.
+- A file that is both a manifest and a source file is an error.
 
-The loader classifies the manifest, referenced source files and their PTCH/rito inputs before ordinary content collection. These files are build resources and never enter WAD output, even inside a `.wad.client` directory. The packer and filesystem provider share this classification. A `.modignore` rule matching a required input is a packing error. A file with conflicting source, resource or game-content roles is an error.
+The three formats express the same data. A source file can use a format other than the format of
+its manifest.
 
-YAML is read as YAML 1.2 with the core schema: `0x6ecc5fac` is an integer, `on` and `yes` are strings. Quote hashes wherever they appear. A local tag, `!f32`, is a [type pin](#type-pins) and loads as the one-key mapping `{f32: ...}`; a tag whose name is not a type name is an error. TOML is read as [TOML 1.1](https://toml.io/en/v1.1.0), including multi-line inline tables and trailing commas. The three formats express the same schema, and source files may use a different format from their manifest.
+- The loader reads **YAML** as YAML 1.2 with the core schema. `0x6ecc5fac` without quotes is an
+  integer. `on` and `yes` are strings. Quote a hash wherever it is a key or a string value. A tag
+  is a [type pin](#type-pins), a [reference](#references) or a [class tag](#objects).
+- The loader reads **TOML** as [TOML 1.1](https://toml.io/en/v1.1.0), which permits an inline
+  table on several lines and a trailing comma.
+- **JSON** has no comments and no tags.
 
-### Module Order
+### Module order
 
-The manifest contains `version: 1` and an ordered `modules` array. Each item has one selector and exactly one body form. The selector is `target`, a chunk string; `entries`, a mapping of entry names to entry bodies, each name resolved to its declaring chunks; or `modes`, a list of mode selectors whose body is `load` and nothing else. A `target` body contains compact bindings directly beside the selector, an ordered `edits` array, or a `source`. An `entries` item contains only its mapping and is one batch. A `modes` item contains only its selectors and `load`. There is no `inline` key. A source item cannot also contain local bindings or edits. Compact bindings and edits are mutually exclusive.
+The manifest contains `version: 1` and a `modules` list. Each module must contain exactly one
+selector:
+
+- `target` is a chunk string, and the module edits that chunk. The body of the module has one of
+  three forms: bindings beside `target` (a compact body), an `edits` list, or a `source` path.
+- `entries` is a mapping of entry names to entry bodies. The build resolves each name to its
+  declaring chunks. The module is one edit. See [`entries` modules](#entries-modules).
+
+A module with both selectors, or with neither, is an error. A module with `source` must contain no
+binding and no `edits`. A module with compact bindings must contain no `edits`.
 
 <Tabs>
   <TabItem label="YAML">
@@ -398,11 +231,47 @@ The manifest contains `version: 1` and an ordered `modules` array. Each item has
   </TabItem>
 </Tabs>
 
-Modules apply in array order across the layer. A source expands at its item's position and behaves like the equivalent direct body. Each module reads the result of preceding applications. File names and mapping-key order have no execution meaning. Repeating a property in a later module is legal; repeating a canonical target/source assignment is a packing error. The same source can explicitly target different bins, with separate assignment identities and diagnostics.
+The build applies the modules of a layer in list order. It applies each module to the result of the
+modules before it. The build applies a source file at the position of the module that references
+it, with the same result as the same body written in the manifest. File names and the key order of
+a body do not change the order of application.
 
-### Source Files
+- A later module can set a property that an earlier module set.
+- A manifest that assigns one source file to one target twice is an error. A manifest can assign
+  one source file to several targets.
+- An empty `modules` list is valid and declares no edit.
 
-`source` names one YAML, TOML or JSON file (`.yml` accepted), relative to the layer directory, with its actual filename. There is no implicit `.bin` suffix or name rewriting. The referenced file contains its own supported `version` and either compact bindings or `edits`. It cannot contain `target`, `modules` or another `source`; recursive includes are outside version 1. Direct bodies use the manifest version.
+### Module names
+
+A module in a manifest takes an optional `name`, a nonempty string beside the selector:
+
+```yaml
+version: 1
+
+modules:
+  - name: Classic missile
+    entries:
+      Characters/Teemo/Skins/Skin0/Resources:
+        +resourceMap:
+          Teemo_R_Mis: Mods/TeemoClassic/Particles/R_Missile
+```
+
+- A name is a label for the author. It does not change loading or application.
+- Two modules of one manifest can have the same name.
+- An empty name is an error.
+- `name` is an error in a source file and in an item of `edits`. In an entry body, `name` is a
+  property path.
+- Packing, both package formats and extraction keep the name.
+
+### Source files
+
+`source` is the path of one YAML, TOML or JSON file, relative to the layer directory. The loader
+reads the file at that exact path and adds no suffix. An absolute path and a path with a backslash
+are errors.
+
+A source file must contain its own `version` and a compact body or an `edits` list. `target`,
+`modules`, `name` and `source` are errors in a source file. A body in the manifest uses the version
+of the manifest.
 
 ```yaml
 # content/base/shared.patch.yaml
@@ -413,7 +282,7 @@ version: 1
     Teemo_Classic_Ambient: Mods/TeemoClassic/Particles/Ambient
 ```
 
-To apply a source and customise its result, use consecutive items with the same target:
+To apply a source file and then change its result, write two modules with the same target:
 
 ```yaml
 # content/base/game_data.yaml
@@ -428,13 +297,24 @@ modules:
       skinMeshProperties.selfIllumination: 1.0
 ```
 
-Paths in `overrides` are relative to the external source file containing them, or to the layer directory for a direct body. In the flat layout above, `overrides: [teemo-skin0.rito]` reads `content/base/teemo-skin0.rito` from either the manifest or `teemo-skin0.patch.yaml`. Source and resource paths must remain within the layer, including after resolving symlinks. Moving a source never changes its target; its relative resource references may need updating.
+The loader resolves a path in `overrides` against the directory of the source file that contains
+it. For a body in the manifest, it resolves the path against the layer directory. In the layout
+above, `overrides: [teemo-skin0.ptch]` resolves to `content/base/teemo-skin0.ptch` in the manifest
+and in `teemo-skin0.patch.yaml`.
 
-Missing sources, unsupported versions, invalid bodies and mixed body forms are packing errors. Diagnostics identify the manifest reference and the source location where applicable. Packing expands sources into ordered declarations; overlay builds from packages do not reopen authoring files.
+- A source path and an override path must resolve to a file inside the layer directory, after the
+  loader resolves symlinks. Any other path is an error.
+- If you move a source file, its target is unchanged. Update the override paths in it for the new
+  directory.
+- A missing source file, an unsupported version, an invalid body and a module with two body forms
+  are errors.
+- Packing expands each source file into the ordered declarations of the layer. An overlay build
+  from a package reads those declarations and does not open the source files.
 
 ### Edits
 
-A compact body is one batch. An `edits` body is an array of batches, each reading the result of the preceding batch. The array can appear directly beside `target` or in a referenced source file:
+A compact body is one edit. An `edits` body is a list of edits, and the build applies each edit to
+the result of the edit before it. Write the list beside `target` or in a source file:
 
 ```yaml
 # content/base/teemo-skin0.patch.yaml
@@ -442,19 +322,39 @@ version: 1
 
 edits:
   - overrides:
-      - teemo-skin0.rito
+      - teemo-skin0.ptch
 
   - Characters/Teemo/Skins/Skin0:
       skinMeshProperties.selfIllumination: 1.0
 ```
 
-Within a batch, the phases are override files in listed order, object creation, entry edits, object removal and dependency-list edits. Object sets belong to their construction. Clones read the state at the start of the object-creation phase; cloning an object created in that phase requires a later edit. A compact body and each edit contain at least one binding; an `edits` array is nonempty. An empty `modules` array is valid and declares no edits.
+The build applies the bindings of one edit in these phases:
 
-Independent entry edits have no order. For the same container, set runs before removal, then addition. Competing ancestor/descendant writes, duplicate semantic sets, and indexed edits overlapping structural list changes require separate edits. A parser must reject duplicate YAML or JSON keys before discarding them. Canonical duplicates that require schema information are build-validation failures. A later edit or module may deliberately set the same property.
+1. Override files, in listed order
+2. Object creations, each with its `set`
+3. Entry edits
+4. Object removals
+5. Link removals, then link additions
+
+A clone reads the target as it is at the start of the object creation phase. To clone an object
+that the same phase creates, write the clone in a later edit.
+
+- A compact body and each edit must contain at least one binding. An `edits` list must contain at
+  least one edit.
+- The build groups the property edits of an entry by path, in the order of first occurrence. For
+  one path, the build applies the set first, then the removals, then the additions.
+- Keys whose paths do not overlap give the same result in any key order. The build applies keys
+  whose paths overlap, such as `a.b` and `a`, in the order of first occurrence.
+- A mapping that contains one key twice is an error in every format.
+- To apply one write to the result of another write to the same property, put the two writes in
+  separate edits or separate modules.
 
 ### Grammar
 
-A manifest item contains `target` and one body form. An external source file contains `version` and its body; the manifest supplies its target. These examples show an external `teemo-skin0.patch` module in each format. The manifest references the actual source filename. For a direct body, place the bindings beside `target` and omit the per-file `version`.
+A manifest module contains a selector and one body form. A source file contains `version` and its
+body, and the manifest supplies its target. The examples below show the source file
+`teemo-skin0.patch` in each format. For a body in the manifest, write the same bindings beside
+`target` and omit `version`.
 
 <Tabs>
   <TabItem label="YAML">
@@ -462,9 +362,9 @@ A manifest item contains `target` and one body form. An external source file con
     # content/base/teemo-skin0.patch.yaml
     version: 1
 
-    # Jade is the codename of the League Classic game mode; Jade_Teemo is its Teemo.
+    # Jade is the codename of the League Classic game mode. Jade_Teemo is its Teemo.
     links: [data/characters/jade_teemo/skins/skin0.bin]
-    overrides: [teemo-skin0.rito]
+    overrides: [teemo-skin0.ptch]
 
     Characters/Teemo/Skins/Skin0:
       skinMeshProperties.selfIllumination: 1.0
@@ -476,9 +376,9 @@ A manifest item contains `target` and one body form. An external source file con
     # content/base/teemo-skin0.patch.toml
     version = 1
 
-    # Jade is the codename of the League Classic game mode; Jade_Teemo is its Teemo.
+    # Jade is the codename of the League Classic game mode. Jade_Teemo is its Teemo.
     links = ["data/characters/jade_teemo/skins/skin0.bin"]
-    overrides = ["teemo-skin0.rito"]
+    overrides = ["teemo-skin0.ptch"]
 
     ["Characters/Teemo/Skins/Skin0"]
     skinMeshProperties.selfIllumination = 1.0
@@ -490,30 +390,53 @@ A manifest item contains `target` and one body form. An external source file con
     {
       "version": 1,
       "links": ["data/characters/jade_teemo/skins/skin0.bin"],
-      "overrides": ["teemo-skin0.rito"],
+      "overrides": ["teemo-skin0.ptch"],
       "Characters/Teemo/Skins/Skin0": { "skinMeshProperties.selfIllumination": 1.0 }
     }
     ```
   </TabItem>
 </Tabs>
 
-In an external compact body, an entry is a root mapping in YAML and JSON, or a `["Entry/Name"]` table in TOML. In a direct body, the entry belongs to its `modules` item. Entry names carry slashes and are quoted in TOML; property names and map keys are bare unless they carry a dot, a bracket or a sign. Binding examples below use external bodies; the same bindings are valid in direct bodies. Examples in format tabs describe the same edit. Where YAML and JSON write a dotted path, the TOML form writes an inline table per struct; the two nest to one document, as [Block Nesting](#block-nesting) states.
+In a compact body, an entry is a root mapping in YAML and JSON, and a `["Entry/Name"]` table in
+TOML. The examples in the binding sections use source files. The same bindings are valid in a
+manifest body. The format tabs of one example describe the same edit.
 
-- **`version`** - required integer in the manifest and each external source file. Direct bodies inherit the manifest version. This page describes version 1. A reader refuses an unsupported version.
-- **`target`** - one nonempty string. Exactly 16 ASCII hexadecimal characters, without `0x`, are a chunk hash; every other spelling is a literal game chunk path, with forward slashes and the game's own extension. Extensionless paths such as `shared` are legal. `target: '5a791d818ae738a6'` selects the chunk `shared` by hash. A hash-shaped spelling is reserved and cannot name a literal path. A string with a `0x` prefix or a `.bin` suffix is a path. Objects and non-string values are errors. A numeric-looking YAML target is quoted.
-- **`entries`** - a mapping of entry names to entry bodies. The build resolves each name to its declaring chunks through the game index, as [Entry Targets](#entry-targets) states.
-- **Mode selectors** - `Map<N>/<MODE>`, or `Map<N>/*` for every mode entry of one map. A bare `*` is an error. See [`modes`](#modes).
-- **Dependency links** - literal game paths, including extensionless paths. They never accept a hash selector or interpret hexadecimal-looking text as a numeric hash. File-storage conventions, including `.ltk` suffix removal, do not apply to game lookup strings.
-- **Casing** - keys and every declared path or name keep the author's casing. Comparison and hashing use the ASCII-lowercased form, the same rule as [embedded hashtables](/reference/mod-packages/hashtables/#hash-computation).
-- **Backslashes** are an error anywhere a path appears.
-- **Unknown keys** are an error. A module that uses a binding this version does not define is rejected, not ignored. LTK Manager then refuses that layer's declarations, keeps the mod's content, warns the user, and suggests updating the app.
-- **Entries.** In a binding body, a key that contains a slash or is in hash form names an entry of the target and holds that entry's [edits](#entries). A bare word is a key of this standard, and an unknown one is an error.
-- **Hash-form names.** Wherever an entry name or a property-path segment appears, a `0x` followed by 8 hex digits is the FNV-1a 32 hash and passes through. That is the only way to reach a property whose name is not yet known. The escape is this standard's, not the game's: the build resolves it, and it cannot appear in an [override file](#overrides), whose records reach the game as written.
-- **Paths to override files** are relative to the external source file containing them, or the layer directory for a direct body. See [Source Files](#source-files).
+- **`version`** - A required integer in the manifest and in each source file. This page describes
+  version 1. The loader fails on any other version.
+- **`target`** - One nonempty string. The loader reads a string of exactly 16 ASCII hexadecimal
+  digits, with no `0x`, as a chunk hash. It reads any other string as a game path. A path with no
+  extension, such as `shared`, is valid. `target: '5a791d818ae738a6'` selects the chunk `shared` by
+  hash. A chunk whose path is 16 hexadecimal digits can be selected only by hash. A string with a
+  `0x` prefix or a `.bin` suffix is a path. A mapping and a non-string value are errors. Quote a
+  target that YAML reads as a number.
+- **`entries`** - A mapping of entry names to entry bodies. See
+  [`entries` modules](#entries-modules).
+- **Entry names** - A nonempty string that is not a binding keyword. `0x` followed by exactly 8
+  hexadecimal digits is an object hash, and any other string is an object path. Quote a hash-form
+  name in YAML.
+- **Link paths** - A game path of 1 to 65,535 UTF-8 bytes. The loader never reads a link path as a
+  hash.
+- **Override paths** - A relative path with forward slashes that ends in `.ptch`. The loader
+  resolves `.` and `..` segments against the directory of the file that contains the path. A
+  backslash, a drive prefix and a path that resolves outside the layer directory are errors.
+  Packages store the resolved path, relative to the layer.
+- **Casing** - Every key, path and name keeps the casing that you write. The build compares and
+  hashes the ASCII-lowercased form, the same rule as
+  [embedded hashtables](/reference/mod-packages/hashtables/#hash-computation).
+- **Literal paths** - The loader does not change a target or a link path. A separator, a space and
+  a suffix stay as written.
+- **Unknown keys** - A key that this version does not define is an error.
+- **Hash-form names** - In an entry name and in a segment of a property path, `0x` followed by 8
+  hexadecimal digits is the FNV-1a 32 hash of the name. Use it for a field or an entry with no
+  known name. The build matches a hash-form name by its hash value. A record of an
+  [override file](#overrides) contains its path as text, and a hash-form name is not valid there.
 
-### Entry Targets
+### `entries` modules
 
-`entries` names entries instead of a chunk. Each key is an entry name; its value is that entry's [edits](#entries), the same body an entry holds under a `target` module. The build resolves each name to its declaring chunks and their WADs for the installed patch, through the game index. Entry-name targeting is sugar over chunk targeting: the plan holds one synthetic override per declaring chunk, and the rest of the build is unchanged.
+An `entries` module selects entries by name and has no `target`. Each key is an entry name. Each
+value is an [entry body](#entries), the same body that an entry has in a `target` module. The build
+resolves each name through the object index to the chunks that declare the entry in the installed
+game.
 
 <Tabs>
   <TabItem label="YAML">
@@ -564,76 +487,110 @@ In an external compact body, an entry is a root mapping in YAML and JSON, or a `
   </TabItem>
 </Tabs>
 
-- An `entries` item contains only its mapping and is one batch. Each entry applies to every declaring chunk.
-- An entry body accepts `links`, `+links` and `-links` as the link engine's extension of this standard. These bindings edit each declaring chunk's dependency list. `overrides`, `objects`, `edits` and `source` belong to a `target` item. No entry body contains `edits` or `source`.
-- Entries apply in authored mapping order, including entries that resolve to the same chunk. Packing and extraction preserve that order. Two edits to one entry that need separate batches are two module items.
-
-- An entry key is a nonempty object name or an object hash. An object hash uses lowercase `0x` and exactly 8 hexadecimal digits, with digits in either case. Quote it in YAML. Object names match by FNV-1a 32 of their ASCII-lowercased form. The manifest and reports keep the author's spelling.
-- **Several declaring chunks.** The build edits every declaring chunk. An informational `EntryFanOut` report names those chunks. A serialized link resolves to the first loaded copy of an entry.
-- **Single-container entries** _(unimplemented)_. For an entry the client looks up in one loaded container, the build edits that container alone. Examples include skin properties, per-skin `Resources` and character records. The report names the chunks left alone.
-- **A name with no declaring chunk** produces `EntryUnresolved`. The build skips that entry's edits.
-- **An unavailable object index** produces `IndexUnavailable` on every `entries` item. The build skips those items and continues.
-- **New entries** a mod adds under [`objects`](#objects) should carry the `Mods/<modid>/` prefix. The build checks each created name against the index: a name another game bin declares produces `ObjectShadowsGame`, and the object is still created. Which of the two objects the game reads then depends on load order.
-- The index gives the entry's class. Types come from the [schema](#vocabulary) for the installed patch, with the base bin as the reported fallback, as [Coercion](#coercion) states.
+- An `entries` module is one edit. Beside `entries`, the module can contain `name` only.
+  `overrides`, `objects`, `edits`, `source` and any other binding beside `entries` are errors.
+- The mapping can be empty. The loader accepts the module, and the module declares no edit.
+- An entry body in an `entries` module accepts `links`, `+links` and `-links` beside its property
+  edits. The build applies these link edits to the dependency list of each declaring chunk.
+- An entry body in an `entries` module must contain at least one key. `overrides`, `objects` and
+  `source` are errors in it.
+- An entry key is a nonempty object path or an object hash. The build matches an object path by
+  the FNV-1a 32 hash of its ASCII-lowercased form. The manifest and the diagnostics keep the
+  casing that you write.
+- The build applies the entries in mapping order, including entries that resolve to the same
+  chunk. Packing and extraction keep that order. To apply two edits to one entry in order, write
+  two modules.
+- If several chunks declare the entry, the build edits each one and reports `EntryFanOut`, which
+  is informational.
+- If no chunk declares the entry, the build reports `EntryUnresolved` and skips the edits of that
+  entry.
+- If the build can neither load nor build the object index, it reports `IndexUnavailable` for
+  each `entries` module, skips those modules and applies the other modules.
 
 ### Precedence
 
-Every binding composes across layers and across mods by the same order, the one string overrides use:
+The build applies the declarations of all enabled mods to a target in one order:
 
-1. Mods earlier in the enabled list win over mods later in it.
-2. Within a mod, layers with higher priority win over layers with lower priority.
-3. Within a layer, [module array order](#module-order), then [edit array order](#edits). Later applications read and may replace the results of earlier applications.
+1. Mods, from the lowest precedence to the highest. A mod that is earlier in the enabled list has
+   the higher precedence.
+2. Layers of a mod. The base layer is first, whatever its priority. The other layers follow in
+   ascending priority. Layers with the same priority follow in natural name order: `layer9` is
+   before `layer10`.
+3. Modules, in list order.
+4. Edits, in list order.
 
-Evaluation runs from lower to higher precedence: mods later in the enabled list first, then layers in ascending priority. The `entries` selector preserves authored mapping order. Property-key order within a binding body has no execution meaning.
+The build applies each edit to the result of the edits before it. The overlay contains the value
+of the last write to a property. If several mods set one property, the overlay contains the value
+of the mod with the highest precedence. The build applies the entries of an `entries` module in
+mapping order.
 
-What "win" means is per binding and per operation, stated in each binding's section. Two enabled mods that touch the same key on the same target, or where one adds what the other removes, resolve by this order, and the build reports the conflict so the manager can show it. A mod may ship a target in one layer and declare on it in another; the shipped copy is the base for the declaration.
+If an enabled mod ships a copy of the target chunk, the copy from the mod with the highest
+precedence is the base for every declaration on that target. A mod can ship a target in one layer
+and declare edits to it in another layer.
 
 ### Operations
 
-The operation is the sign on the key. A value is always the literal the operation takes; there is no operation table.
+The sign on a key selects the operation. The value is the literal that the operation takes.
 
-| Written       | Meaning                                                                                                             |
-| ------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `key: value`  | Set: the value replaces what the base has. On `links`, an unsigned list adds; `+links` is its alias.                |
-| `+key: value` | Add: elements to a list, entries to a map, paths to the link list. The value is a list or a mapping of what to add. |
-| `-key: value` | Remove: elements, entries or paths. The value is a list of what to remove.                                          |
+| Written       | Operation                                                                                                    |
+| ------------- | ------------------------------------------------------------------------------------------------------------ |
+| `key: value`  | Set. The value replaces the base value. On `links`, a key with no sign adds paths.                           |
+| `+key: value` | Add elements to a list, entries to a map, or paths to the dependency list. The value is a list or a mapping. |
+| `-key: value` | Remove elements, map entries or paths. The value is a list.                                                  |
 
-A sign is legal on a key whose target is a list, a map or `links`; a sign on a scalar property is a report and the edit is skipped. `+` on a list or map property the base omits creates the container holding the additions, with the element type taken from the schema; `-` on an absent container is a report. On one key within one batch the set applies first, then the removals, then the additions, and one `ltk_meta` patch writes the result. A report on any of the three skips the key: its set, removals and additions together. The remaining keys continue. A removal names what to remove: a path for `links`, a key for a map, and for a list either a value or an index, by the [element type](#list-removal). An object is deleted with `remove: true` under [`objects`](#objects); no sign applies to an entry name.
+- A sign is valid on a key whose property is a list or a map, and on `links`. On any other
+  property, the build skips the key with the reason `signOnScalar`.
+- If the base omits a list or a map, `+` creates the container with the additions. The schema
+  supplies the element type. If no type is known, the build skips the key with the reason
+  `untypable`.
+- If the base omits the property, the build skips a `-` key with the reason `containerAbsent`.
+- For one key in one edit, the build applies the set first, then the removals, then the additions.
+  It writes the result as one `ltk_meta` patch.
+- If the set, a removal or an addition of a key fails, the build skips all three for that key and
+  applies the other keys.
+- The value of a removal lists the items to remove: paths for `links`, keys for a map, and values
+  or indexes for a list. See [List removal](#list-removal).
+- A sign is not valid on an entry name. To delete an object, write `remove: true` under
+  [`objects`](#objects).
 
-In YAML both signs are plain scalars and need no quotes. In TOML a signed key is quoted whenever the path carries a dot or a bracket, and a `-key` on a plain name may stay bare. In JSON every key is quoted.
+In YAML, a signed key needs no quotes. In TOML, quote a key that starts with `+` and a key that
+contains a dot or a bracket. A TOML key that starts with `-` and contains only letters, digits, `_`
+and `-` needs no quotes. In JSON, every key has quotes.
 
 ## Bindings
 
-Every binding belongs to a module application and is materialised into its target's `PROP` by the build. The target is explicit, or derived from a `modes` selector. The game never sees a `PTCH` emitted by this standard; a mod's override file is an input to the build, and the output is one plain `PROP` per target.
+Each binding is part of an edit of a module, and the build applies it to the target of that
+module.
 
-| Binding     | Payload                                         | Materialised as                               |
-| ----------- | ----------------------------------------------- | --------------------------------------------- |
-| `links`     | chunk paths to add or remove                    | header linked-file list                       |
-| `modes`     | mode selectors and companion bins to load       | an append on each mode entry's extra-bin list |
-| `overrides` | override files in the layer                     | records applied over the target's objects     |
-| entries     | entry name at the root, property path, value    | per-property replacement records              |
-| `objects`   | entry, clone source or class, and property sets | a new object in the target, or a deletion     |
+| Binding     | Payload                                       | Result in the target                            |
+| ----------- | --------------------------------------------- | ----------------------------------------------- |
+| `links`     | Chunk paths to add or remove                  | A changed dependency list in the bin header     |
+| `overrides` | Override files of the layer                   | The records of each file, applied to the target |
+| Entries     | An entry name, with property paths and values | Replaced property values                        |
+| `objects`   | An entry name, with a clone source or a class | A new object, or a removed object               |
 
 ### `links`
 
-Chunk paths added to, or removed from, the target bin's linked-file list. `links` adds, `+links` is its alias, and `-links` removes. An edit holds one of the two addition spellings, not both. There is no set: replacing a game bin's whole link list is never what a mod means.
+`links` adds chunk paths to the dependency list of the target bin. `+links` has the same meaning.
+`-links` removes paths. An edit can contain `links` or `+links`, not both. The format has no key
+that replaces the whole list.
 
 <Tabs>
   <TabItem label="YAML">
     ```yaml
     # content/base/teemo-skin0.patch.yaml
     version: 1
-    links: [data/characters/jade_teemo/skins/skin0.bin] # League Classic Teemo's VFX definitions
-    -links: [data/characters/teemo/animations/skin0.bin] # the mod's classic.bin carries the replacement graph
+    links: [data/characters/jade_teemo/skins/skin0.bin] # The VFX definitions of League Classic Teemo.
+    -links: [data/characters/teemo/animations/skin0.bin] # The mod ships a replacement graph in classic.bin.
     ```
   </TabItem>
   <TabItem label="TOML">
     ```toml
     # content/base/teemo-skin0.patch.toml
     version = 1
-    # League Classic Teemo's VFX definitions
+    # The VFX definitions of League Classic Teemo.
     links = ["data/characters/jade_teemo/skins/skin0.bin"]
-    # the mod's classic.bin carries the replacement graph
+    # The mod ships a replacement graph in classic.bin.
     -links = ["data/characters/teemo/animations/skin0.bin"]
     ```
   </TabItem>
@@ -648,166 +605,105 @@ Chunk paths added to, or removed from, the target bin's linked-file list. `links
   </TabItem>
 </Tabs>
 
-- A link is a chunk path, written without `.bin` appended by tooling and hashed the way the game hashes it: ASCII-lowercase, then xxh64 with seed 0.
-- The materialised list is the base's list, less the removals, followed by the additions in precedence order, de-duplicated on the lowercased path. The game keeps declaration order and drops a link whose chunk does not exist with no diagnostic; the build reports that case instead.
-- A link is expected to be a chunk in some enabled layer or in the game index. Either miss is a build-time report.
-- A removal that names a path the base does not list is a report.
-- A `PTCH` bin declares no links. A target that resolves to a `PTCH` is an error.
-- A link loads unconditionally with its parent and is never a scope. The linked list is recursive, and every linked bin is loaded as a base file, never as a patch.
-- A serialized link resolves after load by a sweep of every loaded bin, first hit in load order. The linked list does not scope that sweep. An entry name that collides with a Riot name is a race, not an override; a mod's own entries live under `Mods/<modid>/`.
-- The code-driven lookups - skin properties, the per-skin `Resources` entry, the character record chain - search only the bin the client loaded itself. An entry meant for one of those lookups has to be in that bin.
-
-### `modes`
-
-Companion bins that load with one or more game modes and are released with them. The binding lowers to an append on the extra-bin list of each selected mode entry.
-
-<Tabs>
-  <TabItem label="YAML">
-    ```yaml
-    # content/base/game_data.yaml
-    version: 1
-
-    modules:
-      - modes:
-          - Map12/ARAM
-          - Map12/KIWI
-        load:
-          - mods/example/aram-announcer.bin
-    ```
-
-  </TabItem>
-  <TabItem label="TOML">
-    ```toml
-    # content/base/game_data.toml
-    version = 1
-
-    [[modules]]
-    modes = ["Map12/ARAM", "Map12/KIWI"]
-    load = ["mods/example/aram-announcer.bin"]
-    ```
-
-  </TabItem>
-  <TabItem label="JSON">
-    ```json
-    {
-      "version": 1,
-      "modules": [
-        {
-          "modes": ["Map12/ARAM", "Map12/KIWI"],
-          "load": ["mods/example/aram-announcer.bin"]
-        }
-      ]
-    }
-    ```
-  </TabItem>
-</Tabs>
-
-- **The gate.** Each mode entry, `Maps/Shipping/Map<N>/Modes/<MODE>` in `data/maps/shipping/map<N>/map<N>.bin`, carries `AdditionalPropertyDataPaths`, a list of strings. When that mode is the live mode, the client appends `.bin` to each value and loads the result through the bin cache, in list order; on unload it releases the same paths. The gate is whichever map and mode the server placed the game in. It fires in custom games too. Ranked, draft, Clash and customs on Summoner's Rift all run `Maps/Shipping/Map11/Modes/CLASSIC`.
-- **`modes`** is a list of `Map<N>/<MODE>` selectors, matched case-insensitively against the mode entries the game index holds for the installed patch. `Map<N>/*` selects every mode entry of that map. A bare `*` is an error: a mod that wants every mode uses `links` on a permanent anchor. A selector with no mode entry in the installed game is a report, and the selector is skipped: modes rotate, and the index decides what exists for an install.
-- **`load`** is a list of literal chunk paths, written the way `links` values are, extension included. The client appends `.bin` to every value unconditionally. An extensionless chunk is unreachable through this gate. A `load` path that does not end in `.bin` is a packing error. Each path is expected to be a chunk in some enabled layer once the overlay is in place; a miss is the same build-time report a missing link is.
-- **Lowering.** One module becomes one entry edit per selected mode entry, on the derived target `data/maps/shipping/map<N>/map<N>.bin`. The value is the `load` path with `.bin` stripped:
-
-  ```yaml
-  - target: data/maps/shipping/map12/map12.bin
-    Maps/Shipping/Map12/Modes/ARAM:
-      +AdditionalPropertyDataPaths:
-        - mods/example/aram-announcer
-  ```
-
-  The target is derived, never authored: a Riot repath of the map bin is caught by the index, not by the mod. A mode entry that ships without the list gets it created, by the [`+` on an absent container](#operations) rule.
-
-- **Order.** The materialised list is Riot's values first, then the appended values in precedence order, de-duplicated on the lowercased form. The client loads them in that order. Two mods appending to the same mode entry compose.
-- **Not a permanent anchor.** A companion bin declared under `load` and under a `links` anchor that every game loads is flagged: the permanent reference keeps it resident and defeats the unload.
-- **Not a queue.** Queue-level gating is outside this standard; see [Outside the Standard](#outside-the-standard).
-- **Roadmap.** The lowering is an entry edit, so `modes` lands with entries. It adds no record shape: a list append, and a list create for the mode entries that ship without the list.
-
-Whole-file overrides and materialised targets in champion and core WADs apply in every mode regardless: nothing in the file layer is mode-aware. A user-level mode filter in LTK Manager is a build input that intersects every module's `modes` list. Toggling it changes only the map bins. One overlay serves every mode.
-
-#### Mode Scoping With Links Only
-
-The link-only engine in [league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225) can approximate a mode gate by linking a companion bin from a mode-specific data bin the mode already loads. The mapping on the 16.16 client, inverted from the shipped mode entries:
-
-| Link target                                          | Loaded by                                                 |
-| ---------------------------------------------------- | --------------------------------------------------------- |
-| `maps/modespecificdata/classic.bin`                  | Map11 CLASSIC, PRACTICETOOL, ONEFORALL; Map453 BASELINESR |
-| `maps/modespecificdata/urf.bin`                      | Map11 URF, SNOWURF                                        |
-| `maps/modespecificdata/swiftplay.bin`                | Map11 SWIFTPLAY                                           |
-| `maps/modespecificdata/ultbook.bin`                  | Map11 ULTBOOK; Map12 ARAM                                 |
-| `maps/modespecificdata/ultbook_bt.bin`               | Map11 ULTBOOK                                             |
-| `maps/modespecificdata/ruby.bin`                     | Map11 RUBY, RUBY_TRIAL_1, RUBY_TRIAL_2, RUBY_TRIAL_3      |
-| `maps/modespecificdata/aram.bin`                     | Map12 ARAM, KIWI, KIWI_JADE                               |
-| `maps/modespecificdata/firstblood.bin`               | Map12 FIRSTBLOOD                                          |
-| `maps/modespecificdata/kiwi.bin`, `kiwi_jade.bin`    | Map12 KIWI, KIWI_JADE respectively                        |
-| `maps/modespecificdata/cherry.bin`                   | Map30 CHERRY                                              |
-| `maps/modespecificdata/jade.bin`                     | Map453 JADE                                               |
-| `maps/modespecificdata/wasd.bin`, `classic/wasd.bin` | nearly every mode; never a gate                           |
-
-This is a stopgap, not the design:
-
-- It scopes to every mode that loads bin X, not to one mode. ARAM alone is unreachable: `aram.bin` is also loaded by KIWI and KIWI_JADE, and `ultbook.bin` is loaded by ARAM.
-- Several of these bins ship in more than one map WAD. `classic.bin` is in Map11 and Map453, `wasd.bin` in four. The edit fans out to every holder.
-- Whether a linked bin is released with its parent on mode unload is unverified. Assume the companion bin may stay resident for the process.
-- The table describes one patch. The game index decides what exists for an install.
+- A link is a game path. The game lowercases it, hashes it with XXH64 and seed 0, and adds no
+  prefix and no extension.
+- The resulting list is the base list without the removed paths, followed by the additions in
+  order of application. The build compares paths ASCII case-insensitively, keeps the written
+  casing of an addition, and omits an addition that the list already contains.
+- If the list does not contain a `-links` path when the build applies the edit, the build reports
+  `LinkRemovalUnmatched` and applies the rest of the edit.
+- Within one edit, the build applies removals before additions. An edit that removes and adds the
+  same path leaves the path in the list.
+- The game loads the links in list order. It skips a link whose chunk does not exist and logs
+  nothing. The build includes the final dependencies of each target in its linked-bin validation,
+  and that validation reports a dependency that no mounted WAD contains.
+- A link does not copy an object into the target, and it does not create the linked bin.
+- The game loads a linked bin unconditionally when it loads the bin that lists it. It also loads
+  the links of each linked bin. The game loads each linked bin as a base file, never as a patch.
+- After load, the game resolves each `link` value. It searches every loaded bin and uses the first
+  match in load order. The dependency list does not limit that search. If two loaded bins declare
+  one entry name, the result depends on load order. Name the entries of a companion bin under
+  `Mods/<modid>/`.
+- The game reads some entries only from the bin that it loaded for that purpose: the skin
+  properties, the `Resources` entry of a skin and the character record chain. An object for one of
+  those lookups must be in that bin.
+- A patch target has no dependency list. See [Patch targets](#patch-targets).
 
 ### `overrides`
 
-Override files in the layer whose records the build applies over the target.
+`overrides` lists override files of the layer. The build applies the records of each file to the
+target.
 
 <Tabs>
   <TabItem label="YAML">
     ```yaml
     version: 1
-    overrides: [teemo-skin0.rito]
+    overrides: [teemo-skin0.ptch]
     ```
   </TabItem>
   <TabItem label="TOML">
     ```toml
     version = 1
-    overrides = ["teemo-skin0.rito"]
+    overrides = ["teemo-skin0.ptch"]
     ```
   </TabItem>
   <TabItem label="JSON">
     ```json
     {
       "version": 1,
-      "overrides": ["teemo-skin0.rito"]
+      "overrides": ["teemo-skin0.ptch"]
     }
     ```
   </TabItem>
 </Tabs>
 
-- A path is relative to the external source file containing it, or the layer directory for a direct body. Two file forms are accepted, by extension: `.ptch`, a `PTCH` bin as the game defines it, and `.rito`, [ritobin text](/reference/file-formats/ritobin/) whose type is `PTCH`. Any other extension is a packing error. A `.rito` file whose type is not `PTCH` is a packing error. The implemented engine accepts `.ptch` only and refuses a `.rito` path with an error naming the extension ([league-mod#240](https://github.com/LeagueToolkit/league-mod/issues/240)).
-- The record language, matching rules and limits are those of [PTCH property patches](https://github.com/LeagueToolkit/league-toolkit/blob/main/docs/design/ptch-property-patches.md). Records are applied as authored; nothing is coerced. An override is the binding for an edit that must be exactly what its author wrote.
-- Override files execute at their batch's override phase, in listed order. A later batch reads their result. Joining records across module or edit boundaries must not erase those dependencies. Cross-mod writes to the same property are reported.
-- Every record is checked against the target state at that point before it is applied: the entry exists, the property exists on its class, the value's type matches. A record that fails the check is reported and skipped; the build does not fail.
-- The records are applied in order and the result is written as a `PROP`. A `PTCH` cannot target a `PTCH`, and the build never emits one.
-- Packing converts a `.rito` file to `.ptch`; a package stores the binary form only.
+- An override file is a `.ptch` file: a `PTCH` bin as the game defines it. The loader compares the
+  extension ASCII case-insensitively. A path with any other extension is an error.
+- The loader resolves a path against the directory of the source file that contains it, or against
+  the layer directory for a body in the manifest.
+- The record language, the matching rules and the limits are those of
+  [PTCH property patches](https://github.com/LeagueToolkit/league-toolkit/blob/main/docs/design/ptch-property-patches.md).
+  The build applies each record as written and converts no value.
+- `overrides` is valid only in a `target` body.
+- The loader reads every override file when it loads a mod project. A file that is missing,
+  excluded by `.modignore`, outside the layer or not a valid `PTCH` bin is an error.
+- The build applies the override files of an edit in listed order, before the other bindings of
+  that edit.
+- The build applies a file in the order that the game uses: deletions, then added objects, then
+  records in file order.
+- If a record does not apply, the build reports `OverrideRecordSkipped` with the record index, the
+  object hash, the property path and a reason code. It applies the other records.
+- If the mod content does not contain an override file, the build reports `OverrideUnreadable`. If
+  a file is not a valid `PTCH` bin, the build reports `OverrideInvalid`. In both cases the build
+  skips the file and applies the rest of the edit.
 
 ### Entries
 
-An entry of the target, keyed by its name at the module root, holding per-property edits: set a value, replace a container, add to or remove from a list or map. There is no binding keyword; the entry name is the key.
+An entry binding is an entry name as a key of the body, with an entry body as its value. An entry
+body sets property values, replaces containers, and adds to or removes from lists and maps. The
+binding has no keyword.
 
 <Tabs>
   <TabItem label="YAML">
     ```yaml
     version: 1
 
-    # Give base Teemo the League Classic look.
+    # Give base Teemo the textures and icons of League Classic Teemo.
     Characters/Teemo/Skins/Skin0:
       skinMeshProperties.texture: assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex
       skinMeshProperties.selfIllumination: 1.0
       iconCircle: assets/characters/jade_teemo/hud/jade_teemo_circle_301.tex
-      iconAvatar: assets/characters/jade_teemo/hud/jade_teemo_circle_0.tex # absent from the base; the schema types it
+      iconAvatar: assets/characters/jade_teemo/hud/jade_teemo_circle_0.tex # The base omits iconAvatar. The schema supplies its type.
       +skinAudioProperties.tagEventList: [Jade_Teemo]
 
-    # Point the ult at League Classic's missile, add its pickup effect, mute the firefly light.
+    # Redirect the R missile, add a pickup effect, and remove the firefly light.
     Characters/Teemo/Skins/Skin0/Resources:
       -resourceMap: [Teemo_R_Firefly_GroundLight]
       +resourceMap:
         Teemo_R_Mis: Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis
         Teemo_R_Pickup: Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Pickup
-        "0x6ecc5fac": Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_E_Poison # an uncracked key, by hash
-        Teemo_R_Debuff: null # a null link: present, resolves to nothing
+        "0x6ecc5fac": Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_E_Poison # A key with no known name, by hash.
+        Teemo_R_Debuff: null # A null link value.
     ```
 
   </TabItem>
@@ -815,10 +711,10 @@ An entry of the target, keyed by its name at the module root, holding per-proper
     ```toml
     version = 1
 
-    # Give base Teemo the League Classic look.
+    # Give base Teemo the textures and icons of League Classic Teemo.
     ["Characters/Teemo/Skins/Skin0"]
     iconCircle = "assets/characters/jade_teemo/hud/jade_teemo_circle_301.tex"
-    # absent from the base; the schema types it
+    # The base omits iconAvatar. The schema supplies its type.
     iconAvatar = "assets/characters/jade_teemo/hud/jade_teemo_circle_0.tex"
     skinMeshProperties = {
       texture = "assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex",
@@ -828,16 +724,15 @@ An entry of the target, keyed by its name at the module root, holding per-proper
       "+tagEventList" = ["Jade_Teemo"],
     }
 
-    # Point the ult at League Classic's missile, add its pickup effect,
-    # mute the firefly light.
+    # Redirect the R missile, add a pickup effect, and remove the firefly light.
     ["Characters/Teemo/Skins/Skin0/Resources"]
     -resourceMap = ["Teemo_R_Firefly_GroundLight"]
     "+resourceMap" = {
       Teemo_R_Mis = "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis",
       Teemo_R_Pickup = "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Pickup",
-      # an uncracked key, by hash
+      # A key with no known name, by hash.
       "0x6ecc5fac" = "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_E_Poison",
-      # a null link: present, resolves to nothing
+      # A null link value.
       Teemo_R_Debuff = "",
     }
     ```
@@ -868,32 +763,57 @@ An entry of the target, keyed by its name at the module root, holding per-proper
   </TabItem>
 </Tabs>
 
-- A property key is a [property path](#property-paths) in the game's own language, with an optional [sign](#operations) in front, so one edit can reach a nested field, a list element or a map entry directly. A mapping on a struct-typed property descends into it instead, so the same edit can be written as a [block](#block-nesting).
-- A value is written as a plain value. The build reads the property's type from the [schema](#vocabulary), or from the base value where the schema says nothing, and coerces the value to it; see [Coercion](#coercion). The declaration never states a type the schema already knows.
-- A [type pin](#type-pins) is optional: `skinMeshProperties.selfIllumination: !f32 1.0`. A pinned value fixes the type, and a base or schema whose type disagrees is a report and the edit is skipped. An unpinned value adapts to whatever type the property has on the day the overlay is built.
-- `+` on a list is materialised as a whole-list replacement holding the base's elements, less removals, followed by the additions, each coerced to the element type. The game cannot grow a list through an index; a replacement is the only shape that appends. `+` on a map adds or replaces by key and is materialised as a whole-map replacement. A null value on a map of links writes a null link, which the game treats as a present entry with no target.
-- Every edit is checked against the base the way an `overrides` record is, and reported on the same terms. A value that does not coerce is a report on the edit, and the edit is skipped.
+- A key is a [property path](#property-paths) with an optional [sign](#operations). One key
+  addresses a nested field, a list element or a map entry. A mapping on a struct property descends
+  into the struct. See [Block nesting](#block-nesting).
+- A value is a plain literal. The build reads the type of the property from the schema, or from
+  the base value if the schema has no type for it, and converts the value to that type. See
+  [Coercion](#coercion).
+- A [type pin](#type-pins) is optional: `skinMeshProperties.selfIllumination: !f32 1.0`. A pin
+  requires one type. If the property has another type, the build skips the key.
+- In an entry body of a `target` module, every key is a property path. This includes `links`,
+  `overrides`, `objects`, `source`, `edits` and `name`. Write `links` beside the entry name, not
+  inside the entry body.
+- If the object omits the property, a set creates the property.
+- For `+` on a list, the build writes the whole list: the base elements, without the removed
+  elements, followed by the additions. For `+` on a map, the build adds or replaces map entries by
+  key and writes the whole map.
+- For a null value in a map of `link` values, the build writes a null `link` value. The game reads
+  it as a map entry that refers to no object.
+- If the target does not contain the entry, the build skips each key of the entry body with the
+  reason `missingObject`.
+- If a key does not apply, the build reports `PropertyEditSkipped` and applies the other keys.
 
-#### Property Paths
+#### Property paths
 
-A property key is Riot's own property path, the language the game's `PropertyPathIterator` walks and `PTCH` records name their target with. `ltk_meta::path::PropertyPath` implements it and is normative; the [PTCH design](https://github.com/LeagueToolkit/league-toolkit/blob/main/docs/design/ptch-property-patches.md#s8.1) carries the full grammar. The sign is not part of the path: the build strips it before parsing.
+A property key is a property path as Riot defines it: the path that the game's
+`PropertyPathIterator` reads and that a `PTCH` record uses. `ltk_meta::path::PropertyPath`
+implements the grammar and is normative. The
+[PTCH design](https://github.com/LeagueToolkit/league-toolkit/blob/main/docs/design/ptch-property-patches.md#s8.1)
+contains the full grammar. The sign is not part of the path. The build removes the sign before it
+parses the path.
 
 ```text
 path       = segment *( "." segment )
 segment    = name [ subscript ]
-name       = 1*name-char        ; anything but . [ ] { } ( ) and control characters
+name       = 1*name-char        ; any character except . [ ] { } ( ) and control characters
 subscript  = "[" index "]" / "{" key "}"
 index      = decimal / "0x" hex / "0" octal
 key        = json-number / json-string / "true" / "false"
 ```
 
-- A `name` selects the property whose hash is FNV-1a 32 of the ASCII-lowercased name. Casing is cosmetic. A `0x` 8-hex name is this standard's [hash-form escape](#grammar).
-- `[index]` selects an element of a `list` or `list2`. On an `option` only `[0]` can succeed.
-- `{key}` selects a `map` entry. The key text is JSON: `{5}`, `{"weapon"}`, `{true}`. A string is hashed to a `hash` or `file` key kind; a number is the raw key value.
-- Between segments a `pointer` is dereferenced (a null pointer stops with a report), an `embed` is descended inline, and a `link` is a leaf: the path never follows a link into another object.
-- One subscript per segment. The format has no nested containers, so `A[1][2]` is not a path.
+- A `name` selects the field whose hash is the FNV-1a 32 hash of the ASCII-lowercased name. Casing
+  does not change the result. A name of `0x` followed by 8 hexadecimal digits is a
+  [hash-form name](#grammar) and selects the field with that hash.
+- `[index]` selects an element of a `list` or a `list2`. On an `option`, only `[0]` is valid.
+- `{key}` selects an entry of a `map`. The key text is JSON: `{5}`, `{"weapon"}`, `{true}`. The
+  build converts the literal to the key type of the map.
+- Between two segments, the build dereferences a `pointer` and descends into an `embed`. If the
+  pointer is null, the build skips the key with the reason `nullPointer`. A `link` value is a
+  leaf: the build does not follow it into another object.
+- A segment has at most one subscript. `A[1][2]` is not a path.
 
-Every key under an entry is one path, and a path can end anywhere a value can sit:
+Each key under an entry is one path. A path can end at any value:
 
 <Tabs>
   <TabItem label="YAML">
@@ -946,11 +866,21 @@ Every key under an entry is one path, and a path can end anywhere a value can si
   </TabItem>
 </Tabs>
 
-A path that ends on a container is where a [sign](#operations) applies, and the two spellings meet: `+resourceMap: {Teemo_R_Mis: ...}` and `resourceMap{"Teemo_R_Mis"}: ...` set the same entry. A path that ends inside a container element (`Elements[3].Size`) edits that element in place; a set on `Elements[3]` replaces it whole. An index or key that the base does not have is a report; `+` is the only way to grow a container. A map-entry path is written in single quotes in YAML and TOML, where the inner double quotes then need no escaping.
+- A [sign](#operations) is valid on a path that ends at a container.
+  `+resourceMap: {Teemo_R_Mis: ...}` and `resourceMap{"Teemo_R_Mis"}: ...` set the same map entry.
+- A path that ends inside a container element, such as `Elements[3].Size`, edits that element. A
+  set on `Elements[3]` replaces the whole element.
+- If the base does not contain the index or the map key, the build skips the key with the reason
+  `indexOutOfRange` or `keyNotFound`. Only `+` adds an element or a map entry to a container.
+- Write a map-entry path in single quotes in YAML and TOML. The double quotes of the map key then
+  need no escape.
 
-#### Block Nesting
+#### Block nesting
 
-A mapping written on an `embed` or `pointer` property, unless it is a [type pin](#type-pins), descends into the struct and merges, field by field. Each key of the mapping is itself a property path, with an optional sign, relative to that struct. The dotted form and the block form are the same edit and mix freely: dots for a one-off, a block for a cluster of edits on one struct. A sign sits on the innermost key it operates on. An index stays a path segment, `bankUnits[0]`, since a mapping keyed by integers on a list would read as a set. In TOML the block is a multi-line inline table under the entry's header, `skinMeshProperties = { ... }`, one field per line; a dotted bare key, `healthBarData.unitHealthBarStyle = 12`, is the one-liner for a single field, and the quoted `"rate.constantValue"` is the dotted path. A TOML header is always absolute, so a sub-table header repeats the entry name and is kept for the deep tables under `objects`. All of these nest to the same document; an inline table is self-contained and a later header cannot add to it.
+A mapping on an `embed` or `pointer` property descends into the struct, unless the mapping is a
+[type pin](#type-pins). Each key of the mapping is a property path relative to that struct, with an
+optional sign. The dotted form `a.b: 1` and the block form `a: {b: 1}` are the same edit, and one
+body can contain both forms.
 
 <Tabs>
   <TabItem label="YAML">
@@ -1021,38 +951,90 @@ A mapping written on an `embed` or `pointer` property, unless it is a [type pin]
   </TabItem>
 </Tabs>
 
-A block never replaces the struct: a field the block does not name keeps its base value. A null `pointer` has nothing to descend into and is a report; a [`pointer` pin](#type-pins) constructs one. A mapping on a `map` property is a set, not a descent; `+` and `-` are the map's operations.
+- A block does not replace the struct. A field that is not a key of the block keeps its base
+  value.
+- Write a sign on the innermost key that it applies to.
+- Write an index as part of the key: `bankUnits[0]: {...}`.
+- If the base contains a null `pointer`, the build skips the key with the reason `nullPointer`. A
+  [`pointer` pin](#type-pins) constructs the struct.
+- A mapping with no sign on a `map` property replaces the whole map. To add or remove map entries,
+  write `+` or `-`.
+- In TOML, a block is an inline table under the header of the entry, `skinMeshProperties = { ... }`.
+  A dotted key without quotes, `healthBarData.unitHealthBarStyle = 12`, sets one field. A key in
+  quotes, `"rate.constantValue"`, is a dotted path. An inline table is complete: a later table
+  header cannot add to it.
 
-#### List Removal
+#### List removal
 
-`-` on a list addresses elements by the list's element type:
+The element type of the list determines how `-` selects elements:
 
-- **By value** for every element type but `embed` and `pointer`: numbers, booleans, strings, `hash`, `link`, `file`, vectors. The value is coerced, then matched, and every equal element is removed. A value the base does not hold is a report.
-- **By index** for `embed` and `pointer` elements, which have no natural value. An index out of range of the base's list is a report.
+- **By value** for every element type except `embed` and `pointer`. The build converts each
+  written value to the element type and removes every equal element. If the list does not contain
+  a value, the build skips the key with the reason `removalUnmatched`.
+- **By index** for `embed` and `pointer` elements. Each written value is an integer index into the
+  base list. If an index is out of range, the build skips the key with the reason
+  `removalUnmatched`.
+
+`-` on a map removes by key. If the map does not contain a key, the build skips the key of the
+edit with the reason `removalUnmatched`.
 
 #### Coercion
 
-The property's type is the target; the written value's kind is the source. The type comes from the schema for the object's class. Where the schema says nothing about a property, the type is the one the base bin serialises, and the fallback is an informational report; a property the base omits with no schema answer is untypable, a report, and the edit is skipped. A base container whose element or key kind is not the schema's is a report. A subscripted path is typed by the container's element type, or the map's value type. The rules are the same wherever a value appears: a property, a list element, a map key or value, a field of an embedded object. Type names are [ritobin](/reference/file-formats/ritobin/)'s: `file` is the [bin format](/reference/file-formats/bin/)'s `WadChunkLink`, `link` its `ObjectLink`, `list` and `list2` its `Container` and `UnorderedContainer`, `pointer` its `Struct`, `embed` its `Embedded`, `option` its `Optional`, `flag` its `BitBool`, `rgba` its `Color`.
+Coercion is the conversion of a written value to the type of its property. The build takes the type
+from the first of these that has one:
 
-| Written value            | Coerces to                                  | Rule                                                                                                                                                                                                                                                                                                |
-| ------------------------ | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| integer                  | `i8` to `i64`, `u8` to `u64`, `flag`        | In range for the target width and sign; out of range is a report, never a wrap. A `flag` accepts `0` and `1`.                                                                                                                                                                                       |
-| integer                  | `f32`                                       | Exact when representable; a loss of precision is a report.                                                                                                                                                                                                                                          |
-| float                    | `f32`                                       | Rounded to single precision. A float never coerces to an integer type, even with a zero fraction.                                                                                                                                                                                                   |
-| boolean                  | `bool`, `flag`                              | As is.                                                                                                                                                                                                                                                                                              |
-| string                   | `string`                                    | As is.                                                                                                                                                                                                                                                                                              |
-| string                   | `hash`, `link`                              | FNV-1a 32 of the ASCII-lowercased string. A `0x` followed by 8 hex digits is a hash and passes through. `""` is the zero hash.                                                                                                                                                                      |
-| string                   | `file`                                      | xxh64 of the ASCII-lowercased path. A `0x` followed by 16 hex digits is a hash and passes through. `""` is the zero hash.                                                                                                                                                                           |
-| null                     | `hash`, `link`, `file`, `pointer`, `option` | The null of that type: a zero hash, a null pointer, an empty option. In TOML, which has no null, `""` is the null of `hash`, `link` and `file`, and `{}` inside a [pin](#type-pins) is the null of `pointer` and `option`.                                                                          |
-| list                     | `list`, `list2`                             | Each element coerced to the element type.                                                                                                                                                                                                                                                           |
-| list                     | `option`                                    | Zero or one element, coerced to the element type.                                                                                                                                                                                                                                                   |
-| any other                | `option`                                    | The one element, coerced to the element type.                                                                                                                                                                                                                                                       |
-| list                     | `vec2`, `vec3`, `vec4`, `rgba`, `mtx44`     | Exactly 2, 3, 4, 4 or 16 numbers. An `rgba` takes four integers from 0 to 255; a colour is never coerced from a string.                                                                                                                                                                             |
-| mapping                  | `map`                                       | Each key, written as a string, coerced to the key type by the string rules; each value to the value type. A numeric key is quoted.                                                                                                                                                                  |
-| mapping                  | `embed`, `pointer`                          | A [struct pin](#type-pins) constructs the struct; a pin of any other type is a report. Any other mapping [descends](#block-nesting): each key is a property path on the struct's class, its value coerced by these rules. The class is the base value's. A null base pointer takes a `pointer` pin. |
-| [reference](#references) | any                                         | Not coerced. The installed game's value carries its own type and is taken as it is; a type that is not the property's is a report. An entry the game does not declare, or a path it does not resolve, is a report.                                                                                  |
+1. The type that the schema defines for the field on the class of the struct
+2. The type of the base value, if the base contains the property
+3. The fallback type of the schema, if the base omits the property
 
-A vector or matrix is one flat list of numbers in every form. A list may span lines, so an `mtx44` is written as four rows of four, here inside a pin on a property whose base value is absent:
+The fallback type is the last known type of the field. The schema supplies it when it does not
+describe the installed game build.
+
+- The build reports one `SchemaFallback` diagnostic for a property that it types from the base
+  value or from the fallback type. The diagnostic is informational.
+- If none of the three has a type, the build skips the key with the reason `untypable`.
+- If a base container does not have the element type or the key type that the schema defines, the
+  build skips the key with the reason `typeMismatch`.
+- A path with a subscript takes the element type of the list, or the value type of the map.
+- The same rules apply to a property, a list element, a map key, a map value and a field of a
+  struct pin.
+
+Type names are those of [ritobin](/reference/file-formats/ritobin/). `file` is the
+`WadChunkLink` of the [bin format](/reference/file-formats/bin/), `link` is its `ObjectLink`,
+`list` and `list2` are its `Container` and `UnorderedContainer`, `pointer` is its `Struct`, `embed`
+is its `Embedded`, `option` is its `Optional`, `flag` is its `BitBool` and `rgba` is its `Color`.
+
+| Written value            | Property type                   | Rule                                                                                                                                                                          |
+| ------------------------ | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| integer                  | `i8` to `i64`, `u8` to `u64`    | The integer, if it is in the range of the type. Otherwise `outOfRange`.                                                                                                       |
+| integer                  | `flag`                          | `0` or `1`. Otherwise `outOfRange`.                                                                                                                                           |
+| integer                  | `f32`                           | The integer, if `f32` represents it exactly. Otherwise `precisionLoss`.                                                                                                       |
+| float                    | `f32`                           | The float, rounded to single precision. A float does not convert to an integer type, including a float with a zero fraction.                                                  |
+| boolean                  | `bool`, `flag`                  | The boolean.                                                                                                                                                                  |
+| string                   | `string`                        | The string.                                                                                                                                                                   |
+| string                   | `hash`                          | The FNV-1a 32 hash of the ASCII-lowercased string. `0x` followed by 8 hexadecimal digits is that hash. `0x` followed by 16 hexadecimal digits is an 8-byte hash. `""` is `0`. |
+| string                   | `link`                          | The FNV-1a 32 hash of the ASCII-lowercased string. `0x` followed by 8 hexadecimal digits is that hash. `""` is `0`.                                                           |
+| string                   | `file`                          | The XXH64 hash of the ASCII-lowercased path. `0x` followed by 16 hexadecimal digits is that hash. `""` is `0`.                                                                |
+| null                     | `hash`, `link`, `file`          | `0`.                                                                                                                                                                          |
+| null                     | `pointer`                       | The null pointer.                                                                                                                                                             |
+| null                     | `option`                        | The empty option.                                                                                                                                                             |
+| list                     | `list`, `list2`                 | Each element, converted to the element type.                                                                                                                                  |
+| list                     | `option`                        | Zero or one element, converted to the element type. Otherwise `arityMismatch`.                                                                                                |
+| any other value          | `option`                        | The one element, converted to the element type.                                                                                                                               |
+| list                     | `vec2`, `vec3`, `vec4`, `mtx44` | Exactly 2, 3, 4 or 16 numbers. Otherwise `arityMismatch`.                                                                                                                     |
+| list                     | `rgba`                          | Exactly 4 integers from 0 to 255. Otherwise `arityMismatch` or `outOfRange`. A string does not convert to a color.                                                            |
+| mapping                  | `map`                           | Each key, written as a string, converted to the key type by the string rules. Each value, converted to the value type. Quote a numeric key.                                   |
+| mapping                  | `embed`, `pointer`              | A [struct pin](#type-pins) constructs the struct. A pin of any other type is `pinMismatch`. Any other mapping [descends](#block-nesting) into the struct.                     |
+| `{}`                     | `pointer`, `option`             | Inside a struct pin or an `option` pin only: the null pointer or the empty option.                                                                                            |
+| [reference](#references) | any                             | The value at the reference in the game's copy, with its own type. The build does not convert it. A value whose type is not the type of the property is `kindMismatch`.        |
+
+For any other pair of value and type, the build skips the key with the reason `kindMismatch`.
+
+TOML has no null. In TOML, `""` is the null of `hash`, `link` and `file`, and `{}` inside a
+[pin](#type-pins) is the null pointer or the empty option.
+
+A vector and a matrix are one flat list of numbers in every format. A list can use several lines.
+This `mtx44` pin has four rows of four numbers:
 
 ```toml
 { mtx44 = [
@@ -1063,14 +1045,22 @@ A vector or matrix is one flat list of numbers in every form. A list may span li
 ] }
 ```
 
-Two things an unpinned value never does:
+The build converts a value with no pin to the type that the property has in the installed patch.
+If Riot changes the type of a property between patches, for example from `string` to `file`, the
+build converts the same written string to the new type. The build does not apply a conversion that
+loses information: it skips the key.
 
-- **Fail on a retype.** A property that Riot retypes between patches, `string` to `file` say, keeps working: the string coerces to whichever type the schema has on the day the overlay is built. That is the point of coercing at build time instead of pinning at authoring time.
-- **Silently narrow.** Any coercion that loses information is a report and skips the edit.
+#### Type pins
 
-#### Type Pins
+A type pin marks a value with the type that its property must have. In YAML it is a tag in front of
+the value, `!f32 1.0`. In TOML and JSON it is a mapping whose only key is the type name,
+`{ f32 = 1.0 }`. Write the value inside a pin in the same form as a value with no pin.
 
-A pin marks a value with the type name it must have. In YAML it is a local tag in front of the value, `!f32 1.0`. In TOML and JSON, which have no tags, it is a mapping with exactly one key, that key being the type name, `{ f32 = 1.0 }`. The value is the literal, written as it would be without the pin. A pin is never required: it exists for the property the base omits and the schema does not know, for a number or string that is ambiguous and the author wants fixed, and for a mod that expects a property to drift and wants to be told.
+A pin is optional. A pin checks the type of the property and never supplies one. Use a pin in
+these cases:
+
+- A number or a string converts to several types, and the edit requires one of them.
+- The build must skip the edit if Riot changes the type of the property.
 
 <Tabs>
   <TabItem label="YAML">
@@ -1079,33 +1069,32 @@ A pin marks a value with the type name it must have. In YAML it is a local tag i
 
     Characters/Teemo/Skins/Skin0:
       skinMeshProperties:
-        # Numbers: a bare 1.0 fits f32 and nothing else, a bare 12 fits u8, i32 and f32.
-        # The pin says which one the mod means.
+        # A value of 1.0 with no pin converts to f32 only.
         selfIllumination: !f32 1.0
 
-        # Strings: a bare string coerces to string, hash, file or link by the schema.
-        # A pin rejects the other three.
+        # A string with no pin converts to string, hash, file or link. Each pin requires one of them.
         skeleton: !file ASSETS/Characters/Jade_Teemo/Skins/Base/Jade_Teemo_Base.skl
         simpleSkin: !file ASSETS/Characters/Jade_Teemo/Skins/Base/Jade_Teemo_Base.skn
         initialSubmeshToHide: !string ""
 
-        # Vectors and colours: both are number lists. The pin fixes the reading.
+        # A list of numbers converts to a vector or a color.
         overrideBoundingBox: !vec3 [50.0, 180.0, 150.0]
         reflectionFresnelColor: !rgba [255, 200, 60, 255]
 
       healthBarData:
+        # A value of 12 with no pin converts to u8, i32 or f32.
         unitHealthBarStyle: !u8 12
 
       skinAudioProperties:
-        # Booleans.
-        bankUnits[1].voiceOver: !bool false
+        # The YAML loader fails on the tag !bool. Write a bool pin as a mapping.
+        bankUnits[1].voiceOver: { bool: false }
 
-        # On a signed key the pin names the element type.
+        # On a list, the pin is the element type.
         +tagEventList: !hash [Jade_Teemo]
         -tagEventList: !hash [Teemo]
 
     Characters/Teemo/Skins/Skin0/Resources:
-      # Map entries: the key is always a hash, the pin fixes the value.
+      # On a map value, the pin is the value type.
       +resourceMap:
         Teemo_R_Mis: !link Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis
         Teemo_R_Debuff: !link null
@@ -1118,31 +1107,29 @@ A pin marks a value with the type name it must have. In YAML it is a local tag i
 
     ["Characters/Teemo/Skins/Skin0"]
     skinMeshProperties = {
-      # Numbers: a bare 1.0 fits f32 and nothing else, a bare 12 fits u8, i32 and f32.
-      # The pin says which one the mod means.
+      # A value of 1.0 with no pin converts to f32 only.
       selfIllumination = { f32 = 1.0 },
 
-      # Strings: a bare string coerces to string, hash, file or link by the schema.
-      # A pin rejects the other three.
+      # A string with no pin converts to string, hash, file or link. Each pin requires one of them.
       skeleton = { file = "ASSETS/Characters/Jade_Teemo/Skins/Base/Jade_Teemo_Base.skl" },
       simpleSkin = { file = "ASSETS/Characters/Jade_Teemo/Skins/Base/Jade_Teemo_Base.skn" },
       initialSubmeshToHide = { string = "" },
 
-      # Vectors and colours: both are number lists. The pin fixes the reading.
+      # A list of numbers converts to a vector or a color.
       overrideBoundingBox = { vec3 = [50.0, 180.0, 150.0] },
       reflectionFresnelColor = { rgba = [255, 200, 60, 255] },
     }
+    # A value of 12 with no pin converts to u8, i32 or f32.
     healthBarData = { unitHealthBarStyle = { u8 = 12 } }
     skinAudioProperties = {
-      # Booleans.
       "bankUnits[1].voiceOver" = { bool = false },
 
-      # On a signed key the pin names the element type.
+      # On a list, the pin is the element type.
       "+tagEventList" = { hash = ["Jade_Teemo"] },
       "-tagEventList" = { hash = ["Teemo"] },
     }
 
-    # Map entries: the key is always a hash, the pin fixes the value.
+    # On a map value, the pin is the value type.
     ["Characters/Teemo/Skins/Skin0/Resources"]
     "+resourceMap" = {
       Teemo_R_Mis = { link = "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis" },
@@ -1182,19 +1169,78 @@ A pin marks a value with the type name it must have. In YAML it is a local tag i
   </TabItem>
 </Tabs>
 
-- **Type names** are ritobin's: `bool`, `i8` to `i64`, `u8` to `u64`, `f32`, `vec2`, `vec3`, `vec4`, `mtx44`, `rgba`, `string`, `hash`, `file`, `link`, `flag`, `option`, `pointer`, `embed`. `list`, `list2` and `map` are never written: a pin on a list value pins its elements, a pin on a map value pins its values, and a map key is always coerced by the schema.
-- **A pin that disagrees with the schema** is a report and the edit is skipped, never a coercion. That is what the pin is for.
-- **`pointer` and `embed` pins** carry a class and the struct's fields. In YAML the class goes in parentheses on the tag and the fields go directly under it, the way ritobin writes `pointer = SomeClass { ... }`: `!pointer(SomeClass) { field: 1 }`. A hash-form class needs no quotes there, `!pointer(0x50db156b)`. In TOML and JSON the pin is a one-key mapping holding `class` and `set`, the same two words an [object declaration](#objects) uses, at least one of the two: `{ pointer = { class = "SomeClass", set = { field = 1 } } }`. A key of the fields is one field name of the class, never a dotted path or a signed key; a nested struct inside them is a nested pin. A `class` the schema does not know is a report, and so is a field the schema does not type. A pin without a class, `!embed { field: 1 }`, takes the class of the base value; on a property the base omits, the class is required. On an `embed` a class that differs from the base's is a report. `!pointer(SomeClass)` alone builds the class with no fields set. `!pointer null` is the null pointer, and in TOML `{ pointer = {} }`; an `embed` pin is never null or empty. Under a YAML tag every key is a field: `!pointer { class: SomeClass }` sets a field named `class`, and the build reports it. A struct that exists in the base needs no pin: a bare mapping [descends](#block-nesting) into it. The shape of a struct pin is checked when the manifest loads, before any build.
-- **`option`** wraps one pinned or bare value, or `null` to clear.
-- **Null spellings.** `null` in YAML and JSON. TOML has no null: `""` is the null `hash`, `link` or `file`, and `{}` is the null `pointer` or the empty `option`.
-- **A pin is a value.** A pin never appears as a key, and no game name ever appears as the key of a pin. In YAML the tag makes that structural.
-- **A one-key mapping keyed by a type name is a pin on every property.** On a `pointer` or `embed` property only a `pointer` or `embed` pin fits; any other pin there is a report and the edit is skipped, never a descent. Riot has fields named `Flag`, `Hash`, `Map`, `Option` and `String`, and names hash case-insensitively. A block whose only key is one of them, `skinMeshProperties: {hash: 1}`, is a pin; the dotted path `skinMeshProperties.hash: 1`, or a second key in the block, reaches the field. A YAML tag loads as the one-key mapping and is read the same way: `!f32 1.0` and `{f32: 1.0}` are one value in every format, and `!pointer(SomeClass) { field: 1 }` is `{pointer: {class: SomeClass, set: {field: 1}}}`. A tag whose name is not a type name is a load error. A class in square brackets, `!pointer[SomeClass]`, does not parse as a tag: YAML ends a tag at `[`.
+- **Type names** - `bool`, `i8` to `i64`, `u8` to `u64`, `f32`, `vec2`, `vec3`, `vec4`, `mtx44`,
+  `rgba`, `string`, `hash`, `file`, `link`, `flag`, `option`, `pointer` and `embed`. Type names are
+  lowercase, and the loader compares them case-sensitively. `list`, `list2` and `map` are not type
+  names.
+- **Containers** - A pin on a list or an option, with or without a sign, is the element type. A
+  pin on a whole map, or on one map value, is the value type. The schema types a map key. A
+  `pointer` or `embed` pin on a list or an option is the struct pin of one element.
+- **Mismatch** - If the type of a pin is not the type of the property, the build skips the key with
+  the reason `pinMismatch`. The build does not convert a pinned value to another type.
+- **No type** - If the schema, the base and the fallback have no type for the property, the build
+  skips the key with the reason `untypable`, with or without a pin.
+- **`option`** - An `option` pin contains one value, with or without a pin, or `null` for the
+  empty option. On an option of `pointer` or `embed` elements, a `pointer` or `embed` pin is the
+  struct pin of the element.
+- **Null** - `null` in YAML and JSON. In TOML, `""` is the null `hash`, `link` or `file`, and `{}`
+  is the null `pointer` or the empty `option`.
+- **Position** - A pin is a value. A pin is never a key, and a game name is never the key of a pin.
+- **One rule on every property** - A mapping whose only key is a type name is a pin on every
+  property, including a struct. Riot has fields named `Flag`, `Hash`, `Option` and `String`, and
+  the game hashes field names case-insensitively. The block `skinMeshProperties: {hash: 1}` is a
+  pin. To set a field with the name of a type, write the dotted path
+  `skinMeshProperties.hash: 1`, write the field name with a capital letter, or put a second key in
+  the block.
+- **Tags** - The loader reads a YAML tag as the mapping with one key: `!f32 1.0` is `{f32: 1.0}`.
+  On a property value, a tag that is not a type name, `ref` or a struct tag is an error. A tag
+  does not change how YAML reads the scalar: `!string 12` contains the integer `12`, which does
+  not convert to a string. Write `!string '12'`. The YAML loader fails on the tag `!bool`. See
+  [Limitations](#limitations).
+
+A struct pin is a `pointer` or `embed` pin. It constructs a struct from a class and its fields:
+
+- In YAML, write the class in parentheses on the tag and the fields under it:
+  `!pointer(SomeClass) { field: 1 }`. A hash-form class needs no quotes: `!pointer(0x50db156b)`.
+  The class is the text between the first `(` and the `)` that ends the tag. A tag cannot contain
+  `[`, `]`, `{`, `}` or `,`, so `!pointer[SomeClass]` is not a tag.
+- In TOML and JSON, the pin is a mapping of `class` and `set`, with at least one of the two:
+  `{ pointer = { class = "SomeClass", set = { field = 1 } } }`. The loader reads the YAML tag as
+  this mapping.
+- Each key of the fields is one field name of the class, with no sign. The build skips a dotted
+  path and a path with a subscript with the reason `invalidPath`. The build skips a field that has
+  no type in the schema with the reason `untypable`. A nested struct is a nested struct pin.
+- Under a YAML struct tag, every key is a field. `!pointer { class: SomeClass }` sets a field named
+  `class`.
+- A pin with no class, `!embed { field: 1 }`, takes the class of the base value. If the base omits
+  the property, the build skips the key with the reason `untypable`.
+- If the class is not the class of the base value and the schema does not define it, the build
+  skips the key with the reason `unknownClass`.
+- On an `embed`, if the class is not the class of the base value, the build skips the key with the
+  reason `pinMismatch`.
+- `!pointer(SomeClass)` with no value constructs the class with no field set.
+- `!pointer null` is the null pointer. In TOML it is `{ pointer = {} }`. An `embed` pin is never
+  null or empty.
+- A struct that the base contains needs no pin. A mapping with no pin [descends](#block-nesting)
+  into it.
+- On a list of `pointer` or `embed` elements, a struct pin is one element.
+  `+list: !pointer(SomeClass) { field: 1 }` adds that struct, and the same value with no sign
+  replaces the list with that struct. To add several structs, write a list of struct pins. A
+  removal from such a list takes indexes, and the build skips a struct pin there with the reason
+  `kindMismatch`.
+- The loader validates the structure of every struct pin when it loads the manifest.
 
 #### References
 
-A reference names a value in the installed game instead of copying it. It is written `<entry name>:<property path>`: in YAML a local tag, `!ref Characters/Ahri/Skins/Skin0:speed`, and in TOML and JSON a mapping with exactly one key, `{ ref = "Characters/Ahri/Skins/Skin0:speed" }`. The build reads the value out of the game's own copy of that entry and writes it into your target.
+A reference is a value that the build reads from the installed game. Write it as
+`<entry name>:<property path>`. In YAML it is a tag,
+`!ref Characters/Ahri/Skins/Skin0:skinMeshProperties.texture`. In TOML and JSON it is a mapping
+whose only key is `ref`, `{ ref = "Characters/Ahri/Skins/Skin0:skinMeshProperties.texture" }`. The
+build reads the value from the game's copy of that entry and writes it into the target.
 
-Use it for a value you would otherwise copy out of a bin you inspected. A copied literal is frozen at the patch you read it from, and when Riot changes it your mod keeps applying the old number with nothing to tell you. A reference is re-read on every build, so it follows Riot's patches with no re-authoring.
+Use a reference in place of a value that you copy from a bin. A copied literal keeps the value of
+the patch that you read it from. The build reads a reference on every build, so the value is the
+value of the installed patch.
 
 <Tabs>
   <TabItem label="YAML">
@@ -1202,16 +1248,16 @@ Use it for a value you would otherwise copy out of a bin you inspected. A copied
     version: 1
 
     Characters/Teemo/Skins/Skin0:
-      # Whatever Ahri's base skin runs at on the installed patch.
-      skinMeshProperties.selfIllumination: !ref Characters/Ahri/Skins/Skin0:skinMeshProperties.selfIllumination
+      # The texture of Ahri's base skin in the installed patch.
+      skinMeshProperties.texture: !ref Characters/Ahri/Skins/Skin0:skinMeshProperties.texture
 
-      # A reference stands wherever a value stands: an element, a map value,
-      # an operand of a signed key, a field of a struct pin.
-      +tagEventList: [!ref "Characters/Ahri/Skins/Skin0:tagEventList[0]"]
+      # A reference as a list element.
+      +skinAudioProperties.tagEventList: [!ref "Characters/Ahri/Skins/Skin0:skinAudioProperties.tagEventList[0]"]
 
     Characters/Teemo/Skins/Skin0/Resources:
+      # A reference as a map value.
       +resourceMap:
-        Teemo_R_Mis: !ref Characters/Ahri/Skins/Skin0/Resources:resourceMap{"Ahri_R_Mis"}
+        Teemo_R_Mis: !ref Characters/Ahri/Skins/Skin0/Resources:resourceMap{"Ahri_Q_mis"}
     ```
 
   </TabItem>
@@ -1220,11 +1266,11 @@ Use it for a value you would otherwise copy out of a bin you inspected. A copied
     version = 1
 
     ["Characters/Teemo/Skins/Skin0"]
-    "skinMeshProperties.selfIllumination" = { ref = "Characters/Ahri/Skins/Skin0:skinMeshProperties.selfIllumination" }
-    "+tagEventList" = [{ ref = "Characters/Ahri/Skins/Skin0:tagEventList[0]" }]
+    "skinMeshProperties.texture" = { ref = "Characters/Ahri/Skins/Skin0:skinMeshProperties.texture" }
+    "+skinAudioProperties.tagEventList" = [{ ref = "Characters/Ahri/Skins/Skin0:skinAudioProperties.tagEventList[0]" }]
 
     ["Characters/Teemo/Skins/Skin0/Resources"]
-    "+resourceMap" = { Teemo_R_Mis = { ref = "Characters/Ahri/Skins/Skin0/Resources:resourceMap{\"Ahri_R_Mis\"}" } }
+    "+resourceMap" = { Teemo_R_Mis = { ref = "Characters/Ahri/Skins/Skin0/Resources:resourceMap{\"Ahri_Q_mis\"}" } }
     ```
 
   </TabItem>
@@ -1233,15 +1279,17 @@ Use it for a value you would otherwise copy out of a bin you inspected. A copied
     {
       "version": 1,
       "Characters/Teemo/Skins/Skin0": {
-        "skinMeshProperties.selfIllumination": {
-          "ref": "Characters/Ahri/Skins/Skin0:skinMeshProperties.selfIllumination"
+        "skinMeshProperties.texture": {
+          "ref": "Characters/Ahri/Skins/Skin0:skinMeshProperties.texture"
         },
-        "+tagEventList": [{ "ref": "Characters/Ahri/Skins/Skin0:tagEventList[0]" }]
+        "+skinAudioProperties.tagEventList": [
+          { "ref": "Characters/Ahri/Skins/Skin0:skinAudioProperties.tagEventList[0]" }
+        ]
       },
       "Characters/Teemo/Skins/Skin0/Resources": {
         "+resourceMap": {
           "Teemo_R_Mis": {
-            "ref": "Characters/Ahri/Skins/Skin0/Resources:resourceMap{\"Ahri_R_Mis\"}"
+            "ref": "Characters/Ahri/Skins/Skin0/Resources:resourceMap{\"Ahri_Q_mis\"}"
           }
         }
       }
@@ -1250,16 +1298,43 @@ Use it for a value you would otherwise copy out of a bin you inspected. A copied
   </TabItem>
 </Tabs>
 
-- **The spelling splits at the first `:`.** Everything before it is an entry name, everything after is a [property path](#property-paths) inside that entry. The path may itself contain a `:` inside a quoted map key; the entry name never does. The entry name takes hash form, and so does any segment of the path.
-- **The game's copy is the source, never the build.** The value comes from the installed game as it ships, read before any mod content is applied. A reference cannot read another mod's edits, and it cannot read edits your own declaration made earlier in the same build. That is what keeps the result a function of the game and your declaration: enabling a different set of mods, or changing their order, never changes what a reference resolves to, and two mods referencing each other cannot deadlock.
-- **The type comes with the value.** The game's value carries its own type, so there is nothing to coerce and nothing to pin. A reference whose value is not the property's type is a report and the edit is skipped. A [type pin](#type-pins) wrapped around a reference is a report: the pin has nothing to fix.
-- **An unresolved reference is a report, never a build failure.** An entry the installed game does not declare, or a path that entry does not resolve, skips that key and leaves the rest of the edit alone. A chunk the game does declare and the build cannot read is reported separately, because that is the installation and not your declaration.
-- **`ref` is reserved as a one-key mapping.** Riot has no field that hashes to `ref`, but the escape exists anyway and matches the one [type pins](#type-pins) use: a block whose only key is `ref` is a reference, and the dotted path `someStruct.ref: 1`, or a second key in the block, reaches a field literally named `ref`.
-- **Cost.** A build containing a reference reads the game's object index, the same index an [`entries`](#entries) module needs, because only the index says which chunk declares an entry. Each referenced entry is read and decoded once per build however many keys name it. An entry declared in several chunks resolves to the first declaring chunk.
+- **Form** - The loader splits the text at the first `:`. The part before it is an entry name, and
+  the part after it is a [property path](#property-paths) in that entry. The path can contain a
+  `:` inside a quoted map key. The entry name and each segment of the path accept the hash form.
+- **Position** - A reference is valid as a whole property, a list element, a map value, the whole
+  operand of a signed key and a field of a struct pin. A reference is not valid as a key or an
+  index. In a map removal and in a removal from a list of structs, the build skips the key with
+  the reason `kindMismatch`.
+- **Game copy** - The build reads the value from the installed game, before any mod content
+  applies. It does not resolve a reference against the edits of another mod or against earlier
+  edits of the same manifest. The enabled mods and their order do not change the resolved value.
+- **Type** - The game's value has its own type, and the build does not convert it. If that type is
+  not the type of the property, the build skips the key with the reason `kindMismatch`. The build
+  skips a key that has a [type pin](#type-pins) on a reference, with the reason `pinMismatch`.
+- **Missing values** - If the installed game does not declare the entry, the build skips the key
+  with the reason `referenceMissingEntry`. If the path does not resolve in the entry, the build
+  skips the key with the reason `referenceUnresolved`. The build applies the other keys.
+- **Unreadable entries** - If the game declares the entry and the build cannot read its chunk, the
+  build reports one `ReferenceUnreadable` for that entry.
+- **`ref` as a field name** - A block whose only key is `ref` is a reference. To set a field named
+  `ref`, write the dotted path `someStruct.ref: 1`, or put a second key in the block.
+- **Cost** - A build with a reference loads the object index, the index that an
+  [`entries` module](#entries-modules) uses. The build reads and decodes each referenced entry
+  once. If several chunks declare the entry, the build reads the first declaring chunk in the
+  order of the game index.
 
 ### `objects`
 
-A new object in the target, cloned from an existing entry or constructed from a class, with property sets applied; or the deletion of an object.
+`objects` creates and removes objects of the target. It is a mapping of entry names to object
+bodies. An object body has one of three forms:
+
+| Form      | Keys                            | Result                                                          |
+| --------- | ------------------------------- | --------------------------------------------------------------- |
+| Clone     | `clone`, with an optional `set` | A copy of an entry of the target, with the `set` applied        |
+| Construct | `class`, with an optional `set` | An object of that class with the properties that `set` contains |
+| Remove    | `remove: true` and no other key | The build removes the object from the target                    |
+
+Any other object body is an error.
 
 <Tabs>
   <TabItem label="YAML">
@@ -1267,8 +1342,8 @@ A new object in the target, cloned from an existing entry or constructed from a 
     version: 1
 
     objects:
-      # A copy of the ult missile that fires twice as often, with a second emitter.
-      Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis:
+      # A copy of the R missile with another rate and a second emitter.
+      Mods/TeemoClassic/Particles/R_Missile:
         clone: Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis
         set:
           particleName: Teemo_Classic_R_Mis
@@ -1277,19 +1352,16 @@ A new object in the target, cloned from an existing entry or constructed from a 
               constantValue: 2.0
             birthColor: !embed(ValueColor)
               constantValue: [0.35, 0.9, 0.45, 0.64]
-          +complexEmitterDefinitionData:
-            - !pointer(VfxEmitterDefinitionData)
-              emitterName: Classic_Trail
-              lifetime: 0.8
+          +complexEmitterDefinitionData: !pointer(VfxEmitterDefinitionData)
+            emitterName: Classic_Trail
+            lifetime: 0.8
 
-      # A second resolver, constructed from the schema, holding the mod's own effects.
-      Characters/Teemo/Skins/Skin0/ClassicResources:
-        class: ResourceResolver
-        set:
-          resourceMap:
-            Teemo_R_Mis: Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis
+      # A resolver for the effects of the mod, constructed from its class.
+      Mods/TeemoClassic/Resources: !ResourceResolver
+        resourceMap:
+          Teemo_R_Mis: Mods/TeemoClassic/Particles/R_Missile
 
-      # The stock missile definition, once nothing resolves to it.
+      # The missile definition of the game.
       Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis:
         remove: true
     ```
@@ -1299,34 +1371,34 @@ A new object in the target, cloned from an existing entry or constructed from a 
     ```toml
     version = 1
 
-    # A copy of the ult missile that fires twice as often, with a second emitter.
-    [objects."Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis"]
+    # A copy of the R missile with another rate and a second emitter.
+    [objects."Mods/TeemoClassic/Particles/R_Missile"]
     clone = "Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis"
 
-    [objects."Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis".set]
+    [objects."Mods/TeemoClassic/Particles/R_Missile".set]
     particleName = "Teemo_Classic_R_Mis"
 
-    [objects."Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis".set."complexEmitterDefinitionData[0]"]
+    [objects."Mods/TeemoClassic/Particles/R_Missile".set."complexEmitterDefinitionData[0]"]
     rate.constantValue = 2.0
     birthColor.embed = {
       class = "ValueColor",
       set = { constantValue = [0.35, 0.9, 0.45, 0.64] },
     }
 
-    [[objects."Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis".set."+complexEmitterDefinitionData"]]
+    [[objects."Mods/TeemoClassic/Particles/R_Missile".set."+complexEmitterDefinitionData"]]
     pointer = {
       class = "VfxEmitterDefinitionData",
       set = { emitterName = "Classic_Trail", lifetime = 0.8 },
     }
 
-    # A second resolver, constructed from the schema, holding the mod's own effects.
-    [objects."Characters/Teemo/Skins/Skin0/ClassicResources"]
+    # A resolver for the effects of the mod, constructed from its class.
+    [objects."Mods/TeemoClassic/Resources"]
     class = "ResourceResolver"
 
-    [objects."Characters/Teemo/Skins/Skin0/ClassicResources".set.resourceMap]
-    Teemo_R_Mis = "Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis"
+    [objects."Mods/TeemoClassic/Resources".set.resourceMap]
+    Teemo_R_Mis = "Mods/TeemoClassic/Particles/R_Missile"
 
-    # The stock missile definition, once nothing resolves to it.
+    # The missile definition of the game.
     [objects."Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis"]
     remove = true
     ```
@@ -1337,7 +1409,7 @@ A new object in the target, cloned from an existing entry or constructed from a 
     {
       "version": 1,
       "objects": {
-        "Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis": {
+        "Mods/TeemoClassic/Particles/R_Missile": {
           "clone": "Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis",
           "set": {
             "particleName": "Teemo_Classic_R_Mis",
@@ -1357,11 +1429,11 @@ A new object in the target, cloned from an existing entry or constructed from a 
             ]
           }
         },
-        "Characters/Teemo/Skins/Skin0/ClassicResources": {
+        "Mods/TeemoClassic/Resources": {
           "class": "ResourceResolver",
           "set": {
             "resourceMap": {
-              "Teemo_R_Mis": "Characters/Teemo/Skins/Skin0/Particles/Teemo_Classic_R_Mis"
+              "Teemo_R_Mis": "Mods/TeemoClassic/Particles/R_Missile"
             }
           }
         },
@@ -1372,147 +1444,510 @@ A new object in the target, cloned from an existing entry or constructed from a 
   </TabItem>
 </Tabs>
 
-- `clone` names an entry in the target state at the start of the batch's object-creation phase. A source the target does not hold then is `SourceMissing`, including an object the same phase creates; clone it from a later edit. The build copies the source, rewrites the copy's own path, and applies `set`.
-- **Own path.** Some classes hold their own path: `objectPath` as a `hash` on `VfxSystemDefinitionData`, `SkinCharacterDataProperties`, `SpellObject` and others, `particlePath` as a `string` on `VfxSystemDefinitionData`. A clone rewrites every top-level `hash` property holding the source's hash, and every top-level `string` property spelling the source's path, compared case-insensitively, to name the clone. Nothing else is rewritten: a field naming another object keeps its value.
-- `class` constructs an object of that class holding only the properties `set` names; the game fills the rest from the class's defaults. A class the schema does not know is `UnknownClass` and nothing is created. `clone` and `class` are exclusive.
-- `set` is an entry body for the new object: the same paths, [blocks](#block-nesting), [signs](#operations), [coercion](#coercion) and [pins](#type-pins), applied against the cloned or constructed object. A struct the object does not yet hold is a `pointer` or `embed` pin.
-- `remove: true` deletes the object. The client's override format carries a deletion record, and the build materialises the removal by omitting the object from the written `PROP`.
-- An entry name the target already holds at object creation under `clone` or `class` is `ObjectExists`, and so is a name the same `objects` mapping creates twice, by path and by hash; an existing object is edited as an [entry](#entries). `remove` on an object the target does not hold is `RemovalUnmatched`.
-- A created object is an entry of the target from the entry-edit phase on: the same batch edits it by name, and a later batch clones it.
-- `objects` belongs to a `target` item. Inside an `entries` item it is an error. Riot's own `Objects` field, capitalised, is a property.
+**Clone.** The value of `clone` is the name of an entry that the target contains at the start of
+the object creation phase. The build copies the class and the properties of that entry under the
+new name. It then rewrites each property of the copy that contains the path of the clone source,
+and applies `set`.
 
-## Build Semantics
+- An object can contain its own path. `objectPath` is a `hash` on `VfxSystemDefinitionData`,
+  `SkinCharacterDataProperties`, `SpellObject` and other classes. `particlePath` is a `string` on
+  `VfxSystemDefinitionData`.
+- The build rewrites each top-level `hash` property that contains the object hash of the clone
+  source. The property then contains the object hash of the clone.
+- The build rewrites each top-level `string` property that is equal to the path of the clone
+  source, ASCII case-insensitively. The property then contains the name of the clone. If the name
+  of the clone source or of the clone is in hash form, the build does not change the string.
+- The build does not change an 8-byte `hash` property.
+- The build rewrites no other property. A field that refers to another object keeps its value.
 
-The overlay build handles declarations in its two existing passes.
+**Construct.** `class` constructs an object of that class. The object contains only the properties
+that `set` contains, and the game supplies the class defaults for the other properties. A class is
+a name, or `0x` followed by 8 hexadecimal digits. An object body can contain `clone` or `class`,
+not both.
 
-**Pass 1 - plan.** The providers expose each layer's compiled, ordered modules. The plan retains module and edit boundaries, explicit targets and diagnostic origins. It does not flatten repeated writes into merged maps. Each target becomes one synthetic entry in the override set. Its fingerprint covers ordered operations and override-resource bytes, alongside the base, schema and build inputs required by the cache. Declared links feed pre-flight, and final materialised dependencies are checked against mounted content. Cross-mod conflicts are reported.
+**Class tag.** In YAML, a tag on an object body is the class, and the value of the tag is the `set`
+of the body. The loader reads the two bodies below as the same object:
 
-**Pass 2 - materialise.** For each target the build resolves the base: the highest-precedence enabled mod copy of the chunk when one exists, else the game's chunk. It refuses a `PTCH` base and a version-1 base (the game loads a base at version 2 or 3 only), and reports either. It applies modules and edits in [execution order](#edits), with `ltk_meta`, against the evolving target state. Each batch applies its override files before its declared edits. Checks use the state at that point and the installed schema. The build writes one `PROP` per target. Objects the plan does not touch copy byte for byte.
+```yaml
+objects:
+  Mods/TeemoClassic/Resources: !ResourceResolver
+    resourceMap:
+      Teemo_R_Mis: Mods/TeemoClassic/Particles/R_Missile
+```
 
-**Routing.** A materialised target is a replacement of a Riot chunk. It routes exactly like a whole-file override: to every game WAD holding the chunk, compressed once from the same bytes so every copy has the same checksum. The client walks the mounted WADs in mount order and returns the first WAD holding a path hash; at the end of every mount it looks up each new chunk in the other mounted WADs, and a same-hash chunk whose compressed checksum differs aborts the process with the install-corrupt fatal. A target held by one WAD, such as `data/maps/shipping/map11/map11.bin`, needs no fan-out. A target held by several, such as `maps/modespecificdata/classic.bin`, fans out to each. The index knows which. There is no shared always-mounted WAD for targets: the always-mounted set is hardcoded in the client, and a copy placed anywhere but beside its twins dies at mount.
+```yaml
+objects:
+  Mods/TeemoClassic/Resources:
+    class: ResourceResolver
+    set:
+      resourceMap:
+        Teemo_R_Mis: Mods/TeemoClassic/Particles/R_Missile
+```
 
-**Companion bins.** A companion bin has no Riot twin. The consistency check never sees it, and any WAD mounted when the referencing bin parses can hold it. Default placement is the WAD directory the mod put the file under. A builder may instead route every companion bin of every enabled mod into one overlay copy of a core WAD, which turns two mods shipping the same companion path with different bytes into a build-time conflict instead of a mount-time fatal, and makes placement deterministic. That is a builder policy, not a manifest concept. The candidate is the smallest always-mounted, non-localized, ungated WAD, `Scripts.wad.client`; `ShaderCache.dx11.wad.client` is mounted only under one renderer and is unsuitable. A companion bin is never placed only in a localized WAD, and `Bootstrap.windows.wad` carries nothing but content linked from `Bootstrap.bin`, which parses before any other WAD mounts.
+- The class is the tag without its `!`. Write a hash-form class as `!0x50db156b`.
+- `!C` with no value and `!C {}` construct an object with no property.
+- Each key under a class tag is a property path. `clone`, `class`, `set` and `remove` under a class
+  tag are property paths.
+- A tag that is a type name, `ref` or a struct tag is an error on an object body. `!embed(C)` on
+  an object body is an error.
+- A tag on the `objects` mapping is an error.
+- Under a class tag, a value that is neither a mapping nor null is an error.
+- A clone and a removal have no tag form. TOML and JSON have no tags: write `class` and `set`.
+- Packages and extracted manifests store a tagged object as `class` and `set`.
 
-**Reports.** The game reports nothing on this path. The build is the one place these are caught, and every one lands in the build report next to the existing linked-bin findings. A report never fails the build. LTK Manager shows reports per mod. `EntryFanOut` is informational. A report does not block the profile.
+**`set`.** `set` is an entry body for the new object. It accepts the same paths,
+[blocks](#block-nesting), [signs](#operations), [coercion](#coercion), [pins](#type-pins) and
+[references](#references) as the body of an [entry](#entries). To add a struct that the object does
+not contain, use a `pointer` or `embed` pin. If a `set` key does not apply, the build reports
+`PropertyEditSkipped` with the name of the object and keeps the object.
 
-The link engine reports these kinds:
+**Remove.** `remove: true` removes the object in the removal phase, after the entry edits of the
+same edit. The written `PROP` does not contain the object.
 
-| Kind                    | Meaning                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `DeclarationsRejected`  | A layer's declarations are invalid or unreadable. The build skips them and retains ordinary content.                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| `TargetSkipped`         | A target has no base, is blocked, or is not a valid `PROP` version 2 or 3. Its edits are skipped.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `EntryUnresolved`       | No game bin declares the entry. Its edits are skipped.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| `EntryFanOut`           | Several game bins declare the entry. Every declaring chunk receives the edits. Informational.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `IndexUnavailable`      | The object index cannot load or build. Every `entries` item is skipped and the build continues.                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| `OverrideUnreadable`    | The mod content does not supply an override file. The file is skipped and the edit continues.                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `OverrideInvalid`       | An override file does not read as a `PTCH`. The file is skipped and the edit continues.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `OverrideRecordSkipped` | One override record did not apply. The report carries the record index, object, property path and a reason code. The remaining records continue.                                                                                                                                                                                                                                                                                                                                                                                                         |
-| `LinkRemovalUnmatched`  | A `-links` path is absent at that edit. The edit continues.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| `PropertyEditSkipped`   | One property key did not apply. The report carries the signed key as `path`, the entry name, and a reason code: `missingObject`, `missingProperty`, `nullPointer`, `cannotDescend`, `notIndexable`, `indexOutOfRange`, `invalidKey`, `keyNotFound`, `typeMismatch`, `invalidPath`, `untypable`, `unknownClass`, `pinMismatch`, `signOnScalar`, `containerAbsent`, `removalUnmatched`, `kindMismatch`, `outOfRange`, `precisionLoss`, or `arityMismatch`. A report on a key skips its set, removals, and additions together; the remaining keys continue. |
-| `SchemaFallback`        | A property typed from the base bin, the schema saying nothing about it. The edit continues. Informational.                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+If a creation or a removal does not apply, the build reports `ObjectSkipped` with one of these
+reasons:
 
-An entry-resolution report carries the authored entry name as `target`. Reports about a specific chunk also carry its WAD chunk hash in `chunk`, beside `origin`. Module-level reports have no chunk.
+| Reason             | Condition                                                                                            |
+| ------------------ | ---------------------------------------------------------------------------------------------------- |
+| `objectExists`     | The target contains the name, or the same `objects` mapping creates it twice, by path and by hash    |
+| `sourceMissing`    | The target does not contain the clone source at the start of the phase, or the same phase creates it |
+| `unknownClass`     | The schema does not define the class of a construction                                               |
+| `removalUnmatched` | The target does not contain the object of a removal                                                  |
 
-| Failure                                        | What the client does                                 | What the user sees                |
-| ---------------------------------------------- | ---------------------------------------------------- | --------------------------------- |
-| linked chunk missing                           | dropped, load continues                              | nothing                           |
-| property type differs from the registered type | property skipped, load reports success               | nothing                           |
-| link target never resolves                     | field left null                                      | nothing, until a null dereference |
-| bin parses to zero entries                     | destroyed, not cached, re-parsed on every request    | nothing                           |
-| mode-list chunk missing                        | not read; the same acquire path drops a missing link | nothing                           |
-| entry name collides with a Riot name           | first hit in load order wins                         | intermittent                      |
+- A created object is an entry of the target when the entry edit phase starts. The same edit can
+  edit it by name, and a later edit can clone it.
+- To edit an object that the target contains, write an [entry](#entries), not an object body.
+- `objects` is valid only in a `target` body. In an entry body of an `entries` module, `objects`
+  is an error. In an entry body of a `target` module, `objects` is a property path.
+- Name each new object under `Mods/<modid>/`. The loader does not check the prefix.
+- The build checks each created name against the object index. If the index lists the name in a
+  chunk other than the target, the build reports `ObjectShadowsGame`, which is informational, and
+  creates the object. Two loaded bins then declare the name, and the object that the game reads
+  depends on load order.
+- The game does not read a new object until a `link` value or a resource slot refers to it. Set a
+  `link` property or a resource slot to the new name.
 
-Every check below is a report line, report-and-skip, never a build failure:
+### `modes`
 
-- every `links` and `load` path exists in the mounted set once the overlay is in place;
-- every targeted entry exists in the resolved declaring chunk, with the class the schema expects;
-- every edited property exists on that class with the expected type; list-valued properties first: a stale list edit does not no-op, it empties the list;
-- every mode selector resolves to a shipped mode entry;
-- every mod-added entry name is absent from the game index, else `ObjectShadowsGame`;
-- every companion path sits under the mod's namespace;
-- a companion bin declared under both `load` and a permanent `links` anchor is flagged.
+:::caution[Not implemented]
+The loader fails on a `modes` module. This section specifies the binding for a later version of
+the engine. See [Limitations](#limitations).
+:::
 
-## Rules at a Glance
+With a `modes` module, the game loads companion bins when it loads one of the listed game modes,
+and releases them when the mode unloads. The module has no `target`. Its selector is `modes`, and
+its body is `load` and no other key.
+
+<Tabs>
+  <TabItem label="YAML">
+    ```yaml
+    # content/base/game_data.yaml
+    version: 1
+
+    modules:
+      - modes:
+          - Map12/ARAM
+          - Map12/KIWI
+        load:
+          - mods/example/aram-announcer.bin
+    ```
+
+  </TabItem>
+  <TabItem label="TOML">
+    ```toml
+    # content/base/game_data.toml
+    version = 1
+
+    [[modules]]
+    modes = ["Map12/ARAM", "Map12/KIWI"]
+    load = ["mods/example/aram-announcer.bin"]
+    ```
+
+  </TabItem>
+  <TabItem label="JSON">
+    ```json
+    {
+      "version": 1,
+      "modules": [
+        {
+          "modes": ["Map12/ARAM", "Map12/KIWI"],
+          "load": ["mods/example/aram-announcer.bin"]
+        }
+      ]
+    }
+    ```
+  </TabItem>
+</Tabs>
+
+- **Mode entry** - Each mode of a map has a root object named `Maps/Shipping/Map<N>/Modes/<MODE>`
+  in `data/maps/shipping/map<N>/map<N>.bin`. The object contains `AdditionalPropertyDataPaths`, a
+  list of strings. When that mode is the live mode, the game appends `.bin` to each string and
+  loads the result, in list order. On unload it releases the same paths.
+- **Scope** - The live mode is the map and mode that the server placed the game in. Custom games
+  load the list too. Ranked, draft, Clash and custom games on Summoner's Rift all run
+  `Maps/Shipping/Map11/Modes/CLASSIC`.
+- **`modes`** - A list of `Map<N>/<MODE>` mode selectors. The build matches each mode selector
+  case-insensitively against the mode entries of the installed game. `Map<N>/*` selects every
+  mode entry of that map. A `*` alone is an error. To load a bin in every mode, use `links` on a
+  bin that every game loads. The build reports and skips a mode selector that matches no mode
+  entry in the installed game.
+- **`load`** - A list of game paths with their extension, in the same form as `links` values. The
+  game appends `.bin` to every value, so a `load` path that does not end in `.bin` is an error.
+  The build reports a path that no enabled content supplies in the same way as a missing linked
+  bin.
+- **Lowering** - One module becomes one entry edit per selected mode entry, on the target
+  `data/maps/shipping/map<N>/map<N>.bin`. The value is the `load` path without `.bin`:
+
+  ```yaml
+  - target: data/maps/shipping/map12/map12.bin
+    Maps/Shipping/Map12/Modes/ARAM:
+      +AdditionalPropertyDataPaths:
+        - mods/example/aram-announcer
+  ```
+
+  The build derives the target from the mode selector. If a mode entry has no list, the build
+  creates the list by the rule for [`+` on a container that the base omits](#operations).
+
+- **Order** - The resulting list is the values that Riot ships, followed by the added values in
+  order of application. The build compares values in ASCII lowercase and omits a value that the
+  list already contains. The build applies the additions of two mods to one mode entry.
+- **Permanent links** - Do not also list the same bin under `links` on a bin that every game
+  loads. The link keeps the bin loaded, and the game does not release it with the mode.
+- **Other content** - A whole-file copy of a chunk and a declared target in a champion WAD or a
+  core WAD apply in every mode.
+
+These behaviors of the game are not verified in a running game:
+
+- A `load` path that does not exist is expected to load nothing and to raise no error.
+- The objects of a mode resolve their `link` values when the map bin parses, before the mode list
+  loads. A Riot object is expected not to resolve a `link` value to an entry of a companion bin.
+- The mode list loads at map load, before the champion WADs mount. An entry of a companion bin is
+  expected to be visible to champion bins and skin bins.
+- The game is expected to release the objects of a companion bin before the next game in another
+  mode.
+
+#### Mode scoping with links
+
+`links` can approximate a mode condition. Link the companion bin from a mode-specific data bin
+that the mode loads. This table lists those bins in the 16.16 game:
+
+| Link target                                          | Loaded by                                                 |
+| ---------------------------------------------------- | --------------------------------------------------------- |
+| `maps/modespecificdata/classic.bin`                  | Map11 CLASSIC, PRACTICETOOL, ONEFORALL; Map453 BASELINESR |
+| `maps/modespecificdata/urf.bin`                      | Map11 URF, SNOWURF                                        |
+| `maps/modespecificdata/swiftplay.bin`                | Map11 SWIFTPLAY                                           |
+| `maps/modespecificdata/ultbook.bin`                  | Map11 ULTBOOK; Map12 ARAM                                 |
+| `maps/modespecificdata/ultbook_bt.bin`               | Map11 ULTBOOK                                             |
+| `maps/modespecificdata/ruby.bin`                     | Map11 RUBY, RUBY_TRIAL_1, RUBY_TRIAL_2, RUBY_TRIAL_3      |
+| `maps/modespecificdata/aram.bin`                     | Map12 ARAM, KIWI, KIWI_JADE                               |
+| `maps/modespecificdata/firstblood.bin`               | Map12 FIRSTBLOOD                                          |
+| `maps/modespecificdata/kiwi.bin`, `kiwi_jade.bin`    | Map12 KIWI, KIWI_JADE respectively                        |
+| `maps/modespecificdata/cherry.bin`                   | Map30 CHERRY                                              |
+| `maps/modespecificdata/jade.bin`                     | Map453 JADE                                               |
+| `maps/modespecificdata/wasd.bin`, `classic/wasd.bin` | Nearly every mode                                         |
+
+- A link applies to every mode that loads the linked bin. No link selects ARAM alone. ARAM loads
+  `aram.bin` and `ultbook.bin`. KIWI and KIWI_JADE also load `aram.bin`, and Map11 ULTBOOK also
+  loads `ultbook.bin`.
+- Several of these bins ship in more than one map WAD. `classic.bin` is in Map11 and Map453. The
+  build writes the edit to every WAD that contains the chunk.
+- Whether the game releases a linked bin when the mode unloads is not verified. The companion bin
+  can stay loaded until the process exits.
+- Do not use `wasd.bin` or `classic/wasd.bin` as a mode condition.
+- The table describes one patch. Riot adds and removes modes between patches. The game index lists
+  the chunks of the installed game.
+
+## Build semantics
+
+The overlay build applies the declarations of every enabled layer before it distributes chunks to
+WADs.
+
+**Base.** For each target the build selects a base: the copy of the chunk from the enabled mod
+with the highest precedence that ships it, or the game's copy. If several game WADs contain the
+chunk, the build reads the first one in the order of the game index. A valid base is a `PROP` of
+version 2 or 3, or a `PTCH`. If a target has no base, is the `.wad.SubChunkTOC` chunk of a game
+archive, or has a base in another format, the build reports `TargetSkipped` and keeps the original
+bytes.
+
+**Application.** The build applies modules and edits in the order of [Precedence](#precedence),
+each to the result of the one before it. `ltk_meta` decodes the base and applies each write. The
+build checks every record and every key against the target as it is at that point. If a check
+fails, the build reports a diagnostic and skips that record or key. The build does not fail.
+
+**Output.** The build writes a `PROP` target with an applied override file, object edit or
+property edit as `PROP` version 3. A target that has only link edits keeps its object bytes and its
+`PROP` version, and the build replaces the dependency list. If no edit of a module changes the
+target, the build reports `NoEffect` for that module. If no module changes the target, the build
+does not write the chunk.
+
+**Object index.** The build loads or builds the object index only if an enabled layer contains an
+`entries` module with at least one entry, a reference or a created object, or if a target is a
+`PTCH`. A build of the index with no cache reads every bin of the game.
+
+### Patch targets
+
+The game ships `PTCH` chunks as variants of UI scenes, such as `uirtl` and `uiflippedminimap`.
+When a variant is on, the game applies its records over the scene `PROP`. A declaration on a
+`PTCH` chunk edits the variant:
+
+- The output is a `PTCH` with an empty dependency list.
+- The build applies the edits to a view. The view contains the objects of the patch. For each
+  other object that an edit refers to, the view contains the game's copy of that object with the
+  records of the patch applied in file order. The view omits a record that does not apply to that
+  copy, and an object that the patch deletes.
+- If the patch contains the object, a property key edits the object in the patch.
+- For any other object, a property key becomes one record of object, path and value. The build
+  removes each record of that object at the same path or under it, and appends the new record.
+- For `+` or `-` on a list or a map, the build writes one record that contains the whole container
+  of the view.
+- A record contains its path as text, and the game hashes that text. The build skips a key with a
+  hash-form segment on an object that the patch does not contain, with the reason `hashFormPath`.
+- An override file adds its deletions, objects and records to the patch.
+- A created object is an object of the patch. If the patch deletes the created name, the build
+  removes that deletion.
+- A removal removes an object of the patch with its records. For any other object, the removal
+  adds the object to the deletions of the patch.
+- The build reports one `LinkUnsupported` for each path of a link edit and applies the rest of the
+  edit.
+- If the build cannot read the game's copy of an entry, it reports `EntryUnreadable` and skips
+  each key of that entry with the reason `missingObject`.
+- The build reads the game's copy of an object before any mod content applies. The view does not
+  contain the declarations of another mod on the scene `PROP`.
+- A target on which no edit applies keeps its bytes.
+
+### Routing
+
+A target with applied declarations replaces a Riot chunk. The build writes it to every game WAD
+that contains the chunk, as it does for a whole-file copy. It compresses the bytes once and writes
+the same compressed bytes to each WAD.
+
+- The game searches the mounted WADs in mount order and reads a chunk from the first WAD that
+  contains its path hash.
+- At the end of every mount, the game looks up each chunk of the new WAD in the other mounted
+  WADs. If a chunk with the same hash has another compressed checksum, the game exits with the
+  install-corrupt error.
+- The build writes a target that one WAD contains, such as `data/maps/shipping/map11/map11.bin`,
+  once. It writes a target that several WADs contain, such as
+  `maps/modespecificdata/classic.bin`, to each WAD. The game index lists the WADs.
+- The set of always-mounted WADs is fixed in the game. The build does not place a target in a WAD
+  that does not ship it.
+
+### Companion bins
+
+No game WAD contains a companion bin, so the mount check does not apply to it. Any WAD that is
+mounted when the linking bin parses can contain it.
+
+- The build places a companion bin in the WAD directory that the mod ships it in.
+- If two enabled mods ship one companion path with different bytes in different WADs, the game
+  exits with the install-corrupt error at mount.
+- Do not place a companion bin only in a localized WAD.
+- The game mounts only `Bootstrap.windows.wad` when it parses `Bootstrap.bin`. A bin that
+  `Bootstrap.bin` links must be in that WAD.
+- The game mounts `ShaderCache.dx11.wad.client` under one renderer only. Do not place a companion
+  bin there.
+
+### Diagnostics
+
+The game logs nothing for a moved file, a changed property type or a stale name. Only the build
+reports these conditions. A diagnostic does not fail the build. The overlay state stores the
+diagnostics, and a cached build returns them again.
+
+| Kind                    | Meaning                                                                                                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DeclarationsRejected`  | The declarations of a layer are invalid or unreadable. The build skips them and keeps the other content of the layer.                                     |
+| `TargetSkipped`         | A target has no base, is a `.wad.SubChunkTOC` chunk, or has a base that is not a `PROP` of version 2 or 3 or a `PTCH`. The build skips its edits.         |
+| `NoEffect`              | No edit of one module changed the target.                                                                                                                 |
+| `EntryUnresolved`       | No game bin declares the entry. The build skips its edits.                                                                                                |
+| `EntryFanOut`           | Several game bins declare the entry. The build edits each one. Informational.                                                                             |
+| `IndexUnavailable`      | The build can neither load nor build the object index. It skips each `entries` module and each reference key, and creates objects without the name check. |
+| `OverrideUnreadable`    | The mod content does not contain an override file. The build skips the file and applies the rest of the edit.                                             |
+| `OverrideInvalid`       | An override file is not a valid `PTCH` bin. The build skips the file and applies the rest of the edit.                                                    |
+| `OverrideRecordSkipped` | One record of an override file did not apply. The build applies the other records.                                                                        |
+| `LinkRemovalUnmatched`  | The dependency list does not contain a `-links` path when the build applies the edit. The build applies the rest of the edit.                             |
+| `LinkUnsupported`       | A link edit is on a patch target. The build reports one diagnostic per path and applies the rest of the edit.                                             |
+| `PropertyEditSkipped`   | One property key did not apply. The build skips the set, the removals and the additions of that key, and applies the other keys.                          |
+| `SchemaFallback`        | The schema has no type for a property, and the build typed it from the base value or from the fallback type. Informational.                               |
+| `ReferenceUnreadable`   | The game declares an entry that a reference uses, and the build cannot read it. One diagnostic per entry.                                                 |
+| `EntryUnreadable`       | On a patch target, the build cannot read the game's copy of an entry.                                                                                     |
+| `ObjectSkipped`         | One object creation or removal did not apply. See [`objects`](#objects) for the reasons.                                                                  |
+| `ObjectShadowsGame`     | A created object has a name that a game chunk other than the target declares. The build creates the object. Informational.                                |
+
+A diagnostic contains the mod, the layer and a message. A diagnostic of a module also contains its
+origin: the manifest, the source file if any, and the module index. A diagnostic about one chunk
+contains the WAD chunk hash. An entry diagnostic contains the entry name as written.
+
+This page writes kinds in PascalCase. The build serializes kinds and reason codes in camelCase:
+`targetSkipped`. A reader decodes a kind or a reason that it does not define as `unknown`.
+
+`PropertyEditSkipped` contains the signed key, the entry name and one of these reasons:
+
+| Reason                  | Condition                                                                                                                     |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `missingObject`         | The target does not contain the entry                                                                                         |
+| `missingProperty`       | A struct on the path has no property with the name of a segment                                                               |
+| `nullPointer`           | The path descends through a null pointer                                                                                      |
+| `cannotDescend`         | A name segment follows a value that is not a `pointer` or an `embed`                                                          |
+| `notIndexable`          | `[index]` is on a value that is not a list or an option, or `{key}` is on a value that is not a map                           |
+| `indexOutOfRange`       | `[index]` is past the end of a list, is not `[0]` on an option, or is on an empty option                                      |
+| `invalidKey`            | A `{key}` literal, a key of a written mapping or a key of a map removal does not convert to the key type of the map           |
+| `keyNotFound`           | The map contains no entry with the `{key}`                                                                                    |
+| `typeMismatch`          | A base container does not have the types of the schema, or `ltk_meta` returns an error for the value                          |
+| `invalidPath`           | A key in a block or in a `set` is not a property path, or a struct pin key is not one field name                              |
+| `untypable`             | The schema, the base and the fallback have no type for the property                                                           |
+| `unknownClass`          | The class of a struct pin is not the class of the base value, and the schema does not define it                               |
+| `pinMismatch`           | The type of a pin is not the type of the property, the pin is on a reference, or its class is not the class of a base `embed` |
+| `signOnScalar`          | A signed key is on a property that is not a list or a map                                                                     |
+| `containerAbsent`       | `-` is on a property that the base omits                                                                                      |
+| `removalUnmatched`      | A removal matches no element, index or key                                                                                    |
+| `kindMismatch`          | The value does not convert to the type of the property                                                                        |
+| `outOfRange`            | An integer is outside the range of the type                                                                                   |
+| `precisionLoss`         | An integer is not exact as `f32`                                                                                              |
+| `arityMismatch`         | A list has the wrong number of elements for a vector, a matrix, a color or an option                                          |
+| `referenceMissingEntry` | The installed game does not declare the entry of a reference                                                                  |
+| `referenceUnresolved`   | The path of a reference does not resolve in its entry                                                                         |
+| `hashFormPath`          | On a patch target, a key with a hash-form segment is on an object that the patch does not contain                             |
+
+`OverrideRecordSkipped` uses the first nine reasons.
+
+The game handles these failures without a log line:
+
+| Failure                                        | Game behavior                                                            | Visible result                                         |
+| ---------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------ |
+| A linked chunk is missing                      | Skips the link and continues the load                                    | None                                                   |
+| A property type is not the registered type     | Skips the property and reports a successful load                         | None                                                   |
+| A `link` value does not resolve                | Leaves the field null                                                    | None, until the game reads the field                   |
+| A bin parses to zero entries                   | Destroys the bin, does not cache it, and parses it again on each request | None                                                   |
+| An entry name is the same as a Riot entry name | Uses the first match in load order                                       | The object that the game uses can differ between games |
+
+## Rule summary
 
 For tools that write projects and packages:
 
-- One layer manifest, `game_data.yaml`, `.yml`, `.toml` or `.json`, with an ordered `modules` array. No manifest means no declarations.
-- Each item has one selector: `target`, `entries` or `modes`. A `target` is one string, hash or path, with direct bindings, `edits` or `source`. An `entries` item contains only its mapping, as one batch. A `modes` item takes `load`. There is no `inline` wrapper. Targets never come from file placement.
-- `version` belongs to the manifest and each external source file. Sources cannot include another source or redeclare a target.
-- Classify manifests, referenced sources and override inputs as build resources before collecting game content. Reject ignored required inputs. Every declared path or name keeps its casing and uses forward slashes.
-- This standard's words are bare keys. A bare root entry binding carries a slash or uses hash form. An `entries` mapping accepts any nonempty entry name. The game's property names sit inside an entry, a `set` or a map value.
-- Never emit a binding, sign or type name this version does not define.
-- Fail packing on multiple manifests, mixed body forms, missing or invalid sources, duplicate canonical target/source assignments, duplicate mapping keys, invalid selectors, a bare `*` mode selector, a `load` path without `.bin`, a mod-added entry name the index holds, conflicting file roles, an unknown override extension, a `.rito` input that is not a `PTCH`, or an unquoted YAML hash.
-- Preserve module, edit and `entries` mapping order in package metadata. Source formatting is optional. Execution boundaries are required.
-- Convert `.rito` override files to `.ptch` at pack; store the binary form.
-- Warn on a chunk path in a layer that is in the game index and is not a declared target: it is a whole-file override of a Riot file.
+- Write one manifest per layer: `game_data.yaml`, `.yml`, `.toml` or `.json`, with `version` and
+  an ordered `modules` list.
+- Give each module one selector, `target` or `entries`. A `target` module contains one target
+  string and one body form: compact bindings, `edits` or `source`. An `entries` module contains
+  its mapping and an optional `name`.
+- Write `version` in the manifest and in each source file. A source file has no `target` key and
+  no `source` key.
+- Classify the manifest, the referenced source files and the override files as build resources,
+  and exclude them from game content.
+- Keep the casing of every path and name. Use forward slashes in source paths and override paths.
+- Write no binding, sign or type name that this version does not define.
+- Fail on two manifests in a layer, a module with two body forms, a missing or invalid source
+  file, a duplicate assignment of a source file to a target, a duplicate mapping key, an unknown
+  key, a build resource that `.modignore` excludes, and an override path that does not end in
+  `.ptch`.
+- Keep the order of modules, edits and `entries` mappings in package metadata.
 
 For tools that build overlays:
 
-- Compose by precedence: mod order, layer priority, module array order, then edit array order. Each batch reads the result of preceding batches. Report every cross-mod conflict.
-- Hash lowercased: xxh64 for chunk paths and `file` values, FNV-1a 32 for entry names, `hash` and `link` values, and map keys of those types.
-- Type from the schema, then the base; coerce unpinned values; check pinned ones. A YAML tag is the one-key mapping; a one-key mapping keyed by a type name is a pin on every property, and a block with one type-named field is written dotted.
-- Apply per key: set, then removals, then additions, as one write. A report on any of them skips the key.
-- Resolve `entries` and `modes` selectors through the game index; one synthetic override per declaring chunk.
-- Resolve every [reference](#references) against the installed game's copy, read before any mod content applies, once per referenced entry. Never resolve one against the build state.
-- Route every materialised target to every WAD holding the chunk, with identical compressed bytes. Never place a target in a WAD that does not ship it.
-- Materialise every target as a `PROP` over the installed base; never emit a `PTCH`.
-- Check every edit against the target state at that point; report and skip, never fail.
-- Never use a link as a scope; it loads unconditionally with its parent.
-- Never gate on `maps/modespecificdata/wasd.bin` or `classic/wasd.bin`; nearly every mode loads them.
-- Never rely on mount order, a backslash-spelled dependency or any other cache-key trick to shadow or namespace a chunk. Mount-order shadowing of a differing chunk is the install-corrupt fatal.
-- Never ship a companion bin that names a Riot chunk path or `file` hash directly. Riot names belong in the binding the build materialises against the installed patch.
+- Apply by precedence: mod order, then the base layer, then the other layers by priority, then
+  module order, then edit order. Apply each edit to the result of the edits before it.
+- Hash the ASCII-lowercased form: XXH64 for chunk paths and `file` values, FNV-1a 32 for entry
+  names, class names, field names, and `hash` and `link` values.
+- Type each property from the schema, then the base, then the fallback type. Convert a value with
+  no pin. Skip a pinned value whose type is not the type of the property.
+- Read a YAML tag as the mapping with one key. Read a mapping whose only key is a type name as a
+  pin on every property.
+- Apply each key as one write: the set, then the removals, then the additions. If one of them
+  fails, skip the key.
+- Resolve an `entries` selector through the object index, and edit every declaring chunk.
+- Resolve each [reference](#references) against the game's copy before any mod content applies.
+  Do not resolve a reference against the build state.
+- Write every target to every WAD that contains the chunk, with the same compressed bytes. Do not
+  place a target in a WAD that does not ship it.
+- Write a `PROP` target as a `PROP` and a `PTCH` target as a `PTCH`.
+- Check each edit against the target as it is at that point. If a check fails, report a diagnostic
+  and skip that record or key. Do not fail the build.
+- Do not use a link as a condition. The game loads a linked bin whenever it loads the bin that
+  lists it.
+- Do not depend on mount order or on a dependency path with a backslash to replace a chunk or to
+  give it a namespace. If a chunk differs from a mounted chunk with the same hash, the game exits.
+- Do not ship a companion bin that contains a Riot chunk path or a Riot `file` hash. Put Riot names
+  in a declaration, which the build applies to the installed patch.
 
-## Outside the Standard
+## Outside the format
 
-- **Queues.** The game process receives the queue from the platform beside the game mode and map id, and no bin load point keys on it. Ranked Solo, Ranked Flex, Normal Draft, Clash and custom games all run `Maps/Shipping/Map11/Modes/CLASSIC`. The manifest carries no `queues` key. "Not in ranked" is a launch-time decision for LTK Manager, which knows the queue from the client's gameflow session before the game process starts and chooses which profile to serve.
-- **Gameplay.** The mode gate is client-only. Anything gameplay-relevant is server-authoritative. Every mod on this path is about what the local client loads.
+- **Queues** - The game process receives the queue from the platform with the game mode and the
+  map id. No bin load depends on the queue. Ranked Solo, Ranked Flex, Normal Draft, Clash and
+  custom games all run `Maps/Shipping/Map11/Modes/CLASSIC`. A manifest has no `queues` key. A rule
+  such as "not in ranked" is a launch decision for LTK Manager, which reads the queue from the
+  League client before the game process starts.
+- **Gameplay** - Declarations change the data that the local game process loads. The server
+  decides every gameplay result.
 
-## Mod Projects
+## Packaged forms
 
-The layer manifest, source files and override inputs travel with the layer directory. `mod.config.json` or `mod.config.toml` keeps project identity and layer configuration; it does not list declaration files.
+### Mod projects
 
-LTK Editor adds direct module items to the layer manifest by default, creating a YAML manifest when absent. It edits an existing TOML or JSON manifest in place. A source item opens its referenced file for editing, with comments and order preserved. Extracting a direct body to a source file preserves its array position and target; the editor adjusts resource references for the new containing directory. The external file receives its own `version`.
+The manifest, the source files and the override files are in the layer directory. `mod.config.json`
+or `mod.config.toml` contains the project identity and the layer configuration, and it does not
+list declaration files. LTK Editor writes the manifest of a layer when you edit a declared game
+bin. See [Game data declarations](/editor/bin-editor/game-data/) in the LTK Editor section.
 
-## Modpkg
+### Modpkg
 
-Packing expands the layer manifest and source files into ordered declarations in per-layer metadata. The declarations preserve selectors, module and edit boundaries, and references to compiled `.ptch` resources. Those resources are package build inputs, excluded from game-content enumeration. The overlay builder does not reopen authored YAML, TOML or JSON files.
+- Packing expands the manifest and the source files of a layer into ordered declarations, and
+  stores them in the layer metadata field `game_data`.
+- The stored declarations keep the selectors, the module names, the order of modules and edits,
+  and the origin of each module.
+- Packing stores each override file under its layer-relative path, as a chunk of its layer with no
+  WAD.
+- Extraction writes one `game_data.json` per layer. That manifest contains the body of every
+  module and uses no source file. Extraction places each override file at its path under the
+  content directory of the layer. It does not restore source file names, comments or formatting.
 
-Filesystem and package providers expose the same declarations. Each module carries its declaration location as `origin`: the manifest, the source file if any, and the module index. That field is provenance for diagnostics; it is not the authoring `source` directive. Packed declarations never combine `source` with a body.
+The stored form differs from a manifest:
 
-A project extracted without preserved source text receives a layer manifest with direct bodies in the same module order and extracted override inputs. Relative resource references are rewritten to those files. Optional source preservation retains file names, comments and formatting. Removing source text cannot change execution order or erase module boundaries.
+- A module contains `name`, `origin`, and either `target` with `edits` or `entries`. It has no
+  compact body and no `source`.
+- `origin` contains `manifest`, `source` and `module`, the zero-based index of the module.
+- Each item of `edits` is one compact body.
+- An override path is relative to the layer.
+- A YAML tag is stored as the mapping with one key, and a class tag as `class` and `set`.
 
-## Fantome Packaging
+### Fantome
 
-Declarations join the [LeagueToolkit extension](/reference/mod-packages/fantome/#the-leaguetoolkit-extension) of `info.json` as `GameData` under each `Layers.{name}`, beside `StringOverrides`. They carry the same ordered declarations as modpkg. Compiled override resources live under `META/game_data/`, with references relative to the archive root. This archive resource location does not impose a `game_data/` directory on the authored project.
+- Packing stores the declarations of a layer as `GameData` under `Layers.{name}` in
+  `META/info.json`, in the
+  [LeagueToolkit extension](/reference/mod-packages/fantome/#the-leaguetoolkit-extension), beside
+  `StringOverrides`.
+- Packing stores each override file as `META/game_data/<layer>/<path>`.
+- A reader with no support for the extension ignores the declarations.
+- Extraction writes the same `game_data.json` manifests as extraction from a `.modpkg`.
 
-Fantome keeps only the base layer's content, as it does for every other per-layer feature. Its retained declarations must have all referenced build resources in the archive.
+## Limitations
 
-## Roadmap
+- **`modes`** - The engine does not implement the [`modes`](#modes) binding. A module with `modes`
+  is an error.
+- **`.rito` override files** - The loader does not read an override file in ritobin text. A
+  `.rito` path is an error, and the error message contains the extension. Convert the file to a
+  `.ptch` bin.
+- **`!bool` tag** - The YAML loader fails on the tag `!bool` with a syntax error. In YAML, write a
+  `bool` pin as a mapping, `{ bool: false }`, or write the value with no pin. The loader reads
+  every other type name as a tag.
+- **Entries that the game reads from one bin** - The game reads some entries from one loaded bin
+  only, such as skin properties and the `Resources` entry of a skin. The build still edits every
+  declaring chunk of an `entries` key.
+- **Conflicts** - The build does not report two mods that write the same property. The overlay
+  contains the value of the mod with the higher precedence.
+- **Container records in a patch target** - For `+` or `-` on a list or a map in a
+  [patch target](#patch-targets), the build stores the whole container. If Riot later changes the
+  container in the scene `PROP`, the stored container keeps the old elements.
 
-1. **`links` and `overrides`.** The module loader, the modpkg and fantome fields, the plan entry, and pass 2 on `ltk_meta`. Delivers [league-mod#190](https://github.com/LeagueToolkit/league-mod/issues/190) and [league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191).
-2. **Entries.** Coercion against the schema, signed keys, block nesting, type pins, reports. `modes` lands here: it lowers to a list append on the mode entry.
-3. **`objects`.** Clone, construct, delete, and the index check on mod-added entry names.
+## Related pages
 
-## Open Questions
-
-- **Same-target conflict granularity in the report.** Whether the manager shows a conflict per target or per key. Per key is more useful and more noise.
-- **Editor rewriting.** Round-trip-safe YAML editing that preserves comments and order is a real requirement in LTK Editor; the crate that does it is not chosen.
-- **Shared companion WAD.** Whether LTK Manager routes companion bins into one core WAD copy by default, or keeps the declared placement. The engine works either way.
-- **Unverified client behaviour on the mode gate.** None of these changes a rule above. Each is observed in a real game before a release relies on it, and there is no log line for any of them.
-  - A `load` path that does not exist: expected to load normally. A fatal or a hang would make the pre-flight a hard requirement.
-  - Link visibility into a companion bin loaded through the gate: the mode's own objects resolve their serialized links when the map bin parses, before the mode list loads. A Riot object is expected not to reach an entry in the companion bin. The other direction, and runtime by-name lookups such as character records and resource resolvers, are expected to work.
-  - Timing against champion bins: the mode list loads at map load, before champion WADs mount. Entries in a companion bin are expected to be visible to champion and skin bins parsed later.
-  - Release on mode unload: the companion bin's objects are expected to be gone in the next game of a different mode.
-
-## Related Pages
-
-- [Mod projects](/making-mods/mod-projects/) - the project layout and manifest the modules live in
-- [Layers](/making-mods/layers/) - priority and the layer content directory
-- [String overrides](/making-mods/string-overrides/) - the per-layer precedent for precedence and storage
-- [Embedded Hashtables](/reference/mod-packages/hashtables/) - the naming standard the same hash rules come from
-- [Metaclasses](/reference/metaclasses/overview/) - the schema the build types against
-- [Ritobin](/reference/file-formats/ritobin/) - the text form override files and type names come from
-- [Fantome Package](/reference/mod-packages/fantome/) - the archive layout and the extension the declarations join
-- [PTCH property patches](https://github.com/LeagueToolkit/league-toolkit/blob/main/docs/design/ptch-property-patches.md) - the record language override files use
-- [Engine constraints](https://github.com/LeagueToolkit/league-mod/blob/main/docs/research/game-data-engine-constraints.md) - the traced client behaviour the routing, `modes` and report rules rest on
+- [Declaration manifests](/making-mods/game-data/) - a guide to writing a manifest
+- [Game data declarations](/editor/bin-editor/game-data/) - declaring edits in LTK Editor
+- [Mod projects](/making-mods/mod-projects/) - the project layout
+- [Layers](/making-mods/layers/) - layer priority and the layer content directory
+- [Embedded Hashtables](/reference/mod-packages/hashtables/) - the hash rules for names
+- [Metaclasses](/reference/metaclasses/overview/) - the schema that types properties
+- [Ritobin](/reference/file-formats/ritobin/) - the source of the type names
+- [Fantome Package](/reference/mod-packages/fantome/) - the archive layout and the LeagueToolkit
+  extension
+- [PTCH property patches](https://github.com/LeagueToolkit/league-toolkit/blob/main/docs/design/ptch-property-patches.md) -
+  the record language of override files
+- [Engine constraints](https://github.com/LeagueToolkit/league-mod/blob/main/docs/research/game-data-engine-constraints.md) -
+  the traced game behavior behind the routing rules and the `modes` binding

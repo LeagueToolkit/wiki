@@ -11,9 +11,9 @@ import Hint from '@components/Hint.svelte';
 import Screenshot from '@components/Screenshot.astro';
 import Where from '@components/Where.astro';
 
-The **Declarations** view lists what each <Hint as="span" tip="A named group of files within a mod project. Layers let mod creators offer optional components that users can toggle independently." client:visible>[layer](/glossary/)</Hint>
-of your project declares in its `game_data.yaml`. The **Game data** document shows one layer's
-file as an outline, and lets you organize its modules.
+The **Declarations** view lists the declarations in the `game_data.yaml` of each <Hint as="span" tip="A named group of files within a mod project. Layers let mod creators offer optional components that users can toggle independently." client:visible>[layer](/glossary/)</Hint>
+of your project. The **Game data** document shows the file of one layer as an outline. You organize
+the modules of the file there.
 
 <Where path={['Declarations']} files="game_data.yaml" />
 
@@ -22,11 +22,11 @@ To learn what a declaration is and how an edit in a game bin becomes one, see
 
 ## Declarations view
 
-The **Declarations** view in the rail lists every layer, its modules and the entries each module
-declares. Each row has a count, and each layer ends with a **New module** line. A layer with no
-`game_data.yaml` is listed too.
+The **Declarations** view in the rail lists every layer, its modules and the entries that each
+module declares. Each row has a count, and each layer ends with a **New module** line. The view
+also lists a layer with no `game_data.yaml`.
 
-Select a row to open the layer's **Game data** document on that item.
+Select a row to open the **Game data** document of the layer on that item.
 
 <Screenshot
   file="editor/declarations-view.webp"
@@ -36,7 +36,7 @@ Select a row to open the layer's **Game data** document on that item.
 ## Game data document
 
 The **Game data** document opens from the **Declarations** view, or from the `game_data.yaml` row
-of a layer in the **Explorer**. Its toolbar names the file and counts its modules and keys.
+of a layer in the **Explorer**. Its toolbar shows the file name and the number of modules and keys.
 
 <Screenshot
   file="editor/declarations-document.webp"
@@ -48,43 +48,42 @@ of a layer in the **Explorer**. Its toolbar names the file and counts its module
 | **Outline** | Each module, then its overrides, entries, keys and links in order |
 | **Raw**     | The file's text, read-only, with line numbers                     |
 
-The **Raw** view does not take edits. Keys change through a declared game bin, or in a text editor
-outside LTK Editor.
+The **Raw** view is read-only. To change a key, edit a declared game bin, or edit the file in a
+text editor outside LTK Editor.
 
-A file that does not load opens in **Raw**, with the line the error names marked. The error shows
-under the text. A layer with no `game_data.yaml` shows **No manifest** and a **New module**
-button, which starts the file.
+If LTK Editor cannot load the file, the document opens in the **Raw** view and marks the line of
+the error. The error message is under the text. A layer with no `game_data.yaml` shows **No manifest** and a **New module** button,
+which creates the file.
 
 ### Rows
 
-| Row      | What it shows                                                                      |
-| -------- | ---------------------------------------------------------------------------------- |
-| Module   | Its name, what it edits, the comment above it, and a count of its objects and keys |
-| Override | A `.ptch` file the module applies to its bin                                       |
-| Entry    | An object the module edits, creates (`new`) or removes (struck out)                |
-| Key      | A property path and its value                                                      |
-| Link     | A dependency the module adds to its bin, or removes from it                        |
-| Empty    | A module that declares nothing yet                                                 |
+| Row      | What it shows                                                                              |
+| -------- | ------------------------------------------------------------------------------------------ |
+| Module   | Its name, its target or entries, the comment above it, and a count of its objects and keys |
+| Override | A `.ptch` file that the module applies to its bin                                          |
+| Entry    | An object that the module edits, creates (`new`) or removes (struck through)               |
+| Key      | A property path and its value                                                              |
+| Link     | A dependency that the module adds to its bin, or removes from it                           |
+| Empty    | A module with no override, entry or link                                                   |
 
-A module without a name shows its place in the file, such as **Module 1**. A `target` module
-shows the file name of the bin it edits. Hover over it to see the full path.
+A module with no name shows its position in the file, such as **Module 1**. A `target` module shows
+the file name of the bin that it edits. Hover over it to see the full path.
 
 ### Go to a declared row
 
 To see a key in its game bin, right-click the key and select **Go to row**, or focus it and
-press <kbd>Enter</kbd>. The bin opens on the row the key sets.
+press <kbd>Enter</kbd>. The bin opens on the row that the key sets.
 
-An object that a module creates is in no game bin, so its rows have no **Go to row**. When no
-game bin holds the object, or the object index is not built, LTK Editor shows **Object not
-found**.
+No game bin contains an object that a module creates, so the rows of that object have no **Go to
+row**. When no game bin contains the object, or the object index is not built, LTK Editor shows
+**Object not found**.
 
-**Show in text** on any row opens the **Raw** view with the row's lines selected.
+**Show in text** on any row opens the **Raw** view with the lines of the row selected.
 
 ## Organize modules
 
-The order of the modules is the order the build applies them in. Right-click a module, or select
-its menu button, to open its actions. The **Declarations** view offers the same actions on its
-rows.
+The build applies the modules in their order in the file. To open the actions of a module,
+right-click it or select its menu button. The **Declarations** view has the same actions on its rows.
 
 | Action                   | Key                            | Rows                                 |
 | ------------------------ | ------------------------------ | ------------------------------------ |
@@ -108,36 +107,38 @@ rows.
 ### Rename a module
 
 Select **Rename**, press <kbd>F2</kbd>, or double-click the module. Enter the new name and
-press <kbd>Enter</kbd>. An empty name removes the module's name.
+press <kbd>Enter</kbd>. An empty name removes the name of the module.
 
 ### Reorder modules
 
 Select **Move up** or **Move down**, or press <kbd>Alt</kbd>+<kbd>Up</kbd>
-or <kbd>Alt</kbd>+<kbd>Down</kbd>. You can also drag a module above or below another. A line shows
-where it lands.
+or <kbd>Alt</kbd>+<kbd>Down</kbd>. You can also drag a module above or below another module. A line
+shows the new position.
 
 ### Choose the module for new edits
 
-Select **Write new edits here** on an `entries` module. Each edit you then make in a declared game
-bin joins this module. The module shows the **New edits** mark, and its layer becomes the layer
-that edits write to.
+Select **Write new edits here** on an `entries` module. LTK Editor then writes each edit that you
+make in a declared game bin to this module. The module shows the **New edits** mark, and its layer
+becomes the layer that receives your edits.
 
-Select **Stop writing new edits here** to clear the choice. A `target` module takes no new keys.
+Select **Stop writing new edits here** to clear the selection. LTK Editor does not write new keys to
+a `target` module.
 
 ### Move entries and keys
 
 To move an entry or a key of an `entries` module, right-click it and select **Move to module**.
 Select another `entries` module of the same layer, or **New module...** to move it into a new one.
 
-You can also drag an entry or a key onto another `entries` module of the same layer. Nothing drags
-across layers, and a `target` module takes no dropped entry.
+You can also drag an entry or a key onto another `entries` module of the same layer. You cannot
+drag an entry or a key to another layer or onto a `target` module.
 
-A named module stays when it loses its last entry. A module with no name is removed.
+A named module stays in the file when you move its last entry to another module. LTK Editor removes
+a module with no name when you move its last entry.
 
 ### Remove a module
 
-Select **Remove module**, or press <kbd>Del</kbd>, and confirm. The module and the comment lines
-above it leave the file.
+Select **Remove module**, or press <kbd>Del</kbd>, and confirm. LTK Editor removes the module and
+the comment lines above it from the file.
 
 :::caution[No undo]
 Undo does not restore a removed module.

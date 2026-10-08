@@ -1,6 +1,6 @@
 ---
 title: Declaration manifests
-description: Edit entry properties and BIN dependencies with layer manifests, ordered modules, and reusable source files.
+description: Write a game_data manifest for a mod layer to add bin dependencies, edit entry properties and create objects without a copy of the game bin.
 tags:
   type: guide
   audience: [mod-creator]
@@ -10,43 +10,29 @@ tags:
 
 import { FileTree, Tabs, TabItem } from '@astrojs/starlight/components';
 
-Game data declarations describe edits to a game's [BIN file](/reference/file-formats/bin/).
-You write them in a layer manifest. The overlay builder applies them to the target BIN while
-building your mod's overlay.
+A game data declaration is a change to a game [bin file](/reference/file-formats/bin/) that you
+write in the manifest of a layer. The overlay build applies the change to the game's copy of the
+bin, so your mod ships no copy of the file. Objects and properties that you do not change keep the
+values of the installed game.
 
-This guide covers **links**, the dependency paths in a BIN's header, and **property edits**,
-values you set, add, or remove on an entry of the BIN. You can add a companion BIN to the
-dependency list, remove an existing dependency, and change the properties of an entry the BIN
-declares. Objects and properties you do not name stay intact.
+This guide shows how to write a manifest by hand. LTK Editor writes the same file when you edit a
+game bin. See [Game data declarations](/editor/bin-editor/game-data/). For every rule of the
+format, see the [Game data declarations reference](/reference/mod-packages/game-data/).
 
-:::caution[Tool support]
-These examples require a packer and overlay builder with the declaration support in
-[league-mod#225](https://github.com/LeagueToolkit/league-mod/pull/225).
-Support in a particular LTK Manager release depends on its bundled engine. This guide describes
-hand-authored project files. LTK Editor writes the same files when you edit a game bin. See
-[Game data declarations](/editor/bin-editor/game-data/).
-The `entries` selector requires the game-index support in
-[league-mod#228](https://github.com/LeagueToolkit/league-mod/issues/228).
-
-The supported bindings are `links`, `+links`, `-links`, `overrides` with `.ptch` files
-([league-mod#191](https://github.com/LeagueToolkit/league-mod/issues/191)), and entry bodies of
-property edits under an entry name ([league-mod#243](https://github.com/LeagueToolkit/league-mod/issues/243),
-[league-mod#244](https://github.com/LeagueToolkit/league-mod/issues/244)): signed keys, block
-nesting, type pins, and references
-([league-mod#264](https://github.com/LeagueToolkit/league-mod/pull/264)) as the
-[reference](/reference/mod-packages/game-data/#entries) describes
-them. A `.rito` override file is refused with an error naming the extension. `objects` and
-`modes` belong to the broader [proposal](/reference/mod-packages/game-data/); the engine rejects
-those bindings.
+:::note[Tool support]
+A manifest requires a packer and an overlay build with declaration support. An LTK Manager release
+applies the rules of the `ltk_game_data` version that it bundles. That version fails on a key, a
+sign or a type name that it does not define.
 :::
 
 ## Add your first link
 
-Start with an existing [mod project](/making-mods/mod-projects/) and a companion BIN you want
-the game to load. This example uses `mods/teemo-example/particles.bin` as your custom BIN's
-game path. Replace it with the path of your own content.
+Start with an existing [mod project](/making-mods/mod-projects/) and a companion bin that the game
+must load. This example uses `mods/teemo-example/particles.bin` as the game path of the companion
+bin. Replace it with the path of your own bin.
 
-Place the companion BIN in the layer's WAD content and create `game_data.yaml` at the layer root:
+Put the companion bin in the WAD content of the layer, and create `game_data.yaml` in the layer
+directory:
 
 {/* prettier-ignore */}
 <FileTree>
@@ -61,9 +47,7 @@ Place the companion BIN in the layer's WAD content and create `game_data.yaml` a
             - particles.bin
 </FileTree>
 
-`content/base/game_data.yaml`:
-
-```yaml
+```yaml title="content/base/game_data.yaml"
 version: 1
 modules:
   - target: data/characters/teemo/skins/skin0.bin
@@ -71,191 +55,334 @@ modules:
       - mods/teemo-example/particles.bin
 ```
 
-| Part         | Meaning                                                                 |
-| ------------ | ----------------------------------------------------------------------- |
-| `version: 1` | The declaration format version, independent of the League patch number. |
-| `modules`    | An ordered list of edits in this layer.                                 |
-| `target`     | The game chunk to edit.                                                 |
-| `links`      | Dependency paths to add to that target.                                 |
+| Part         | Meaning                                                                  |
+| ------------ | ------------------------------------------------------------------------ |
+| `version: 1` | The version of the declaration format. It is not the League patch number |
+| `modules`    | The ordered list of modules of this layer                                |
+| `target`     | The game chunk that the module edits                                     |
+| `links`      | The dependency paths that the module adds to the target                  |
 
-The target must exist in the game or enabled mod content. You do not need a copy of
-`skin0.bin` in this project for a link edit. The companion `particles.bin` must exist at the
-declared path in content available to the game.
-
-Adding a link does not create the companion BIN, copy its objects into the target, or redirect
-a particle effect to an object inside it. Those are separate content changes.
+- The target must exist in the game or in enabled mod content. Your project needs no copy of
+  `skin0.bin`.
+- The companion `particles.bin` must exist at the declared path in content that the game loads.
+- A link does not create the companion bin, and it does not copy the objects of that bin into the
+  target.
+- A link does not redirect a particle effect to an object in the companion bin. To redirect an
+  effect, [edit the properties of an entry](#edit-an-entrys-properties).
 
 ## Choose a target
 
-`target` is one string, containing either a game path or a raw WAD chunk hash:
+`target` is one string: a game path or a WAD chunk hash.
 
-| Example value                           | Interpretation                                                                 |
-| --------------------------------------- | ------------------------------------------------------------------------------ |
-| `data/characters/teemo/skins/skin0.bin` | A literal game path.                                                           |
-| `shared`                                | An extensionless game path.                                                    |
-| `'0123456789abcdef'`                    | A raw hash: exactly 16 hexadecimal digits. This example hash is a placeholder. |
+| Example value                           | Meaning                                                           |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| `data/characters/teemo/skins/skin0.bin` | A game path                                                       |
+| `shared`                                | A game path with no extension                                     |
+| `'0123456789abcdef'`                    | A chunk hash of exactly 16 hexadecimal digits, here a placeholder |
 
-Use the chunk path inside the WAD. Leave out `content/base/`, the WAD directory name, and any
-absolute filesystem prefix. Preserve the actual extension, including its absence. Use forward
-slashes, including on Windows.
+- Write the chunk path as it is inside the WAD. Omit `content/base/`, the WAD directory name and
+  any absolute file system prefix.
+- Keep the extension of the chunk. Write no extension for a chunk that has none.
+- Use forward slashes, including on Windows.
+- A hash has no `0x` prefix and no `.bin` suffix. The loader reads a string with either as a path.
+- Quote a hash in YAML. YAML reads a hash that contains only digits as a number.
+- The build matches a path ASCII case-insensitively. The loader does not change the path: a
+  separator, a space and a suffix stay as written.
+- `target: { path: ... }` and `target: { hash: ... }` are errors.
 
-Raw hashes have no `0x` prefix or `.bin` suffix. A string with either is treated as a path.
-Always quote hashes in YAML, especially values containing only digits. A literal path consisting
-of exactly 16 hexadecimal characters is reserved for hash notation.
-
-Path lookup ignores ASCII letter case. Other characters remain literal: separators, whitespace,
-and suffixes are not cleaned up. The object forms `target: { path: ... }` and
-`target: { hash: ... }` are invalid in this engine.
-
-Link values are game paths, not raw hashes or local source filenames. Each link is a nonempty
-string of at most 65,535 UTF-8 bytes.
+A link value is a game path of 1 to 65,535 UTF-8 bytes. It is not a hash, and it is not the name
+of a local file.
 
 ### Select by entry name
 
-Use `entries` to select a BIN through an entry it declares. The game index resolves the name
-to every **declaring chunk**: a game BIN that contains that entry.
+Use `entries` to select a bin by an entry that it declares. The build resolves the name through
+the game index to each **declaring chunk**: a game bin that contains the entry.
 
 ```yaml
 version: 1
 modules:
   - entries:
-      'Characters/Teemo/Skins/Skin0':
+      Characters/Teemo/Skins/Skin0:
         links:
           - mods/teemo-example/particles.bin
 ```
 
-The link applies to the dependency list of every declaring chunk. An entry body holds
-[property edits](#edit-an-entrys-properties) beside `links`, `+links`, and `-links`; the link
-keys are the link engine's extension of the standard.
+- The build adds the link to the dependency list of each declaring chunk.
+- An entry body under `entries` accepts [property edits](#edit-an-entrys-properties) and the keys
+  `links`, `+links` and `-links`.
+- An entry key is an object path or an object hash: `0x` followed by exactly 8 hexadecimal digits.
+  Quote a hash in YAML, for example `'0xd2343ed1'`.
+- The build matches an object path ASCII case-insensitively. The manifest and the diagnostics keep
+  the casing that you write.
+- An `entries` module contains only the entry mapping and an optional `name`. `target`, `edits`
+  and `source` are errors in it.
+- The build applies the entries in mapping order. To apply two edits to one entry in order, write
+  two modules.
 
-An entry key is a nonempty object name or an object hash: lowercase `0x` followed by exactly
-8 hexadecimal digits. The digits accept either case. Quote hashes in YAML, for example
-`'0xd2343ed1'`. Object names match by FNV-1a 32 of their ASCII-lowercased spelling.
-The manifest and reports keep your spelling.
+The build does not fail in these cases:
 
-Each `entries` item is one batch. It contains only the entry mapping, with no `target`,
-`edits`, or `source`. Entry bodies have no `edits` or `source` either. Entries apply in
-mapping order. Use separate module items for repeated edits to one entry.
-
-Several declaring chunks produce an informational `EntryFanOut` report. The build edits every
-one. A missing entry produces `EntryUnresolved` and skips that entry's edits. An unavailable
-object index produces `IndexUnavailable` for each `entries` item and skips those items.
-The build continues in each case.
+| Diagnostic         | Cause                                                 | Result                                 |
+| ------------------ | ----------------------------------------------------- | -------------------------------------- |
+| `EntryFanOut`      | Several chunks declare the entry                      | The build edits each chunk             |
+| `EntryUnresolved`  | No game bin declares the entry                        | The build skips the edits of the entry |
+| `IndexUnavailable` | The build can neither load nor build the object index | The build skips each `entries` module  |
 
 ## Add and remove dependencies
 
-Use `links` or its alias `+links` for additions. Use `-links` for removals. This alternative
-manifest removes an example old dependency and adds its replacement:
+Use `links` or `+links` to add a dependency. Both keys have the same meaning. Use `-links` to
+remove a dependency. This manifest removes one dependency and adds another:
 
 ```yaml
 version: 1
 modules:
   - target: data/characters/teemo/skins/skin0.bin
-    '-links':
+    -links:
       - mods/teemo-example/old-particles.bin
-    '+links':
+    +links:
       - mods/teemo-example/particles.bin
 ```
 
-`links` adds to the existing list; it does not replace the list. Matching ignores ASCII letter
-case. Additions preserve the written spelling and list order, with duplicate paths omitted.
-A removal with no matching dependency produces a diagnostic and leaves the other edits active.
-
-Within one edit, removals run before additions, regardless of key order. Removing and adding the
-same path leaves that path present. An edit can contain `links` or `+links`, but not both aliases.
+- `links` adds to the list. It does not replace the list.
+- The build compares paths ASCII case-insensitively.
+- An addition keeps its written casing and its position in the list. The build omits a path that
+  the list already contains.
+- If the list does not contain the path of a removal, the build reports `LinkRemovalUnmatched` and
+  applies the other edits.
+- In one edit, the build applies removals before additions, in any key order. An edit that removes
+  and adds the same path leaves the path in the list.
+- An edit can contain `links` or `+links`, not both.
+- In a `target` module, write `links` beside the entry names. Under an entry name of a `target`
+  module, `links` is a property path.
 
 ## Edit an entry's properties
 
-An entry name under `target` opens an entry body. Each key in the body is a property path, with
-an optional sign in front; each value is what the property becomes. This example gives base
-Teemo one texture from a companion skin, a lighting value, one tag more and one tag less, and a
-replaced particle:
+An entry name beside `target` starts an entry body. Each key of the body is a property path, with
+an optional sign in front. Each value is the new value of the property. This example sets a
+texture and a lighting value, adds one audio tag, removes another, and changes two resource slots:
 
 ```yaml
 version: 1
 modules:
   - target: data/characters/teemo/skins/skin0.bin
-    'Characters/Teemo/Skins/Skin0':
+    Characters/Teemo/Skins/Skin0:
       skinMeshProperties.selfIllumination: 1.0
       skinMeshProperties.texture: assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex
       skinAudioProperties:
-        '+tagEventList': [Jade_Teemo]
-        '-tagEventList': [Teemo]
-    'Characters/Teemo/Skins/Skin0/Resources':
-      '-resourceMap': [Teemo_R_Firefly_GroundLight]
-      '+resourceMap':
+        +tagEventList: [Jade_Teemo]
+        -tagEventList: [Teemo]
+    Characters/Teemo/Skins/Skin0/Resources:
+      -resourceMap: [Teemo_R_Firefly_GroundLight]
+      +resourceMap:
         Teemo_R_Mis: Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis
 ```
 
-| Part                                  | Meaning                                                                                |
-| ------------------------------------- | -------------------------------------------------------------------------------------- |
-| `'Characters/Teemo/Skins/Skin0'`      | The entry to edit. An entry name at the module root carries a slash or is a `0x` hash. |
-| `skinMeshProperties.selfIllumination` | A dotted path into a struct field. The value replaces what the base has.               |
-| `skinAudioProperties:` with a block   | The same struct as a block. Each key inside is a path relative to the struct.          |
-| `'+tagEventList'`                     | Add these elements to the list. On a map, add or replace these keys.                   |
-| `'-tagEventList'`, `'-resourceMap'`   | Remove these elements from the list, or these keys from the map.                       |
+| Part                                  | Meaning                                                                             |
+| ------------------------------------- | ----------------------------------------------------------------------------------- |
+| `Characters/Teemo/Skins/Skin0`        | The entry to edit. An entry name in a `target` module has a slash or is a `0x` hash |
+| `skinMeshProperties.selfIllumination` | A dotted path to a field of a struct. The value replaces the value of the game      |
+| `skinAudioProperties:` with a block   | The same struct as a block. Each key in the block is a path relative to the struct  |
+| `+tagEventList`                       | Adds the elements to the list. On a map, adds or replaces the keys                  |
+| `-tagEventList`, `-resourceMap`       | Removes the elements from the list, or the keys from the map                        |
 
-Write values as plain YAML: `1.0` is a number, `true` is a boolean, a game path is a string.
-The build reads the property's type from the installed patch's schema and converts the value to
-it: a string on a `hash` or `link` property is hashed, on a `file` property it is hashed as a
-path, a number list on a `vec3` property is a vector. Where the schema says nothing about a
-property, the type is the one the base BIN holds, and the build reports the fallback as
-informational. A property the base omits and the schema does not know is skipped.
+Copy entry names and property names from the bin that you inspect. An entry name is not derived
+from the file name of the bin.
 
-A sign belongs on a list or map property. On a plain value it is a report, and the edit is
-skipped. `-` on a list matches elements by value, or by index when the elements are structs;
-on a map it matches by key. A removal that matches nothing is a report. Within one key the set
-applies first, then the removals, then the additions; a report on any of the three skips that
-key and the remaining keys continue.
-
-The dotted spelling and the block spelling are the same edit. A block on a struct merges
-field by field, and a field the block does not name keeps its base value. Choose one spelling
-for a field within a module; both spellings together are two writes to the same property.
-
-A **type pin** fixes the type a value must have. In YAML it is a tag in front of the value,
-`selfIllumination: !f32 1.0`; in TOML and JSON it is a one-key mapping, `{ f32 = 1.0 }`. A pin
-whose type disagrees with the property's is a report, and the edit is skipped. A block whose
-only key is a type name, such as `hash`, is read as a pin; write that field as a dotted path. A `pointer` pin
-builds a struct where the base has a null pointer, with the class in parentheses and the fields under
-it: `!pointer(SomeClass) { field: 1 }`.
-The [reference](/reference/mod-packages/game-data/#type-pins) lists the type names and the full
-conversion table.
-
-A **reference** names a value in the installed game instead of copying it, written
-`<entry name>:<property path>`: `speed: !ref Characters/Ahri/Skins/Skin0:speed` in YAML, or
-`{ ref = "Characters/Ahri/Skins/Skin0:speed" }` in TOML and JSON. Use it wherever you would
-otherwise paste a number out of a bin you inspected. The copied number is frozen at the patch
-you read it from and silently goes stale; the reference is re-read on every build. It reads the
-game's own copy, never another mod's edits, so the result never depends on which mods are
-enabled or in what order. The
-[reference](/reference/mod-packages/game-data/#references) covers the spelling and the reports.
-
-The same body works under `entries`, where the build edits the entry in every declaring chunk:
+The same body is valid under `entries`. The build then edits the entry in each declaring chunk:
 
 ```yaml
 version: 1
 modules:
   - entries:
-      'Characters/Teemo/Skins/Skin0':
+      Characters/Teemo/Skins/Skin0:
         skinMeshProperties.selfIllumination: 1.0
         links:
           - mods/teemo-example/particles.bin
 ```
 
-## Organize edits into modules and edit lists
+### Values
 
-A **module** selects a chunk with `target` or named entries with `entries`.
-A `target` module contains one of these forms:
+Write a value as plain YAML: `1.0` is a number, `true` is a boolean, and a game path is a string.
+The build reads the type of the property from the schema of the installed patch and converts the
+value to it:
 
-- Direct bindings, such as the `links` list in the first example.
-- An `edits` list of ordered binding groups.
-- A `source` filename containing the bindings or edits.
+- The build hashes a string on a `hash` or `link` property.
+- The build hashes a string on a `file` property as a path.
+- A list of numbers on a `vec3` property is a vector.
 
-Keep one form per `target` module. An `entries` module contains only its entry mapping.
-There is no `inline` wrapper.
+If the schema has no type for a property, the build uses the type of the value in the game's bin
+and reports `SchemaFallback`, which is informational. If the game's bin omits the property and no
+type is known, the build skips the key.
 
-Use `edits` when the order between groups matters. In this example, the second edit removes the
-link added by the first. The final list has no `temporary.bin` dependency:
+### Signs
+
+- A key with no sign sets the value. On a list or a map, it replaces the whole container.
+- `+` adds elements to a list, and adds or replaces keys of a map. The other elements and keys
+  stay.
+- `-` removes elements from a list, and keys from a map. On a list of structs, `-` takes indexes.
+- A sign is valid on a list or a map property only. On any other property, the build skips the
+  key.
+- If a removal matches no element or key, the build skips the key.
+- For one key, the build applies the set first, then the removals, then the additions. If one of
+  them fails, the build skips all three for that key and applies the other keys.
+
+### Blocks and dotted paths
+
+The dotted form and the block form are the same edit. A block on a struct changes the fields that
+are keys of the block, and the other fields keep their values. Use one form for a field in an
+entry body. If both forms set one field, the build applies the later value.
+
+### Type pins
+
+A **type pin** requires one type for a value. In YAML it is a tag in front of the value:
+`selfIllumination: !f32 1.0`. In TOML and JSON it is a mapping with one key: `{ f32 = 1.0 }`.
+
+- If the property has another type, the build skips the key.
+- A pin does not supply a type. If no type is known for the property, the build skips the key with
+  or without a pin.
+- A block whose only key is a type name, such as `hash`, is a pin. To set a field with that name,
+  write the dotted path.
+- A `pointer` pin constructs a struct where the game's bin has a null pointer. Write the class in
+  parentheses and the fields under it: `!pointer(SomeClass) { field: 1 }`.
+- The YAML loader fails on the tag `!bool`. Write `{ bool: false }`, or write the value with no
+  pin.
+
+The reference lists the [type names](/reference/mod-packages/game-data/#type-pins) and the
+[conversion table](/reference/mod-packages/game-data/#coercion).
+
+### References
+
+A **reference** is a value that the build reads from the installed game. Write it as
+`<entry name>:<property path>`. In YAML:
+`texture: !ref Characters/Ahri/Skins/Skin0:skinMeshProperties.texture`. In TOML and JSON:
+`{ ref = "Characters/Ahri/Skins/Skin0:skinMeshProperties.texture" }`.
+
+- Use a reference in place of a value that you copy from a bin. A copied value keeps the value of
+  the patch that you read it from. The build reads a reference again on every build.
+- The build resolves a reference against the game's own copy and never against the edits of a mod.
+  The enabled mods and their order do not change the result.
+
+See [References](/reference/mod-packages/game-data/#references) in the reference for the form and
+the diagnostics.
+
+## Create, clone and remove objects
+
+`objects` in a `target` module creates and removes objects of the target bin. Each key is the name
+of an object. Name a new object under `Mods/<modid>/` to keep its name different from the names of
+game objects.
+
+```yaml
+version: 1
+modules:
+  - target: data/characters/teemo/skins/skin0.bin
+    objects:
+      # A copy of a game object, with one property changed.
+      Mods/TeemoExample/Particles/R_Missile:
+        clone: Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis
+        set:
+          particleName: Teemo_Example_R_Mis
+
+      # A new object of a class.
+      Mods/TeemoExample/Resources:
+        class: ResourceResolver
+        set:
+          resourceMap:
+            Teemo_R_Mis: Mods/TeemoExample/Particles/R_Missile
+
+      # An object to delete.
+      Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Firefly_GroundLight:
+        remove: true
+```
+
+| Body                            | Result                                                             |
+| ------------------------------- | ------------------------------------------------------------------ |
+| `clone` with an optional `set`  | A copy of an entry of the target, with the `set` applied           |
+| `class` with an optional `set`  | An object of that class that contains only the properties in `set` |
+| `remove: true` and no other key | The build removes the object                                       |
+
+- `set` is an entry body. It accepts the same paths, signs, blocks, pins and references as
+  [the body of an entry](#edit-an-entrys-properties).
+- A clone copies the class and the properties of its source. The build also rewrites the property
+  that contains the path of the source, such as `objectPath` or `particlePath`, to the new name.
+- The game supplies the class defaults for each property that a constructed object omits.
+- The game does not read a new object until a `link` property or a resource slot refers to it. Set
+  a `link` property or a resource slot to the new name.
+- `objects` is an error in an `entries` module.
+
+In YAML, a constructed object has a shorter form. Write the class as a tag on the object, and the
+properties directly under it:
+
+```yaml
+objects:
+  Mods/TeemoExample/Resources: !ResourceResolver
+    resourceMap:
+      Teemo_R_Mis: Mods/TeemoExample/Particles/R_Missile
+```
+
+The loader reads this body as the `class` and `set` body above. A clone and a removal have no tag
+form. TOML and JSON have no tags.
+
+A clone reads the bin as it is before the build creates the objects of the same edit. To clone an
+object that you create, put the second clone in a later item of an `edits` list:
+
+```yaml
+version: 1
+modules:
+  - target: data/characters/teemo/skins/skin0.bin
+    edits:
+      - objects:
+          Mods/TeemoExample/Particles/R_Missile:
+            clone: Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis
+
+      - objects:
+          Mods/TeemoExample/Particles/R_Missile_Extra:
+            clone: Mods/TeemoExample/Particles/R_Missile
+```
+
+If an object edit does not apply, the build reports `ObjectSkipped` with one of these reasons:
+
+| Reason             | Cause                                                   |
+| ------------------ | ------------------------------------------------------- |
+| `objectExists`     | The target already contains an object with the new name |
+| `sourceMissing`    | The target does not contain the clone source            |
+| `unknownClass`     | The schema does not define the class                    |
+| `removalUnmatched` | The target does not contain the object to remove        |
+
+`ObjectShadowsGame` is informational: another game bin declares an object with the new name. The
+build still creates the object.
+
+## Apply an override file
+
+`overrides` applies `.ptch` files of the layer to the target. A `.ptch` file is a `PTCH` bin with
+property records. Use it for an edit that the build must apply exactly as written: the build
+converts no value of a record.
+
+```yaml
+version: 1
+modules:
+  - target: data/characters/teemo/skins/skin0.bin
+    overrides:
+      - teemo-skin0.ptch
+```
+
+- The loader resolves the path against the layer directory, or against the directory of the source
+  file that contains it.
+- `overrides` is valid only in a `target` module.
+- A `.rito` path is an error.
+- In one edit, the build applies override files before objects, entries and links.
+
+## Organize edits into modules
+
+A **module** selects a chunk with `target`, or entries with `entries`. A `target` module has one
+of these forms:
+
+- Bindings beside `target`, such as the `links` list in the first example
+- An `edits` list of ordered edits
+- A `source` path of a file that contains the bindings or the edits
+
+An `entries` module contains only its entry mapping and an optional `name`.
+
+Use `edits` when the build must apply one edit to the result of another. In this example, the
+second edit removes the link that the first edit adds. The resulting list has no `temporary.bin`:
 
 ```yaml
 version: 1
@@ -264,16 +391,28 @@ modules:
     edits:
       - links:
           - mods/teemo-example/temporary.bin
-      - '-links':
+      - -links:
           - mods/teemo-example/temporary.bin
 ```
 
-You can also repeat a target in separate modules. Modules run in array order, and each module
-reads the preceding module's result. Add another module with a different `target` to edit another BIN.
+- The build applies modules in list order, each to the result of the module before it.
+- Two modules can have the same `target`.
+- To edit another bin, add a module with another `target`.
+- A module takes an optional `name`, a label that LTK Editor shows in the **Declarations** view.
+  A name does not change the build.
+
+```yaml
+version: 1
+modules:
+  - name: Example particles
+    target: data/characters/teemo/skins/skin0.bin
+    links:
+      - mods/teemo-example/particles.bin
+```
 
 ## Reuse a source file
 
-A source file holds an edit independently of its target. For example:
+A source file contains a body with no target. A module in the manifest assigns it to a target:
 
 {/* prettier-ignore */}
 <FileTree>
@@ -283,48 +422,41 @@ A source file holds an edit independently of its target. For example:
     - particle-links.yaml
 </FileTree>
 
-`content/base/game_data.yaml`:
-
-```yaml
+```yaml title="content/base/game_data.yaml"
 version: 1
 modules:
   - target: data/characters/teemo/skins/skin0.bin
     source: declarations/particle-links.yaml
 ```
 
-`content/base/declarations/particle-links.yaml`:
-
-```yaml
+```yaml title="content/base/declarations/particle-links.yaml"
 version: 1
 links:
   - mods/teemo-example/particles.bin
 ```
 
-Keep `target` in the manifest. The source has its own `version: 1` and direct bindings or
-`edits`; it has no `modules` wrapper. A source cannot select a target or include another source.
-
-The `source` path is relative to the layer root, here `content/base/`. It uses forward slashes
-and must stay within that layer, including through symlinks. A source may use YAML, TOML, or
-JSON independently of the manifest's format.
-
-To reuse the edit for another target, add another module referencing the same source. Assigning
-the same source to the same target twice is an error. To customize a source's result, add a
-separate module for that target immediately below the source module.
-
-The manifest and referenced sources must exist and must not be excluded by `.modignore`.
-An unreferenced source file contributes no declarations.
+- Keep `target` in the manifest. The source file contains its own `version: 1` and bindings or
+  `edits`. `modules`, `target`, `name` and `source` are errors in a source file.
+- The `source` path is relative to the layer directory, here `content/base/`. Use forward slashes.
+  The path must resolve to a file inside the layer directory, after the loader resolves symlinks.
+- A source file can be YAML, TOML or JSON. Its format is independent of the format of the
+  manifest.
+- To use the edit on another target, add a module with the same `source`. A manifest that assigns
+  one source file to one target twice is an error.
+- To change the result of a source file, add a module for the same target after the module with
+  `source`. A module with `source` can contain no other binding.
+- The manifest and each referenced source file must exist, and `.modignore` must not exclude them.
+- A file that no manifest references adds no declaration.
 
 ## Choose a manifest format
 
-Each layer accepts exactly one manifest: `game_data.yaml`, `game_data.yml`, `game_data.json`, or
-`game_data.toml`. Choose one of these alternatives; do not place multiple formats in the same layer.
+A layer accepts one manifest: `game_data.yaml`, `game_data.yml`, `game_data.json` or
+`game_data.toml`. Two manifests in one layer are an error.
 
 <Tabs>
   <TabItem label="YAML">
 
-    `content/base/game_data.yaml`:
-
-    ```yaml
+    ```yaml title="content/base/game_data.yaml"
     version: 1
     modules:
       - target: data/characters/teemo/skins/skin0.bin
@@ -335,9 +467,7 @@ Each layer accepts exactly one manifest: `game_data.yaml`, `game_data.yml`, `gam
   </TabItem>
   <TabItem label="JSON">
 
-    `content/base/game_data.json`:
-
-    ```json
+    ```json title="content/base/game_data.json"
     {
       "version": 1,
       "modules": [
@@ -352,9 +482,7 @@ Each layer accepts exactly one manifest: `game_data.yaml`, `game_data.yml`, `gam
   </TabItem>
   <TabItem label="TOML">
 
-    `content/base/game_data.toml`:
-
-    ```toml
+    ```toml title="content/base/game_data.toml"
     version = 1
 
     [[modules]]
@@ -365,63 +493,83 @@ Each layer accepts exactly one manifest: `game_data.yaml`, `game_data.yml`, `gam
   </TabItem>
 </Tabs>
 
-Keep one `version` and one `modules` list in a manifest. Unknown fields, duplicate keys,
-unsupported versions, and mixed module forms are errors.
+A manifest contains one `version` and one `modules` list. An unknown key, a duplicate key, an
+unsupported version and a module with two body forms are errors.
 
-## Layers, ordering, and packaging
+YAML has comments, tags and nested blocks. Follow these rules in a YAML manifest:
 
-Each layer owns its manifest. Only enabled layers contribute declarations. You do not list
-declaration filenames in `mod.config.json` or `mod.config.toml`.
+- Indent with two spaces at each level. Do not use tabs.
+- Quote a hash: `'0xd2343ed1'`. YAML reads `0xd2343ed1` without quotes as a number.
+- Quote a key that contains a map subscript: `'resourceMap{"Teemo_R_Mis"}'`.
+- Write `1.0` for a number, `true` for a boolean and `'1.0'` for a string.
+- Write a short vector in brackets: `[50.0, 180.0, 150.0]`.
+- Write each mapping key once. To write a property twice in order, use two modules or two edits.
 
-The overlay builder selects the highest-precedence enabled mod copy of the target as its base,
-or the game's copy when no mod supplies one. It applies declarations in this order:
+## Layers, order and packaging
 
-1. Mods from lowest to highest precedence.
-2. Layers from lowest to highest priority, with layer name as the tie-breaker.
-3. Modules in manifest order.
-4. Edits in their listed order.
+Each layer has its own manifest. Only enabled layers add declarations. `mod.config.json` and
+`mod.config.toml` do not list declaration files.
 
-Source filenames do not control order. A higher-precedence removal can remove a lower-precedence
-addition. A whole-file mod copy also supplies the starting objects and dependencies for all
-declarations targeting that BIN.
+The build takes the **base** of a target from the enabled mod with the highest precedence that
+ships a copy of the chunk. If no mod ships a copy, the base is the game's copy. The build applies
+declarations in this order:
 
-[Packing](/making-mods/packaging/) validates the manifests and expands source files into package
-metadata. These files are build inputs and are excluded from game content. Invalid declarations
-fail packing. Game-dependent checks, such as target existence, happen during the overlay build.
+1. Mods, from the lowest precedence to the highest
+2. Layers of a mod: the base layer first, then the other layers from the lowest priority to the
+   highest, and layers with the same priority in name order
+3. Modules, in manifest order
+4. Edits, in list order
 
-`.modpkg` carries declarations per layer. `.fantome` carries base-layer declarations in the
-LeagueToolkit extension; a consumer must support that extension to apply them. Fantome packing
-omits non-base layers. Extraction reconstructs a `game_data.json` manifest with inline edits for
-`target` modules and compact entry bodies for `entries` modules. Entry mapping order survives
-packing and extraction. Source filenames, comments, and formatting are not reconstructed.
+- File names of source files do not change the order.
+- A removal in a mod with a higher precedence can remove an addition of a mod with a lower
+  precedence.
+- A whole-file copy of a bin in a mod is the base for every declaration on that bin.
 
-## Check your result
+[Packing](/making-mods/packaging/) validates the manifest and expands each source file into the
+package metadata. The manifest, the source files and the override files are build resources, and
+packing excludes them from game content. Packing fails on an invalid declaration. Checks that need
+the game, such as the existence of a target, run in the overlay build.
 
-Build the overlay with the intended mods and layers enabled, then inspect its diagnostics.
-A successful pack verifies the declaration files, not the availability of every game target or
-dependency. The target must be a valid `PROP` BIN at version 2 or 3; `PTCH` files and version 1
-BINs are unsupported bases.
+- A `.modpkg` stores the declarations of each layer.
+- A `.fantome` stores them in the LeagueToolkit extension of `META/info.json`. A tool with no
+  support for the extension installs the mod without the declarations.
+- Extraction writes a `game_data.json` manifest that contains the body of every module and uses no
+  source file. It keeps module order, module names and the order of an `entries` mapping. It does
+  not restore source file names, comments or formatting.
 
-| Problem                     | What to check                                                                                                                                                                                                                                                                                            |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Multiple manifests          | Keep one `game_data.*` manifest at the layer root.                                                                                                                                                                                                                                                       |
-| Declarations rejected       | Check the reported file, supported keys, `version`, and module body form. An invalid module rejects that layer's declarations. Ordinary mod content remains available during overlay building.                                                                                                           |
-| Missing or ignored source   | Match the layer-relative filename and check `.modignore`.                                                                                                                                                                                                                                                |
-| Duplicate source assignment | Keep only one assignment of a given source to a given target, including aliases of either path.                                                                                                                                                                                                          |
-| Target skipped              | Check its game path or 16-digit hash, enabled content, and BIN format. A missing, invalid, or blocked target receives no declaration edits.                                                                                                                                                              |
-| `EntryUnresolved`           | Check the entry name or `0x` plus 8-digit object hash against the installed game. No game BIN declares it.                                                                                                                                                                                               |
-| `EntryFanOut`               | Informational: several chunks declare the entry, and the build edits every one. Check the reported chunks.                                                                                                                                                                                               |
-| `IndexUnavailable`          | Check the object-index error in the build log. The build skips every `entries` item and continues.                                                                                                                                                                                                       |
-| `PropertyEditSkipped`       | One property key did not apply. The report names the entry, the signed key, and a reason code: a missing property, a sign on a plain value, a value that does not convert, a pin that disagrees with the type, or a removal that matches nothing. Check the key against the entry's class in the schema. |
-| `SchemaFallback`            | Informational: the schema says nothing about the property, and the build typed it from the base BIN.                                                                                                                                                                                                     |
-| Link removal is absent      | The dependency is not present at that edit. Check the path and preceding edits.                                                                                                                                                                                                                          |
-| Linked BIN is missing       | Supply the companion BIN at the declared game path in enabled content.                                                                                                                                                                                                                                   |
-| No edits appear             | Check the layer is enabled, the manifest is at its root, and both packing and overlay tools support declarations.                                                                                                                                                                                        |
+## Check the result
 
-## Related pages
+Build the overlay with the intended mods and layers enabled, then read its diagnostics. A
+successful pack validates the declaration files. It does not check that each target and each
+dependency exists in the game. A target must be a `PROP` bin of version 2 or 3, or a `PTCH` bin.
 
-- [Mod projects](/making-mods/mod-projects/) - project layout and content paths.
-- [Game data declarations](/editor/bin-editor/game-data/) - declaring edits in LTK Editor.
-- [Layers](/making-mods/layers/) - optional content and priorities.
-- [BIN Files](/reference/file-formats/bin/) - property bins and linked files.
-- [Game Data Declarations proposal](/reference/mod-packages/game-data/) - the broader declaration design.
+| Problem                          | What to do                                                                                                                                                                  |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Several manifests                | Keep one `game_data.*` manifest in the layer directory.                                                                                                                     |
+| `DeclarationsRejected`           | Read the reported file, key, `version` and module form. The build skips the declarations of a layer that contains an invalid module. It keeps the other content of the mod. |
+| A YAML duplicate key error       | Put the fields under one entry block, or use separate modules or edits for ordered writes.                                                                                  |
+| A missing or ignored source file | Compare the `source` path with the file name, and check `.modignore`.                                                                                                       |
+| A duplicate source assignment    | Assign a source file to a target once.                                                                                                                                      |
+| A rejected module with `source`  | Keep only the `target` and the `source` in that module. Put other bindings in the next module.                                                                              |
+| A target rejected as a mapping   | Write `target` as one string: a path, or a quoted hash of 16 digits.                                                                                                        |
+| `TargetSkipped`                  | Check the game path or the hash, the enabled content and the bin format.                                                                                                    |
+| `NoEffect`                       | No edit of the module changed the target. Read the other diagnostics of that module.                                                                                        |
+| `EntryUnresolved`                | Check the entry name or the `0x` hash against the installed game. No game bin declares it.                                                                                  |
+| `EntryFanOut`                    | Informational. Several chunks declare the entry, and the build edits each one.                                                                                              |
+| `IndexUnavailable`               | Read the object index error in the build log.                                                                                                                               |
+| `PropertyEditSkipped`            | One property key did not apply. The diagnostic contains the entry name, the signed key and a reason code. Check the key against the class of the entry in the schema.       |
+| `pinMismatch` on a struct block  | The only key of the block is a type name, so the block is a [type pin](#type-pins). Write the field as a dotted path.                                                       |
+| `SchemaFallback`                 | Informational. The schema has no type for the property, and the build used the type of the game's value or the fallback type of the schema.                                 |
+| `ObjectSkipped`                  | Check the reason code under [Create, clone and remove objects](#create-clone-and-remove-objects).                                                                           |
+| `LinkRemovalUnmatched`           | The list does not contain the dependency when the build applies that edit. Check the path and the edits before it.                                                          |
+| A missing linked bin             | Supply the companion bin at the declared game path in enabled content.                                                                                                      |
+| No edit applies                  | Check that the layer is enabled, that the manifest is in the layer directory, and that the packer and the overlay build support declarations.                               |
+
+The reference lists every [diagnostic and reason code](/reference/mod-packages/game-data/#diagnostics).
+
+## Next steps
+
+- [Game data declarations reference](/reference/mod-packages/game-data/)
+- [Game data declarations](/editor/bin-editor/game-data/) in LTK Editor
+- [Layers](/making-mods/layers/)
+- [Package formats](/making-mods/packaging/)
