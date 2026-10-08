@@ -243,8 +243,8 @@ A **type pin** requires one type for a value. In YAML it is a tag in front of th
   write the dotted path.
 - A `pointer` pin constructs a struct where the game's bin has a null pointer. Write the class in
   parentheses and the fields under it: `!pointer(SomeClass) { field: 1 }`.
-- The YAML loader fails on the tag `!bool`. Write `{ bool: false }`, or write the value with no
-  pin.
+- `!bool` is valid on `true` and `false` only. To pin a list or a map as `bool`, write the pin as
+  a mapping: `{ bool: [true, false] }`.
 
 The reference lists the [type names](/reference/mod-packages/game-data/#type-pins) and the
 [conversion table](/reference/mod-packages/game-data/#coercion).

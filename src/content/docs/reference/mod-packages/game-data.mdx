@@ -1086,8 +1086,8 @@ these cases:
         unitHealthBarStyle: !u8 12
 
       skinAudioProperties:
-        # The YAML loader fails on the tag !bool. Write a bool pin as a mapping.
-        bankUnits[1].voiceOver: { bool: false }
+        # A boolean with no pin converts to bool or flag.
+        bankUnits[1].voiceOver: !bool false
 
         # On a list, the pin is the element type.
         +tagEventList: !hash [Jade_Teemo]
@@ -1122,6 +1122,7 @@ these cases:
     # A value of 12 with no pin converts to u8, i32 or f32.
     healthBarData = { unitHealthBarStyle = { u8 = 12 } }
     skinAudioProperties = {
+      # A boolean with no pin converts to bool or flag.
       "bankUnits[1].voiceOver" = { bool = false },
 
       # On a list, the pin is the element type.
@@ -1195,8 +1196,9 @@ these cases:
 - **Tags** - The loader reads a YAML tag as the mapping with one key: `!f32 1.0` is `{f32: 1.0}`.
   On a property value, a tag that is not a type name, `ref` or a struct tag is an error. A tag
   does not change how YAML reads the scalar: `!string 12` contains the integer `12`, which does
-  not convert to a string. Write `!string '12'`. The YAML loader fails on the tag `!bool`. See
-  [Limitations](#limitations).
+  not convert to a string. Write `!string '12'`. The YAML parser reads `!bool` as the YAML boolean
+  tag: `!bool true` and `!bool false` are the `bool` pin, and `!bool` on any other value is a
+  syntax error. See [Limitations](#limitations).
 
 A struct pin is a `pointer` or `embed` pin. It constructs a struct from a class and its fields:
 
@@ -1924,9 +1926,10 @@ The stored form differs from a manifest:
 - **`.rito` override files** - The loader does not read an override file in ritobin text. A
   `.rito` path is an error, and the error message contains the extension. Convert the file to a
   `.ptch` bin.
-- **`!bool` tag** - The YAML loader fails on the tag `!bool` with a syntax error. In YAML, write a
-  `bool` pin as a mapping, `{ bool: false }`, or write the value with no pin. The loader reads
-  every other type name as a tag.
+- **`!bool` tag on a list or a map** - The YAML parser reads `!bool` as the YAML boolean tag. The
+  tag is valid on `true` and `false` only. On a list or a mapping, `!bool` is a syntax error. To
+  pin the elements of a list or the values of a map as `bool`, write the pin as a mapping:
+  `{ bool: [true, false] }`. No other type name has this limit.
 - **Entries that the game reads from one bin** - The game reads some entries from one loaded bin
   only, such as skin properties and the `Resources` entry of a skin. The build still edits every
   declaring chunk of an `entries` key.
