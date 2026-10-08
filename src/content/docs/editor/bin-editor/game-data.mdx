@@ -10,9 +10,9 @@ tags:
 import Screenshot from '@components/Screenshot.astro';
 import Where from '@components/Where.astro';
 
-Declare edits to a game bin to change a few of its values without shipping a copy of the whole
-file. Each edit you make in the bin editor becomes a line in a layer's `game_data.yaml`, and the
-build applies it to the game's copy of the bin.
+Declare edits to a game bin to change some of its values without a copy of the whole file in your
+mod. Each edit that you make in the bin editor becomes a key in the `game_data.yaml` of a layer,
+and the build applies it to the game's copy of the bin.
 
 <Where path={['Bin editor', 'Sandbox', 'Use game data declarations']} files="Game bin files" />
 
@@ -21,27 +21,27 @@ Prerequisites:
 - A [project](/editor/projects/) with at least one layer
 - The League installation path set in LTK Manager
 
-## How a declared bin works
+## Declared bins
 
-A game bin that no layer of your project ships opens declared. The bin editor shows the game's
-copy with every declaration of every layer applied, in the order the build applies them. What you
-see is what the build makes.
+If no layer of your project ships a game bin, the bin opens as a declared bin. The bin editor shows
+the game's copy with the declarations of every layer applied, in the order in which the build
+applies them. The values in the bin editor are the values that the build writes.
 
-An edit writes one key to the `game_data.yaml` of the chosen layer, under the chosen module. The
-edit is on disk as soon as the row shows it, so a declared bin has no save state.
+For each edit, LTK Editor writes one key to the selected module in the `game_data.yaml` of the
+selected layer. LTK Editor saves the file with each edit, so a declared bin has no unsaved changes.
 
 See [Declaration manifests](/making-mods/game-data/) for the file format.
 
 ## Turn on declarations
 
 1. Open a game bin from the **Game index** view, or follow a link to one.
-2. In the tab header, select **Sandbox**, the button that shows your project's name.
+2. In the tab header, select **Sandbox**, the button that shows the name of your project.
 3. Turn on **Use game data declarations**.
 
-   The bin takes edits. The setting applies to the whole project.
+   You can now edit the bin. The setting applies to the whole project.
 
-When declarations are off, the bin still shows the declarations applied, and a strip under the
-toolbar offers **Declare edits**, which turns the setting on.
+When declarations are off, the bin still shows the declarations applied. A strip under the toolbar
+shows **Declare edits**. Select it to turn the setting on.
 
 <Screenshot
   file="editor/bin-editor-sandbox-declared.webp"
@@ -50,16 +50,17 @@ toolbar offers **Declare edits**, which turns the setting on.
 
 ## Choose the layer and module
 
-In the **Sandbox** options, select the layer that edits write to, and the module that new keys
-join. The options open on the layer you used last in the project, or `base`.
+In the **Sandbox** options, select the layer that receives your edits, and the module that receives
+new keys. The layer defaults to the layer that you used last in the project, or to `base`.
 
-Each row that a declaration of the chosen layer sets shows a mark. Hover over the mark to see the
-layer and the game's own value. A declaration in another layer shows as applied, with no mark.
+A row shows a mark if a declaration of the selected layer sets it. Hover over the mark to see the
+layer and the game's own value. If a declaration of another layer sets a row, the row shows the
+applied value with no mark.
 
 ## Edit a row
 
-Edit a value as in any bin. See [Editing bins](/editor/bin-editor/editing/). Each edit
-becomes the declaration that says it:
+Edit a value as in any bin. See [Editing bins](/editor/bin-editor/editing/). Each edit becomes one
+declaration:
 
 | Edit                             | Declaration                           |
 | -------------------------------- | ------------------------------------- |
@@ -67,12 +68,13 @@ becomes the declaration that says it:
 | Add an entry to a map            | `+map: {key: value}`                  |
 | Remove an entry of a map         | `-map: [key]`                         |
 | Add an item at the end of a list | `+list: [value]`                      |
-| Insert or move an item mid-list  | The whole list                        |
+| Insert or move an item in a list | The whole list                        |
 | Add a dependency                 | `links: [path]` in a `target` module  |
 | Remove a dependency              | `-links: [path]` in a `target` module |
 
-To drop a declaration, right-click its row and select **Reset to default**. The row then shows the
-game's value again. Undo and redo restore the `game_data.yaml` as it was before and after the edit.
+To remove a declaration, right-click its row and select **Reset to default**. The row then shows
+the game's value again. Undo restores the `game_data.yaml` to its content before the edit. Redo
+applies the edit again.
 
 ## Add and remove objects
 
@@ -83,32 +85,31 @@ game's value again. Undo and redo restore the `game_data.yaml` as it was before 
 | **Remove object**           | An object row's menu        |
 | **Restore object**          | A removed object row's menu |
 
-A new object gets its name on a line under the file's objects. The name starts as
-`Mods/<mod>/` followed by the source object or the class. Press <kbd>Enter</kbd> to declare the
-object. A removed object keeps its row, struck through.
+Enter the name of the new object on the line under the objects of the file. The name starts with
+`Mods/<mod>/`, followed by the name of the source object or the class. Press <kbd>Enter</kbd> to
+declare the object. A removed object keeps its row, with the name struck through.
 
 ## Copy a row as a declaration
 
-Right-click any row of any bin and select **Copy as declaration** to copy it as an `entries`
-module you can paste into a `game_data.yaml`. **Copy reference** copies a value row as a
-`!ref` to the game's value. Both work on a read-only bin.
+To copy a row of any bin as an `entries` module, right-click it and select **Copy as
+declaration**. You can paste the module into a `game_data.yaml`. **Copy reference** copies a value
+row as a `!ref` to the game's value. Both commands are available on a read-only bin.
 
 In a declared bin, **Paste reference** sets a row to the copied reference, and **Merge reference**
 adds it to a list or a map.
 
-## When a layer ships the bin
+## Bins in a layer
 
-When a layer of your project ships its own copy of a game bin, the bin opens as that layer's file,
-and edits save to the file, not to a `game_data.yaml`. A row that a declaration in any layer
-overrides at build shows the declaring layer's glyph. Hover over it to see each layer's value and
-the file's own value. The build packs the value of the last layer.
+When a layer of your project ships its own copy of a game bin, the bin opens as the file of that
+layer. LTK Editor saves edits to the file and writes no key to a `game_data.yaml`. If a declaration
+of any layer overrides a row in the build, the row shows the glyph of the declaring layer. Hover over it to see the value of
+each layer and the value in the file. The build packs the value of the last layer.
 
 ## Limitations
 
-- A property cannot be removed from a game bin. **Reset to default** writes the default value
-  instead.
-- A path through a field that no hash table names cannot be declared.
-- A map key that the bin holds twice cannot be declared.
+- You cannot remove a property from a game bin. **Reset to default** writes the default value.
+- You cannot declare a path that contains a field whose name is not in a hash table.
+- You cannot declare a map key that the bin contains twice.
 
 ## Next steps
 
