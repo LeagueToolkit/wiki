@@ -8,7 +8,7 @@ tags:
   status: wip
 ---
 
-import { FileTree, Tabs, TabItem } from '@astrojs/starlight/components';
+import { FileTree } from '@astrojs/starlight/components';
 
 A game data declaration is a change to a game [bin file](/reference/file-formats/bin/) that you
 write in the manifest of a layer. The overlay build applies the change to the game's copy of the
@@ -234,7 +234,7 @@ entry body. If both forms set one field, the build applies the later value.
 ### Type pins
 
 A **type pin** requires one type for a value. In YAML it is a tag in front of the value:
-`selfIllumination: !f32 1.0`. In TOML and JSON it is a mapping with one key: `{ f32 = 1.0 }`.
+`selfIllumination: !f32 1.0`. It can also be a mapping with one key: `{f32: 1.0}`.
 
 - If the property has another type, the build skips the key.
 - A pin does not supply a type. If no type is known for the property, the build skips the key with
@@ -252,9 +252,9 @@ The reference lists the [type names](/reference/mod-packages/game-data/#type-pin
 ### References
 
 A **reference** is a value that the build reads from the installed game. Write it as
-`<entry name>:<property path>`. In YAML:
-`texture: !ref Characters/Ahri/Skins/Skin0:skinMeshProperties.texture`. In TOML and JSON:
-`{ ref = "Characters/Ahri/Skins/Skin0:skinMeshProperties.texture" }`.
+`<entry name>:<property path>`:
+`texture: !ref Characters/Ahri/Skins/Skin0:skinMeshProperties.texture`. It can also be a mapping
+with one key: `{ref: "Characters/Ahri/Skins/Skin0:skinMeshProperties.texture"}`.
 
 - Use a reference in place of a value that you copy from a bin. A copied value keeps the value of
   the patch that you read it from. The build reads a reference again on every build.
@@ -319,7 +319,7 @@ objects:
 ```
 
 The loader reads this body as the `class` and `set` body above. A clone and a removal have no tag
-form. TOML and JSON have no tags.
+form.
 
 A clone reads the bin as it is before the build creates the objects of the same edit. To clone an
 object that you create, put the second clone in a later item of an `edits` list:
@@ -439,8 +439,7 @@ links:
   `edits`. `modules`, `target`, `name` and `source` are errors in a source file.
 - The `source` path is relative to the layer directory, here `content/base/`. Use forward slashes.
   The path must resolve to a file inside the layer directory, after the loader resolves symlinks.
-- A source file can be YAML, TOML or JSON. Its format is independent of the format of the
-  manifest.
+- A source file is a YAML file with the extension `.yaml` or `.yml`.
 - To use the edit on another target, add a module with the same `source`. A manifest that assigns
   one source file to one target twice is an error.
 - To change the result of a source file, add a module for the same target after the module with
@@ -448,50 +447,23 @@ links:
 - The manifest and each referenced source file must exist, and `.modignore` must not exclude them.
 - A file that no manifest references adds no declaration.
 
-## Choose a manifest format
+## Name the manifest
 
-A layer accepts one manifest: `game_data.yaml`, `game_data.yml`, `game_data.json` or
-`game_data.toml`. Two manifests in one layer are an error.
+A layer accepts one manifest: `game_data.yaml` or `game_data.yml`. Two manifests in one layer are
+an error.
 
-<Tabs>
-  <TabItem label="YAML">
+Manifests and source files are YAML. Packing refuses a layer that holds `game_data.json` or
+`game_data.toml`, even beside a YAML manifest, and a source file in any other format. The overlay
+build rejects the declarations of that layer. The error names the file and says to convert it to
+YAML.
 
-    ```yaml title="content/base/game_data.yaml"
-    version: 1
-    modules:
-      - target: data/characters/teemo/skins/skin0.bin
-        links:
-          - mods/teemo-example/particles.bin
-    ```
-
-  </TabItem>
-  <TabItem label="JSON">
-
-    ```json title="content/base/game_data.json"
-    {
-      "version": 1,
-      "modules": [
-        {
-          "target": "data/characters/teemo/skins/skin0.bin",
-          "links": ["mods/teemo-example/particles.bin"]
-        }
-      ]
-    }
-    ```
-
-  </TabItem>
-  <TabItem label="TOML">
-
-    ```toml title="content/base/game_data.toml"
-    version = 1
-
-    [[modules]]
-    target = "data/characters/teemo/skins/skin0.bin"
-    links = ["mods/teemo-example/particles.bin"]
-    ```
-
-  </TabItem>
-</Tabs>
+```yaml title="content/base/game_data.yaml"
+version: 1
+modules:
+  - target: data/characters/teemo/skins/skin0.bin
+    links:
+      - mods/teemo-example/particles.bin
+```
 
 A manifest contains one `version` and one `modules` list. An unknown key, a duplicate key, an
 unsupported version and a module with two body forms are errors.
@@ -531,9 +503,10 @@ packing excludes them from game content. Packing fails on an invalid declaration
 the game, such as the existence of a target, run in the overlay build.
 
 - A `.modpkg` stores the declarations of each layer.
-- A `.fantome` stores them in the LeagueToolkit extension of `META/info.json`. A tool with no
-  support for the extension installs the mod without the declarations.
-- Extraction writes a `game_data.json` manifest that contains the body of every module and uses no
+- A `.fantome` stores them as a YAML manifest per layer, at
+  `META/game_data/<layer>/game_data.yaml`. A tool with no support for this entry installs the mod
+  without the declarations.
+- Extraction writes a `game_data.yaml` manifest that contains the body of every module and uses no
   source file. It keeps module order, module names and the order of an `entries` mapping. It does
   not restore source file names, comments or formatting.
 
