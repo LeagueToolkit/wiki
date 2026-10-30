@@ -8,8 +8,6 @@ tags:
   status: wip
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
-
 A game data declaration is a change to one of the game's property bins that a mod layer declares in
 a manifest. The overlay build reads the copy of the target bin from the installed game and applies
 the change to it. This page specifies the manifest format, the bindings, the packaged forms and the
@@ -43,11 +41,11 @@ The format has two parts:
 
 The same declarations are stored in three forms:
 
-| Form        | Location                                                     | Contents                                   |
-| ----------- | ------------------------------------------------------------ | ------------------------------------------ |
-| Mod project | `content/{layer}/game_data.yaml`, `.yml`, `.toml` or `.json` | The authored manifest and its source files |
-| `.modpkg`   | Layer metadata field `game_data`                             | The ordered declarations of the layer      |
-| `.fantome`  | `Layers.{name}.GameData` in `META/info.json`                 | The same ordered declarations              |
+| Form        | Location                                   | Contents                                   |
+| ----------- | ------------------------------------------ | ------------------------------------------ |
+| Mod project | `content/{layer}/game_data.yaml` or `.yml` | The authored manifest and its source files |
+| `.modpkg`   | Layer metadata field `game_data`           | The ordered declarations of the layer      |
+| `.fantome`  | `META/game_data/{layer}/game_data.yaml`    | The same ordered declarations              |
 
 A `.modpkg` and a `.fantome` are build outputs of a mod project.
 
@@ -73,14 +71,14 @@ A `.modpkg` and a `.fantome` are build outputs of a mod project.
   sign. Each value is the value that the build sets, adds or removes.
 - **Sign** - A leading `+` or `-` on a key. `+` adds to a list or a map, and `-` removes from it. A
   key with no sign sets the value.
-- **Type pin** - A value marked with a type name. In YAML it is a tag, `!f32 1.0`. In TOML and
-  JSON it is a mapping whose only key is the type name, `{f32: 1.0}`. The loader reads both forms
+- **Type pin** - A value marked with a type name. It is a tag, `!f32 1.0`, or a mapping whose
+  only key is the type name, `{f32: 1.0}`. The loader reads both forms
   as the same value.
 - **Struct pin** - A `pointer` or `embed` pin. It contains the class and the fields of a new
   struct.
 - **Reference** - A value that the build reads from the installed game, written as
-  `<entry name>:<property path>`. In YAML it is a tag, `!ref a/b:speed`. In TOML and JSON it is a
-  mapping whose only key is `ref`, `{ref: "a/b:speed"}`.
+  `<entry name>:<property path>`. It is a tag, `!ref a/b:speed`, or a mapping whose only key is
+  `ref`, `{ref: "a/b:speed"}`.
 - **Class tag** - The YAML form of a constructed object: the class as a tag on the properties of
   the object, `!ResourceResolver`.
 - **Override file** - A `.ptch` file in a layer. It contains `PTCH` records that the build applies
@@ -117,9 +115,9 @@ binding keyword is an error. The loader compares binding keywords case-sensitive
 
 ### Location
 
-A layer with declarations has one manifest in `content/{layer}/`: `game_data.yaml`,
-`game_data.yml`, `game_data.toml` or `game_data.json`. The loader selects the format by the file
-extension, which it compares ASCII case-insensitively. Two manifests in one layer are an error. A
+A layer with declarations has one manifest in `content/{layer}/`: `game_data.yaml` or
+`game_data.yml`. Two manifests in one layer are an error. A `game_data.json` or `game_data.toml` in
+a layer is an error, even beside a YAML manifest, and the error says to convert the file to YAML. A
 layer with no manifest has no declarations.
 
 ```
@@ -143,21 +141,18 @@ my-mod/
 - The manifest references every source file and every override file by path. The loader does not
   search for source files. A directory name or a file name does not select a target. The `.patch`
   part of a source file name in these examples has no meaning.
-- A YAML, TOML or JSON file that no manifest references is game content.
+- A file that no manifest references is game content.
 - Packing excludes build resources from game content, including a build resource inside a
   `.wad.client` directory.
 - A `.modignore` rule that excludes a referenced source file or override file is an error.
 - A file that is both a manifest and a source file is an error.
 
-The three formats express the same data. A source file can use a format other than the format of
-its manifest.
+A manifest and a source file are YAML. The loader compares the extension, `.yaml` or `.yml`, ASCII
+case-insensitively. Any other extension is an error that says to convert the file to YAML.
 
 - The loader reads **YAML** as YAML 1.2 with the core schema. `0x6ecc5fac` without quotes is an
   integer. `on` and `yes` are strings. Quote a hash wherever it is a key or a string value. A tag
   is a [type pin](#type-pins), a [reference](#references) or a [class tag](#objects).
-- The loader reads **TOML** as [TOML 1.1](https://toml.io/en/v1.1.0), which permits an inline
-  table on several lines and a trailing comma.
-- **JSON** has no comments and no tags.
 
 ### Module order
 
@@ -172,64 +167,21 @@ selector:
 A module with both selectors, or with neither, is an error. A module with `source` must contain no
 binding and no `edits`. A module with compact bindings must contain no `edits`.
 
-<Tabs>
-  <TabItem label="YAML">
-    ```yaml
-    # content/base/game_data.yaml
-    version: 1
+```yaml
+# content/base/game_data.yaml
+version: 1
 
-    modules:
-      - target: data/characters/teemo/skins/skin0.bin
-        links:
-          - mods/teemo-classic/particles.bin
-        Characters/Teemo/Skins/Skin0/Resources:
-          +resourceMap:
-            Teemo_R_Mis: Mods/TeemoClassic/Particles/R_Missile
+modules:
+  - target: data/characters/teemo/skins/skin0.bin
+    links:
+      - mods/teemo-classic/particles.bin
+    Characters/Teemo/Skins/Skin0/Resources:
+      +resourceMap:
+        Teemo_R_Mis: Mods/TeemoClassic/Particles/R_Missile
 
-      - target: shared
-        source: shared.patch.yaml
-    ```
-
-  </TabItem>
-  <TabItem label="TOML">
-    ```toml
-    # content/base/game_data.toml
-    version = 1
-
-    [[modules]]
-    target = "data/characters/teemo/skins/skin0.bin"
-    links = ["mods/teemo-classic/particles.bin"]
-
-    [modules."Characters/Teemo/Skins/Skin0/Resources"."+resourceMap"]
-    Teemo_R_Mis = "Mods/TeemoClassic/Particles/R_Missile"
-
-    [[modules]]
-    target = "shared"
-    source = "shared.patch.yaml"
-    ```
-
-  </TabItem>
-  <TabItem label="JSON">
-    ```json
-    {
-      "version": 1,
-      "modules": [
-        {
-          "target": "data/characters/teemo/skins/skin0.bin",
-          "links": ["mods/teemo-classic/particles.bin"],
-          "Characters/Teemo/Skins/Skin0/Resources": {
-            "+resourceMap": { "Teemo_R_Mis": "Mods/TeemoClassic/Particles/R_Missile" }
-          }
-        },
-        {
-          "target": "shared",
-          "source": "shared.patch.yaml"
-        }
-      ]
-    }
-    ```
-  </TabItem>
-</Tabs>
+  - target: shared
+    source: shared.patch.yaml
+```
 
 The build applies the modules of a layer in list order. It applies each module to the result of the
 modules before it. The build applies a source file at the position of the module that references
@@ -265,7 +217,7 @@ modules:
 
 ### Source files
 
-`source` is the path of one YAML, TOML or JSON file, relative to the layer directory. The loader
+`source` is the path of one YAML file, relative to the layer directory. The loader
 reads the file at that exact path and adds no suffix. An absolute path and a path with a backslash
 are errors.
 
@@ -345,61 +297,31 @@ that the same phase creates, write the clone in a later edit.
   one path, the build applies the set first, then the removals, then the additions.
 - Keys whose paths do not overlap give the same result in any key order. The build applies keys
   whose paths overlap, such as `a.b` and `a`, in the order of first occurrence.
-- A mapping that contains one key twice is an error in every format.
+- A mapping that contains one key twice is an error.
 - To apply one write to the result of another write to the same property, put the two writes in
   separate edits or separate modules.
 
 ### Grammar
 
 A manifest module contains a selector and one body form. A source file contains `version` and its
-body, and the manifest supplies its target. The examples below show the source file
-`teemo-skin0.patch` in each format. For a body in the manifest, write the same bindings beside
+body, and the manifest supplies its target. The example below shows the source file
+`teemo-skin0.patch`. For a body in the manifest, write the same bindings beside
 `target` and omit `version`.
 
-<Tabs>
-  <TabItem label="YAML">
-    ```yaml
-    # content/base/teemo-skin0.patch.yaml
-    version: 1
+```yaml
+# content/base/teemo-skin0.patch.yaml
+version: 1
 
-    # Jade is the codename of the League Classic game mode. Jade_Teemo is its Teemo.
-    links: [data/characters/jade_teemo/skins/skin0.bin]
-    overrides: [teemo-skin0.ptch]
+# Jade is the codename of the League Classic game mode. Jade_Teemo is its Teemo.
+links: [data/characters/jade_teemo/skins/skin0.bin]
+overrides: [teemo-skin0.ptch]
 
-    Characters/Teemo/Skins/Skin0:
-      skinMeshProperties.selfIllumination: 1.0
-    ```
+Characters/Teemo/Skins/Skin0:
+  skinMeshProperties.selfIllumination: 1.0
+```
 
-  </TabItem>
-  <TabItem label="TOML">
-    ```toml
-    # content/base/teemo-skin0.patch.toml
-    version = 1
-
-    # Jade is the codename of the League Classic game mode. Jade_Teemo is its Teemo.
-    links = ["data/characters/jade_teemo/skins/skin0.bin"]
-    overrides = ["teemo-skin0.ptch"]
-
-    ["Characters/Teemo/Skins/Skin0"]
-    skinMeshProperties.selfIllumination = 1.0
-    ```
-
-  </TabItem>
-  <TabItem label="JSON">
-    ```json
-    {
-      "version": 1,
-      "links": ["data/characters/jade_teemo/skins/skin0.bin"],
-      "overrides": ["teemo-skin0.ptch"],
-      "Characters/Teemo/Skins/Skin0": { "skinMeshProperties.selfIllumination": 1.0 }
-    }
-    ```
-  </TabItem>
-</Tabs>
-
-In a compact body, an entry is a root mapping in YAML and JSON, and a `["Entry/Name"]` table in
-TOML. The examples in the binding sections use source files. The same bindings are valid in a
-manifest body. The format tabs of one example describe the same edit.
+In a compact body, an entry is a root mapping. The examples in the binding sections use source
+files. The same bindings are valid in a manifest body.
 
 - **`version`** - A required integer in the manifest and in each source file. This page describes
   version 1. The loader fails on any other version.
@@ -438,54 +360,18 @@ value is an [entry body](#entries), the same body that an entry has in a `target
 resolves each name through the object index to the chunks that declare the entry in the installed
 game.
 
-<Tabs>
-  <TabItem label="YAML">
-    ```yaml
-    # content/base/game_data.yaml
-    version: 1
+```yaml
+# content/base/game_data.yaml
+version: 1
 
-    modules:
-      - entries:
-          Characters/Teemo/Skins/Skin0:
-            skinMeshProperties.selfIllumination: 1.0
-          Characters/Teemo/Skins/Skin0/Resources:
-            +resourceMap:
-              Teemo_R_Mis: Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis
-    ```
-
-  </TabItem>
-  <TabItem label="TOML">
-    ```toml
-    # content/base/game_data.toml
-    version = 1
-
-    [[modules]]
-    [modules.entries."Characters/Teemo/Skins/Skin0"]
-    skinMeshProperties.selfIllumination = 1.0
-
-    [modules.entries."Characters/Teemo/Skins/Skin0/Resources"."+resourceMap"]
-    Teemo_R_Mis = "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis"
-    ```
-
-  </TabItem>
-  <TabItem label="JSON">
-    ```json
-    {
-      "version": 1,
-      "modules": [
-        {
-          "entries": {
-            "Characters/Teemo/Skins/Skin0": { "skinMeshProperties.selfIllumination": 1.0 },
-            "Characters/Teemo/Skins/Skin0/Resources": {
-              "+resourceMap": { "Teemo_R_Mis": "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis" }
-            }
-          }
-        }
-      ]
-    }
-    ```
-  </TabItem>
-</Tabs>
+modules:
+  - entries:
+      Characters/Teemo/Skins/Skin0:
+        skinMeshProperties.selfIllumination: 1.0
+      Characters/Teemo/Skins/Skin0/Resources:
+        +resourceMap:
+          Teemo_R_Mis: Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis
+```
 
 - An `entries` module is one edit. Beside `entries`, the module can contain `name` only.
   `overrides`, `objects`, `edits`, `source` and any other binding beside `entries` are errors.
@@ -553,9 +439,7 @@ The sign on a key selects the operation. The value is the literal that the opera
 - A sign is not valid on an entry name. To delete an object, write `remove: true` under
   [`objects`](#objects).
 
-In YAML, a signed key needs no quotes. In TOML, quote a key that starts with `+` and a key that
-contains a dot or a bracket. A TOML key that starts with `-` and contains only letters, digits, `_`
-and `-` needs no quotes. In JSON, every key has quotes.
+A signed key needs no quotes.
 
 ## Bindings
 
@@ -575,35 +459,12 @@ module.
 `-links` removes paths. An edit can contain `links` or `+links`, not both. The format has no key
 that replaces the whole list.
 
-<Tabs>
-  <TabItem label="YAML">
-    ```yaml
-    # content/base/teemo-skin0.patch.yaml
-    version: 1
-    links: [data/characters/jade_teemo/skins/skin0.bin] # The VFX definitions of League Classic Teemo.
-    -links: [data/characters/teemo/animations/skin0.bin] # The mod ships a replacement graph in classic.bin.
-    ```
-  </TabItem>
-  <TabItem label="TOML">
-    ```toml
-    # content/base/teemo-skin0.patch.toml
-    version = 1
-    # The VFX definitions of League Classic Teemo.
-    links = ["data/characters/jade_teemo/skins/skin0.bin"]
-    # The mod ships a replacement graph in classic.bin.
-    -links = ["data/characters/teemo/animations/skin0.bin"]
-    ```
-  </TabItem>
-  <TabItem label="JSON">
-    ```json
-    {
-      "version": 1,
-      "links": ["data/characters/jade_teemo/skins/skin0.bin"],
-      "-links": ["data/characters/teemo/animations/skin0.bin"]
-    }
-    ```
-  </TabItem>
-</Tabs>
+```yaml
+# content/base/teemo-skin0.patch.yaml
+version: 1
+links: [data/characters/jade_teemo/skins/skin0.bin] # The VFX definitions of League Classic Teemo.
+-links: [data/characters/teemo/animations/skin0.bin] # The mod ships a replacement graph in classic.bin.
+```
 
 - A link is a game path. The game lowercases it, hashes it with XXH64 and seed 0, and adds no
   prefix and no extension.
@@ -634,28 +495,10 @@ that replaces the whole list.
 `overrides` lists override files of the layer. The build applies the records of each file to the
 target.
 
-<Tabs>
-  <TabItem label="YAML">
-    ```yaml
-    version: 1
-    overrides: [teemo-skin0.ptch]
-    ```
-  </TabItem>
-  <TabItem label="TOML">
-    ```toml
-    version = 1
-    overrides = ["teemo-skin0.ptch"]
-    ```
-  </TabItem>
-  <TabItem label="JSON">
-    ```json
-    {
-      "version": 1,
-      "overrides": ["teemo-skin0.ptch"]
-    }
-    ```
-  </TabItem>
-</Tabs>
+```yaml
+version: 1
+overrides: [teemo-skin0.ptch]
+```
 
 - An override file is a `.ptch` file: a `PTCH` bin as the game defines it. The loader compares the
   extension ASCII case-insensitively. A path with any other extension is an error.
@@ -683,85 +526,26 @@ An entry binding is an entry name as a key of the body, with an entry body as it
 body sets property values, replaces containers, and adds to or removes from lists and maps. The
 binding has no keyword.
 
-<Tabs>
-  <TabItem label="YAML">
-    ```yaml
-    version: 1
+```yaml
+version: 1
 
-    # Give base Teemo the textures and icons of League Classic Teemo.
-    Characters/Teemo/Skins/Skin0:
-      skinMeshProperties.texture: assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex
-      skinMeshProperties.selfIllumination: 1.0
-      iconCircle: assets/characters/jade_teemo/hud/jade_teemo_circle_301.tex
-      iconAvatar: assets/characters/jade_teemo/hud/jade_teemo_circle_0.tex # The base omits iconAvatar. The schema supplies its type.
-      +skinAudioProperties.tagEventList: [Jade_Teemo]
+# Give base Teemo the textures and icons of League Classic Teemo.
+Characters/Teemo/Skins/Skin0:
+  skinMeshProperties.texture: assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex
+  skinMeshProperties.selfIllumination: 1.0
+  iconCircle: assets/characters/jade_teemo/hud/jade_teemo_circle_301.tex
+  iconAvatar: assets/characters/jade_teemo/hud/jade_teemo_circle_0.tex # The base omits iconAvatar. The schema supplies its type.
+  +skinAudioProperties.tagEventList: [Jade_Teemo]
 
-    # Redirect the R missile, add a pickup effect, and remove the firefly light.
-    Characters/Teemo/Skins/Skin0/Resources:
-      -resourceMap: [Teemo_R_Firefly_GroundLight]
-      +resourceMap:
-        Teemo_R_Mis: Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis
-        Teemo_R_Pickup: Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Pickup
-        "0x6ecc5fac": Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_E_Poison # A key with no known name, by hash.
-        Teemo_R_Debuff: null # A null link value.
-    ```
-
-  </TabItem>
-  <TabItem label="TOML">
-    ```toml
-    version = 1
-
-    # Give base Teemo the textures and icons of League Classic Teemo.
-    ["Characters/Teemo/Skins/Skin0"]
-    iconCircle = "assets/characters/jade_teemo/hud/jade_teemo_circle_301.tex"
-    # The base omits iconAvatar. The schema supplies its type.
-    iconAvatar = "assets/characters/jade_teemo/hud/jade_teemo_circle_0.tex"
-    skinMeshProperties = {
-      texture = "assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex",
-      selfIllumination = 1.0,
-    }
-    skinAudioProperties = {
-      "+tagEventList" = ["Jade_Teemo"],
-    }
-
-    # Redirect the R missile, add a pickup effect, and remove the firefly light.
-    ["Characters/Teemo/Skins/Skin0/Resources"]
-    -resourceMap = ["Teemo_R_Firefly_GroundLight"]
-    "+resourceMap" = {
-      Teemo_R_Mis = "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis",
-      Teemo_R_Pickup = "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Pickup",
-      # A key with no known name, by hash.
-      "0x6ecc5fac" = "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_E_Poison",
-      # A null link value.
-      Teemo_R_Debuff = "",
-    }
-    ```
-
-  </TabItem>
-  <TabItem label="JSON">
-    ```json
-    {
-      "version": 1,
-      "Characters/Teemo/Skins/Skin0": {
-        "skinMeshProperties.texture": "assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex",
-        "skinMeshProperties.selfIllumination": 1.0,
-        "iconCircle": "assets/characters/jade_teemo/hud/jade_teemo_circle_301.tex",
-        "iconAvatar": "assets/characters/jade_teemo/hud/jade_teemo_circle_0.tex",
-        "+skinAudioProperties.tagEventList": ["Jade_Teemo"]
-      },
-      "Characters/Teemo/Skins/Skin0/Resources": {
-        "-resourceMap": ["Teemo_R_Firefly_GroundLight"],
-        "+resourceMap": {
-          "Teemo_R_Mis": "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis",
-          "Teemo_R_Pickup": "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Pickup",
-          "0x6ecc5fac": "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_E_Poison",
-          "Teemo_R_Debuff": null
-        }
-      }
-    }
-    ```
-  </TabItem>
-</Tabs>
+# Redirect the R missile, add a pickup effect, and remove the firefly light.
+Characters/Teemo/Skins/Skin0/Resources:
+  -resourceMap: [Teemo_R_Firefly_GroundLight]
+  +resourceMap:
+    Teemo_R_Mis: Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis
+    Teemo_R_Pickup: Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Pickup
+    '0x6ecc5fac': Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_E_Poison # A key with no known name, by hash.
+    Teemo_R_Debuff: null # A null link value.
+```
 
 - A key is a [property path](#property-paths) with an optional [sign](#operations). One key
   addresses a nested field, a list element or a map entry. A mapping on a struct property descends
@@ -815,56 +599,18 @@ key        = json-number / json-string / "true" / "false"
 
 Each key under an entry is one path. A path can end at any value:
 
-<Tabs>
-  <TabItem label="YAML">
-    ```yaml
-    version: 1
+```yaml
+version: 1
 
-    Characters/Teemo/Skins/Skin0:
-      skinMeshProperties.materialOverride[0].texture: assets/characters/jade_teemo/skins/base/jade_teemo_base_mushroom_tx_cm.tex
-      skinMeshProperties.overrideBoundingBox: [50.0, 180.0, 150.0]
-      healthBarData.unitHealthBarStyle: 12
-      +skinAudioProperties.bankUnits[0].events: [Play_sfx_Teemo_R_Pickup]
+Characters/Teemo/Skins/Skin0:
+  skinMeshProperties.materialOverride[0].texture: assets/characters/jade_teemo/skins/base/jade_teemo_base_mushroom_tx_cm.tex
+  skinMeshProperties.overrideBoundingBox: [50.0, 180.0, 150.0]
+  healthBarData.unitHealthBarStyle: 12
+  +skinAudioProperties.bankUnits[0].events: [Play_sfx_Teemo_R_Pickup]
 
-    Characters/Teemo/Skins/Skin0/Resources:
-      'resourceMap{"Teemo_R_Mis"}': Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis
-    ```
-
-  </TabItem>
-  <TabItem label="TOML">
-    ```toml
-    version = 1
-
-    ["Characters/Teemo/Skins/Skin0"]
-    "skinMeshProperties.materialOverride[0].texture" = """\
-    assets/characters/jade_teemo/skins/base/jade_teemo_base_mushroom_tx_cm.tex"""
-    "skinMeshProperties.overrideBoundingBox" = [50.0, 180.0, 150.0]
-    "healthBarData.unitHealthBarStyle" = 12
-    "+skinAudioProperties.bankUnits[0].events" = ["Play_sfx_Teemo_R_Pickup"]
-
-    ["Characters/Teemo/Skins/Skin0/Resources"]
-    'resourceMap{"Teemo_R_Mis"}' = """\
-    Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis"""
-    ```
-
-  </TabItem>
-  <TabItem label="JSON">
-    ```json
-    {
-      "version": 1,
-      "Characters/Teemo/Skins/Skin0": {
-        "skinMeshProperties.materialOverride[0].texture": "assets/characters/jade_teemo/skins/base/jade_teemo_base_mushroom_tx_cm.tex",
-        "skinMeshProperties.overrideBoundingBox": [50.0, 180.0, 150.0],
-        "healthBarData.unitHealthBarStyle": 12,
-        "+skinAudioProperties.bankUnits[0].events": ["Play_sfx_Teemo_R_Pickup"]
-      },
-      "Characters/Teemo/Skins/Skin0/Resources": {
-        "resourceMap{\"Teemo_R_Mis\"}": "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis"
-      }
-    }
-    ```
-  </TabItem>
-</Tabs>
+Characters/Teemo/Skins/Skin0/Resources:
+  'resourceMap{"Teemo_R_Mis"}': Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis
+```
 
 - A [sign](#operations) is valid on a path that ends at a container.
   `+resourceMap: {Teemo_R_Mis: ...}` and `resourceMap{"Teemo_R_Mis"}: ...` set the same map entry.
@@ -872,7 +618,7 @@ Each key under an entry is one path. A path can end at any value:
   set on `Elements[3]` replaces the whole element.
 - If the base does not contain the index or the map key, the build skips the key with the reason
   `indexOutOfRange` or `keyNotFound`. Only `+` adds an element or a map entry to a container.
-- Write a map-entry path in single quotes in YAML and TOML. The double quotes of the map key then
+- Write a map-entry path in single quotes. The double quotes of the map key then
   need no escape.
 
 #### Block nesting
@@ -882,74 +628,24 @@ A mapping on an `embed` or `pointer` property descends into the struct, unless t
 optional sign. The dotted form `a.b: 1` and the block form `a: {b: 1}` are the same edit, and one
 body can contain both forms.
 
-<Tabs>
-  <TabItem label="YAML">
-    ```yaml
-    version: 1
+```yaml
+version: 1
 
-    Characters/Teemo/Skins/Skin0:
-      skinMeshProperties:
-        texture: assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex
-        selfIllumination: 1.0
-        materialOverride[0]:
-          texture: assets/characters/jade_teemo/skins/base/jade_teemo_base_mushroom_tx_cm.tex
-      skinAudioProperties:
-        +tagEventList: [Jade_Teemo]
-        -tagEventList: [Teemo]
-        bankUnits[0]:
-          +events: [Play_sfx_Teemo_R_Pickup]
-      healthBarData:
-        unitHealthBarStyle: 12
-      iconCircle: assets/characters/jade_teemo/hud/jade_teemo_circle_301.tex
-    ```
-
-  </TabItem>
-  <TabItem label="TOML">
-    ```toml
-    version = 1
-
-    ["Characters/Teemo/Skins/Skin0"]
-    iconCircle = "assets/characters/jade_teemo/hud/jade_teemo_circle_301.tex"
-    skinMeshProperties = {
-      texture = "assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex",
-      selfIllumination = 1.0,
-      "materialOverride[0]" = {
-        texture = "assets/characters/jade_teemo/skins/base/jade_teemo_base_mushroom_tx_cm.tex",
-      },
-    }
-    skinAudioProperties = {
-      "+tagEventList" = ["Jade_Teemo"],
-      "-tagEventList" = ["Teemo"],
-      "bankUnits[0]" = { "+events" = ["Play_sfx_Teemo_R_Pickup"] },
-    }
-    healthBarData.unitHealthBarStyle = 12
-    ```
-
-  </TabItem>
-  <TabItem label="JSON">
-    ```json
-    {
-      "version": 1,
-      "Characters/Teemo/Skins/Skin0": {
-        "skinMeshProperties": {
-          "texture": "assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex",
-          "selfIllumination": 1.0,
-          "materialOverride[0]": {
-            "texture": "assets/characters/jade_teemo/skins/base/jade_teemo_base_mushroom_tx_cm.tex"
-          }
-        },
-        "skinAudioProperties": {
-          "+tagEventList": ["Jade_Teemo"],
-          "-tagEventList": ["Teemo"],
-          "bankUnits[0]": { "+events": ["Play_sfx_Teemo_R_Pickup"] }
-        },
-        "healthBarData": { "unitHealthBarStyle": 12 },
-        "iconCircle": "assets/characters/jade_teemo/hud/jade_teemo_circle_301.tex"
-      }
-    }
-    ```
-  </TabItem>
-</Tabs>
+Characters/Teemo/Skins/Skin0:
+  skinMeshProperties:
+    texture: assets/characters/jade_teemo/skins/base/jade_teemo_base_tx_cm.tex
+    selfIllumination: 1.0
+    materialOverride[0]:
+      texture: assets/characters/jade_teemo/skins/base/jade_teemo_base_mushroom_tx_cm.tex
+  skinAudioProperties:
+    +tagEventList: [Jade_Teemo]
+    -tagEventList: [Teemo]
+    bankUnits[0]:
+      +events: [Play_sfx_Teemo_R_Pickup]
+  healthBarData:
+    unitHealthBarStyle: 12
+  iconCircle: assets/characters/jade_teemo/hud/jade_teemo_circle_301.tex
+```
 
 - A block does not replace the struct. A field that is not a key of the block keeps its base
   value.
@@ -959,10 +655,6 @@ body can contain both forms.
   [`pointer` pin](#type-pins) constructs the struct.
 - A mapping with no sign on a `map` property replaces the whole map. To add or remove map entries,
   write `+` or `-`.
-- In TOML, a block is an inline table under the header of the entry, `skinMeshProperties = { ... }`.
-  A dotted key without quotes, `healthBarData.unitHealthBarStyle = 12`, sets one field. A key in
-  quotes, `"rate.constantValue"`, is a dotted path. An inline table is complete: a later table
-  header cannot add to it.
 
 #### List removal
 
@@ -1030,19 +722,11 @@ is its `Embedded`, `option` is its `Optional`, `flag` is its `BitBool` and `rgba
 
 For any other pair of value and type, the build skips the key with the reason `kindMismatch`.
 
-TOML has no null. In TOML, `""` is the null of `hash`, `link` and `file`, and `{}` inside a
-[pin](#type-pins) is the null pointer or the empty option.
-
-A vector and a matrix are one flat list of numbers in every format. A list can use several lines.
+A vector and a matrix are one flat list of numbers. A list can use several lines.
 This `mtx44` pin has four rows of four numbers:
 
-```toml
-{ mtx44 = [
-  1.0, 0.0, 0.0, 0.0,
-  0.0, 1.0, 0.0, 0.0,
-  0.0, 0.0, 1.0, 0.0,
-  0.0, 0.0, 0.0, 1.0,
-] }
+```yaml
+transform: !mtx44 [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
 ```
 
 The build converts a value with no pin to the type that the property has in the installed patch.
@@ -1052,9 +736,8 @@ loses information: it skips the key.
 
 #### Type pins
 
-A type pin marks a value with the type that its property must have. In YAML it is a tag in front of
-the value, `!f32 1.0`. In TOML and JSON it is a mapping whose only key is the type name,
-`{ f32 = 1.0 }`. Write the value inside a pin in the same form as a value with no pin.
+A type pin marks a value with the type that its property must have. It is a tag in front of the
+value, `!f32 1.0`, or a mapping whose only key is the type name, `{f32: 1.0}`. Write the value inside a pin in the same form as a value with no pin.
 
 A pin is optional. A pin checks the type of the property and never supplies one. Use a pin in
 these cases:
@@ -1062,113 +745,41 @@ these cases:
 - A number or a string converts to several types, and the edit requires one of them.
 - The build must skip the edit if Riot changes the type of the property.
 
-<Tabs>
-  <TabItem label="YAML">
-    ```yaml
-    version: 1
+```yaml
+version: 1
 
-    Characters/Teemo/Skins/Skin0:
-      skinMeshProperties:
-        # A value of 1.0 with no pin converts to f32 only.
-        selfIllumination: !f32 1.0
+Characters/Teemo/Skins/Skin0:
+  skinMeshProperties:
+    # A value of 1.0 with no pin converts to f32 only.
+    selfIllumination: !f32 1.0
 
-        # A string with no pin converts to string, hash, file or link. Each pin requires one of them.
-        skeleton: !file ASSETS/Characters/Jade_Teemo/Skins/Base/Jade_Teemo_Base.skl
-        simpleSkin: !file ASSETS/Characters/Jade_Teemo/Skins/Base/Jade_Teemo_Base.skn
-        initialSubmeshToHide: !string ""
+    # A string with no pin converts to string, hash, file or link. Each pin requires one of them.
+    skeleton: !file ASSETS/Characters/Jade_Teemo/Skins/Base/Jade_Teemo_Base.skl
+    simpleSkin: !file ASSETS/Characters/Jade_Teemo/Skins/Base/Jade_Teemo_Base.skn
+    initialSubmeshToHide: !string ''
 
-        # A list of numbers converts to a vector or a color.
-        overrideBoundingBox: !vec3 [50.0, 180.0, 150.0]
-        reflectionFresnelColor: !rgba [255, 200, 60, 255]
+    # A list of numbers converts to a vector or a color.
+    overrideBoundingBox: !vec3 [50.0, 180.0, 150.0]
+    reflectionFresnelColor: !rgba [255, 200, 60, 255]
 
-      healthBarData:
-        # A value of 12 with no pin converts to u8, i32 or f32.
-        unitHealthBarStyle: !u8 12
-
-      skinAudioProperties:
-        # A boolean with no pin converts to bool or flag.
-        bankUnits[1].voiceOver: !bool false
-
-        # On a list, the pin is the element type.
-        +tagEventList: !hash [Jade_Teemo]
-        -tagEventList: !hash [Teemo]
-
-    Characters/Teemo/Skins/Skin0/Resources:
-      # On a map value, the pin is the value type.
-      +resourceMap:
-        Teemo_R_Mis: !link Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis
-        Teemo_R_Debuff: !link null
-    ```
-
-  </TabItem>
-  <TabItem label="TOML">
-    ```toml
-    version = 1
-
-    ["Characters/Teemo/Skins/Skin0"]
-    skinMeshProperties = {
-      # A value of 1.0 with no pin converts to f32 only.
-      selfIllumination = { f32 = 1.0 },
-
-      # A string with no pin converts to string, hash, file or link. Each pin requires one of them.
-      skeleton = { file = "ASSETS/Characters/Jade_Teemo/Skins/Base/Jade_Teemo_Base.skl" },
-      simpleSkin = { file = "ASSETS/Characters/Jade_Teemo/Skins/Base/Jade_Teemo_Base.skn" },
-      initialSubmeshToHide = { string = "" },
-
-      # A list of numbers converts to a vector or a color.
-      overrideBoundingBox = { vec3 = [50.0, 180.0, 150.0] },
-      reflectionFresnelColor = { rgba = [255, 200, 60, 255] },
-    }
+  healthBarData:
     # A value of 12 with no pin converts to u8, i32 or f32.
-    healthBarData = { unitHealthBarStyle = { u8 = 12 } }
-    skinAudioProperties = {
-      # A boolean with no pin converts to bool or flag.
-      "bankUnits[1].voiceOver" = { bool = false },
+    unitHealthBarStyle: !u8 12
 
-      # On a list, the pin is the element type.
-      "+tagEventList" = { hash = ["Jade_Teemo"] },
-      "-tagEventList" = { hash = ["Teemo"] },
-    }
+  skinAudioProperties:
+    # A boolean with no pin converts to bool or flag.
+    bankUnits[1].voiceOver: !bool false
 
-    # On a map value, the pin is the value type.
-    ["Characters/Teemo/Skins/Skin0/Resources"]
-    "+resourceMap" = {
-      Teemo_R_Mis = { link = "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis" },
-      Teemo_R_Debuff = { link = "" },
-    }
-    ```
+    # On a list, the pin is the element type.
+    +tagEventList: !hash [Jade_Teemo]
+    -tagEventList: !hash [Teemo]
 
-  </TabItem>
-  <TabItem label="JSON">
-    ```json
-    {
-      "version": 1,
-      "Characters/Teemo/Skins/Skin0": {
-        "skinMeshProperties": {
-          "selfIllumination": { "f32": 1.0 },
-          "skeleton": { "file": "ASSETS/Characters/Jade_Teemo/Skins/Base/Jade_Teemo_Base.skl" },
-          "simpleSkin": { "file": "ASSETS/Characters/Jade_Teemo/Skins/Base/Jade_Teemo_Base.skn" },
-          "initialSubmeshToHide": { "string": "" },
-          "overrideBoundingBox": { "vec3": [50.0, 180.0, 150.0] },
-          "reflectionFresnelColor": { "rgba": [255, 200, 60, 255] }
-        },
-        "healthBarData": { "unitHealthBarStyle": { "u8": 12 } },
-        "skinAudioProperties": {
-          "bankUnits[1].voiceOver": { "bool": false },
-          "+tagEventList": { "hash": ["Jade_Teemo"] },
-          "-tagEventList": { "hash": ["Teemo"] }
-        }
-      },
-      "Characters/Teemo/Skins/Skin0/Resources": {
-        "+resourceMap": {
-          "Teemo_R_Mis": { "link": "Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis" },
-          "Teemo_R_Debuff": { "link": null }
-        }
-      }
-    }
-    ```
-  </TabItem>
-</Tabs>
+Characters/Teemo/Skins/Skin0/Resources:
+  # On a map value, the pin is the value type.
+  +resourceMap:
+    Teemo_R_Mis: !link Characters/Jade_Teemo/Skins/Skin0/Particles/Jade_Teemo_Base_R_Mis
+    Teemo_R_Debuff: !link null
+```
 
 - **Type names** - `bool`, `i8` to `i64`, `u8` to `u64`, `f32`, `vec2`, `vec3`, `vec4`, `mtx44`,
   `rgba`, `string`, `hash`, `file`, `link`, `flag`, `option`, `pointer` and `embed`. Type names are
@@ -1184,8 +795,7 @@ these cases:
 - **`option`** - An `option` pin contains one value, with or without a pin, or `null` for the
   empty option. On an option of `pointer` or `embed` elements, a `pointer` or `embed` pin is the
   struct pin of the element.
-- **Null** - `null` in YAML and JSON. In TOML, `""` is the null `hash`, `link` or `file`, and `{}`
-  is the null `pointer` or the empty `option`.
+- **Null** - `null`.
 - **Position** - A pin is a value. A pin is never a key, and a game name is never the key of a pin.
 - **One rule on every property** - A mapping whose only key is a type name is a pin on every
   property, including a struct. Riot has fields named `Flag`, `Hash`, `Option` and `String`, and
@@ -1206,9 +816,8 @@ A struct pin is a `pointer` or `embed` pin. It constructs a struct from a class 
   `!pointer(SomeClass) { field: 1 }`. A hash-form class needs no quotes: `!pointer(0x50db156b)`.
   The class is the text between the first `(` and the `)` that ends the tag. A tag cannot contain
   `[`, `]`, `{`, `}` or `,`, so `!pointer[SomeClass]` is not a tag.
-- In TOML and JSON, the pin is a mapping of `class` and `set`, with at least one of the two:
-  `{ pointer = { class = "SomeClass", set = { field = 1 } } }`. The loader reads the YAML tag as
-  this mapping.
+- The mapping form of the pin holds `class` and `set`, with at least one of the two:
+  `{pointer: {class: SomeClass, set: {field: 1}}}`. The loader reads the tag as this mapping.
 - Each key of the fields is one field name of the class, with no sign. The build skips a dotted
   path and a path with a subscript with the reason `invalidPath`. The build skips a field that has
   no type in the schema with the reason `untypable`. A nested struct is a nested struct pin.
@@ -1221,7 +830,7 @@ A struct pin is a `pointer` or `embed` pin. It constructs a struct from a class 
 - On an `embed`, if the class is not the class of the base value, the build skips the key with the
   reason `pinMismatch`.
 - `!pointer(SomeClass)` with no value constructs the class with no field set.
-- `!pointer null` is the null pointer. In TOML it is `{ pointer = {} }`. An `embed` pin is never
+- `!pointer null` is the null pointer. An `embed` pin is never
   null or empty.
 - A struct that the base contains needs no pin. A mapping with no pin [descends](#block-nesting)
   into it.
@@ -1235,70 +844,31 @@ A struct pin is a `pointer` or `embed` pin. It constructs a struct from a class 
 #### References
 
 A reference is a value that the build reads from the installed game. Write it as
-`<entry name>:<property path>`. In YAML it is a tag,
-`!ref Characters/Ahri/Skins/Skin0:skinMeshProperties.texture`. In TOML and JSON it is a mapping
-whose only key is `ref`, `{ ref = "Characters/Ahri/Skins/Skin0:skinMeshProperties.texture" }`. The
+`<entry name>:<property path>`. It is a tag,
+`!ref Characters/Ahri/Skins/Skin0:skinMeshProperties.texture`, or a mapping whose only key is
+`ref`, `{ref: "Characters/Ahri/Skins/Skin0:skinMeshProperties.texture"}`. The
 build reads the value from the game's copy of that entry and writes it into the target.
 
 Use a reference in place of a value that you copy from a bin. A copied literal keeps the value of
 the patch that you read it from. The build reads a reference on every build, so the value is the
 value of the installed patch.
 
-<Tabs>
-  <TabItem label="YAML">
-    ```yaml
-    version: 1
+```yaml
+version: 1
 
-    Characters/Teemo/Skins/Skin0:
-      # The texture of Ahri's base skin in the installed patch.
-      skinMeshProperties.texture: !ref Characters/Ahri/Skins/Skin0:skinMeshProperties.texture
+Characters/Teemo/Skins/Skin0:
+  # The texture of Ahri's base skin in the installed patch.
+  skinMeshProperties.texture: !ref Characters/Ahri/Skins/Skin0:skinMeshProperties.texture
 
-      # A reference as a list element.
-      +skinAudioProperties.tagEventList: [!ref "Characters/Ahri/Skins/Skin0:skinAudioProperties.tagEventList[0]"]
+  # A reference as a list element.
+  +skinAudioProperties.tagEventList:
+    [!ref 'Characters/Ahri/Skins/Skin0:skinAudioProperties.tagEventList[0]']
 
-    Characters/Teemo/Skins/Skin0/Resources:
-      # A reference as a map value.
-      +resourceMap:
-        Teemo_R_Mis: !ref Characters/Ahri/Skins/Skin0/Resources:resourceMap{"Ahri_Q_mis"}
-    ```
-
-  </TabItem>
-  <TabItem label="TOML">
-    ```toml
-    version = 1
-
-    ["Characters/Teemo/Skins/Skin0"]
-    "skinMeshProperties.texture" = { ref = "Characters/Ahri/Skins/Skin0:skinMeshProperties.texture" }
-    "+skinAudioProperties.tagEventList" = [{ ref = "Characters/Ahri/Skins/Skin0:skinAudioProperties.tagEventList[0]" }]
-
-    ["Characters/Teemo/Skins/Skin0/Resources"]
-    "+resourceMap" = { Teemo_R_Mis = { ref = "Characters/Ahri/Skins/Skin0/Resources:resourceMap{\"Ahri_Q_mis\"}" } }
-    ```
-
-  </TabItem>
-  <TabItem label="JSON">
-    ```json
-    {
-      "version": 1,
-      "Characters/Teemo/Skins/Skin0": {
-        "skinMeshProperties.texture": {
-          "ref": "Characters/Ahri/Skins/Skin0:skinMeshProperties.texture"
-        },
-        "+skinAudioProperties.tagEventList": [
-          { "ref": "Characters/Ahri/Skins/Skin0:skinAudioProperties.tagEventList[0]" }
-        ]
-      },
-      "Characters/Teemo/Skins/Skin0/Resources": {
-        "+resourceMap": {
-          "Teemo_R_Mis": {
-            "ref": "Characters/Ahri/Skins/Skin0/Resources:resourceMap{\"Ahri_Q_mis\"}"
-          }
-        }
-      }
-    }
-    ```
-  </TabItem>
-</Tabs>
+Characters/Teemo/Skins/Skin0/Resources:
+  # A reference as a map value.
+  +resourceMap:
+    Teemo_R_Mis: !ref Characters/Ahri/Skins/Skin0/Resources:resourceMap{"Ahri_Q_mis"}
+```
 
 - **Form** - The loader splits the text at the first `:`. The part before it is an entry name, and
   the part after it is a [property path](#property-paths) in that entry. The path can contain a
@@ -1338,113 +908,33 @@ bodies. An object body has one of three forms:
 
 Any other object body is an error.
 
-<Tabs>
-  <TabItem label="YAML">
-    ```yaml
-    version: 1
+```yaml
+version: 1
 
-    objects:
-      # A copy of the R missile with another rate and a second emitter.
-      Mods/TeemoClassic/Particles/R_Missile:
-        clone: Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis
-        set:
-          particleName: Teemo_Classic_R_Mis
-          complexEmitterDefinitionData[0]:
-            rate:
-              constantValue: 2.0
-            birthColor: !embed(ValueColor)
-              constantValue: [0.35, 0.9, 0.45, 0.64]
-          +complexEmitterDefinitionData: !pointer(VfxEmitterDefinitionData)
-            emitterName: Classic_Trail
-            lifetime: 0.8
+objects:
+  # A copy of the R missile with another rate and a second emitter.
+  Mods/TeemoClassic/Particles/R_Missile:
+    clone: Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis
+    set:
+      particleName: Teemo_Classic_R_Mis
+      complexEmitterDefinitionData[0]:
+        rate:
+          constantValue: 2.0
+        birthColor: !embed(ValueColor)
+          constantValue: [0.35, 0.9, 0.45, 0.64]
+      +complexEmitterDefinitionData: !pointer(VfxEmitterDefinitionData)
+        emitterName: Classic_Trail
+        lifetime: 0.8
 
-      # A resolver for the effects of the mod, constructed from its class.
-      Mods/TeemoClassic/Resources: !ResourceResolver
-        resourceMap:
-          Teemo_R_Mis: Mods/TeemoClassic/Particles/R_Missile
+  # A resolver for the effects of the mod, constructed from its class.
+  Mods/TeemoClassic/Resources: !ResourceResolver
+    resourceMap:
+      Teemo_R_Mis: Mods/TeemoClassic/Particles/R_Missile
 
-      # The missile definition of the game.
-      Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis:
-        remove: true
-    ```
-
-  </TabItem>
-  <TabItem label="TOML">
-    ```toml
-    version = 1
-
-    # A copy of the R missile with another rate and a second emitter.
-    [objects."Mods/TeemoClassic/Particles/R_Missile"]
-    clone = "Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis"
-
-    [objects."Mods/TeemoClassic/Particles/R_Missile".set]
-    particleName = "Teemo_Classic_R_Mis"
-
-    [objects."Mods/TeemoClassic/Particles/R_Missile".set."complexEmitterDefinitionData[0]"]
-    rate.constantValue = 2.0
-    birthColor.embed = {
-      class = "ValueColor",
-      set = { constantValue = [0.35, 0.9, 0.45, 0.64] },
-    }
-
-    [[objects."Mods/TeemoClassic/Particles/R_Missile".set."+complexEmitterDefinitionData"]]
-    pointer = {
-      class = "VfxEmitterDefinitionData",
-      set = { emitterName = "Classic_Trail", lifetime = 0.8 },
-    }
-
-    # A resolver for the effects of the mod, constructed from its class.
-    [objects."Mods/TeemoClassic/Resources"]
-    class = "ResourceResolver"
-
-    [objects."Mods/TeemoClassic/Resources".set.resourceMap]
-    Teemo_R_Mis = "Mods/TeemoClassic/Particles/R_Missile"
-
-    # The missile definition of the game.
-    [objects."Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis"]
-    remove = true
-    ```
-
-  </TabItem>
-  <TabItem label="JSON">
-    ```json
-    {
-      "version": 1,
-      "objects": {
-        "Mods/TeemoClassic/Particles/R_Missile": {
-          "clone": "Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis",
-          "set": {
-            "particleName": "Teemo_Classic_R_Mis",
-            "complexEmitterDefinitionData[0]": {
-              "rate": { "constantValue": 2.0 },
-              "birthColor": {
-                "embed": { "class": "ValueColor", "set": { "constantValue": [0.35, 0.9, 0.45, 0.64] } }
-              }
-            },
-            "+complexEmitterDefinitionData": [
-              {
-                "pointer": {
-                  "class": "VfxEmitterDefinitionData",
-                  "set": { "emitterName": "Classic_Trail", "lifetime": 0.8 }
-                }
-              }
-            ]
-          }
-        },
-        "Mods/TeemoClassic/Resources": {
-          "class": "ResourceResolver",
-          "set": {
-            "resourceMap": {
-              "Teemo_R_Mis": "Mods/TeemoClassic/Particles/R_Missile"
-            }
-          }
-        },
-        "Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis": { "remove": true }
-      }
-    }
-    ```
-  </TabItem>
-</Tabs>
+  # The missile definition of the game.
+  Characters/Teemo/Skins/Skin0/Particles/Teemo_Base_R_Mis:
+    remove: true
+```
 
 **Clone.** The value of `clone` is the name of an entry that the target contains at the start of
 the object creation phase. The build copies the class and the properties of that entry under the
@@ -1494,7 +984,7 @@ objects:
   an object body is an error.
 - A tag on the `objects` mapping is an error.
 - Under a class tag, a value that is neither a mapping nor null is an error.
-- A clone and a removal have no tag form. TOML and JSON have no tags: write `class` and `set`.
+- A clone and a removal have no tag form.
 - Packages and extracted manifests store a tagged object as `class` and `set`.
 
 **`set`.** `set` is an entry body for the new object. It accepts the same paths,
@@ -1540,46 +1030,17 @@ With a `modes` module, the game loads companion bins when it loads one of the li
 and releases them when the mode unloads. The module has no `target`. Its selector is `modes`, and
 its body is `load` and no other key.
 
-<Tabs>
-  <TabItem label="YAML">
-    ```yaml
-    # content/base/game_data.yaml
-    version: 1
+```yaml
+# content/base/game_data.yaml
+version: 1
 
-    modules:
-      - modes:
-          - Map12/ARAM
-          - Map12/KIWI
-        load:
-          - mods/example/aram-announcer.bin
-    ```
-
-  </TabItem>
-  <TabItem label="TOML">
-    ```toml
-    # content/base/game_data.toml
-    version = 1
-
-    [[modules]]
-    modes = ["Map12/ARAM", "Map12/KIWI"]
-    load = ["mods/example/aram-announcer.bin"]
-    ```
-
-  </TabItem>
-  <TabItem label="JSON">
-    ```json
-    {
-      "version": 1,
-      "modules": [
-        {
-          "modes": ["Map12/ARAM", "Map12/KIWI"],
-          "load": ["mods/example/aram-announcer.bin"]
-        }
-      ]
-    }
-    ```
-  </TabItem>
-</Tabs>
+modules:
+  - modes:
+      - Map12/ARAM
+      - Map12/KIWI
+    load:
+      - mods/example/aram-announcer.bin
+```
 
 - **Mode entry** - Each mode of a map has a root object named `Maps/Shipping/Map<N>/Modes/<MODE>`
   in `data/maps/shipping/map<N>/map<N>.bin`. The object contains `AdditionalPropertyDataPaths`, a
@@ -1825,8 +1286,7 @@ The game handles these failures without a log line:
 
 For tools that write projects and packages:
 
-- Write one manifest per layer: `game_data.yaml`, `.yml`, `.toml` or `.json`, with `version` and
-  an ordered `modules` list.
+- Write one manifest per layer: `game_data.yaml` or `.yml`, with `version` and an ordered `modules` list.
 - Give each module one selector, `target` or `entries`. A `target` module contains one target
   string and one body form: compact bindings, `edits` or `source`. An `entries` module contains
   its mapping and an optional `name`.
@@ -1896,7 +1356,7 @@ bin. See [Game data declarations](/editor/bin-editor/game-data/) in the LTK Edit
   and the origin of each module.
 - Packing stores each override file under its layer-relative path, as a chunk of its layer with no
   WAD.
-- Extraction writes one `game_data.json` per layer. That manifest contains the body of every
+- Extraction writes one `game_data.yaml` per layer. That manifest contains the body of every
   module and uses no source file. Extraction places each override file at its path under the
   content directory of the layer. It does not restore source file names, comments or formatting.
 
@@ -1911,13 +1371,14 @@ The stored form differs from a manifest:
 
 ### Fantome
 
-- Packing stores the declarations of a layer as `GameData` under `Layers.{name}` in
-  `META/info.json`, in the
-  [LeagueToolkit extension](/reference/mod-packages/fantome/#the-leaguetoolkit-extension), beside
-  `StringOverrides`.
+- Packing stores the declarations of a layer as `META/game_data/<layer>/game_data.yaml`, a direct
+  manifest that names no source file. `META/info.json` carries no declarations.
+- A reader takes this entry first. For a layer with no entry, it reads `GameData` under
+  `Layers.{name}` in the
+  [LeagueToolkit extension](/reference/mod-packages/fantome/#the-leaguetoolkit-extension) of
+  `META/info.json`. A reader that only knows `GameData` applies no declarations from a new archive.
 - Packing stores each override file as `META/game_data/<layer>/<path>`.
-- A reader with no support for the extension ignores the declarations.
-- Extraction writes the same `game_data.json` manifests as extraction from a `.modpkg`.
+- Extraction writes the same `game_data.yaml` manifests as extraction from a `.modpkg`.
 
 ## Limitations
 
